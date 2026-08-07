@@ -15,7 +15,7 @@ add {
   },
   {
     src = "https://github.com/stevearc/oil.nvim",
-    version = "v2.15.0",
+    version = "v2.16.0",
   },
 }
 

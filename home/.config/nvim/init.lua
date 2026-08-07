@@ -8,12 +8,10 @@ require "plugins.ui"
 require "plugins.picker"
 require "plugins.files"
 require "plugins.formatting"
-require "plugins.markdown"
 require "plugins.quickfix"
 require "plugins.rust"
 require "plugins.node"
 require "plugins.session"
-require "plugins.terminal"
 local ai = require "plugins.ai"
 vim.api.nvim_create_autocmd("InsertEnter", {
   once = true,
