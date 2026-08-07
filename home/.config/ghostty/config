@@ -1,0 +1,68 @@
+# Shell
+command = /opt/homebrew/bin/fish
+macos-option-as-alt = true
+shell-integration-features = ssh-terminfo
+
+## Norwegian keyboard: restore Option+key special characters
+keybind = alt+7=text:|
+keybind = alt+8=text:[
+keybind = alt+9=text:]
+keybind = alt+´=text:`
+keybind = alt+¨=text:~
+keybind = alt+@=text:'
+keybind = alt+shift+8=text:{
+keybind = alt+shift+9=text:}
+keybind = alt+shift+7=text:\\
+
+env=XDG_CONFIG_HOME=/Users/gg/.config
+
+# Visuals
+macos-icon = custom-style
+macos-icon-frame = plastic
+macos-icon-ghost-color = #FFFFFF
+macos-icon-screen-color = #FF69B4,#FF69B4
+theme = light:gg-light,dark:gg-dark
+window-height = 52
+window-width = 180
+window-padding-y = 0
+mouse-hide-while-typing = true
+selection-clear-on-copy = true
+unfocused-split-opacity = 0.75
+macos-titlebar-style = tabs
+
+## Fonts
+font-size = 15
+font-family = BerkeleyMono Nerd Font Mono
+
+# Keybindings
+
+## Unbinds
+keybind = cmd+w=unbind
+keybind = ctrl+tab=unbind
+keybind = ctrl+shift+tab=unbind
+keybind = cmd+shift+w=unbind
+keybind = ctrl+cmd+up=unbind
+
+# For the chained version
+keybind = cmd+d=unbind
+
+## Features
+keybind = cmd+k=toggle_command_palette
+keybind = global:ctrl+opt+cmd+t=toggle_quick_terminal
+keybind = cmd+shift+r=text:\x15exec $SHELL\n
+keybind = ctrl+cmd+r=prompt_tab_title
+keybind = ctrl+cmd+shift+r=prompt_surface_title
+
+keybind = cmd+d=new_split:right
+keybind = chain=equalize_splits
+
+## Splits
+keybind = performable:cmd+alt+l=goto_split:right
+keybind = performable:cmd+alt+h=goto_split:left
+keybind = performable:cmd+alt+k=goto_split:up
+keybind = performable:cmd+alt+j=goto_split:down
+keybind = cmd+alt+shift+l=resize_split:right,75
+keybind = cmd+alt+shift+h=resize_split:left,75
+keybind = cmd+alt+shift+k=resize_split:up,75
+keybind = cmd+alt+shift+j=resize_split:down,75
+keybind = cmd+alt+shift+0=equalize_splits

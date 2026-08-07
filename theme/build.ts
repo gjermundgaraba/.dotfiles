@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 import { palettes } from "./palette.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const template = await readFile(new URL("./templates/neovim.lua", import.meta.url), "utf8");
+const neovimTemplate = await readFile(new URL("./templates/neovim.lua", import.meta.url), "utf8");
+const ghosttyTemplate = await readFile(new URL("./templates/ghostty", import.meta.url), "utf8");
 const modes = ["dark", "light"] as const;
 const expectedKeys = Object.keys(palettes.dark).sort().join(",");
 
@@ -56,17 +57,34 @@ async function writeAtomic(path: string, content: string): Promise<void> {
   await rename(temporary, path);
 }
 
+function render(template: string, values: Record<string, string>): string {
+  const output = template.replace(/{{(\w+)}}/g, (_, name: string) => {
+    if (!(name in values)) throw new Error(`unknown template token: ${name}`);
+    return values[name];
+  });
+  if (output.includes("{{")) throw new Error("unresolved template token");
+  return output;
+}
+
 for (const mode of modes) {
   const palette: Record<string, string> = palettes[mode];
   validate(mode, palette);
-  const values = { ...palette, Name: `gg-${mode}`, Background: mode };
-  const output = template.replace(/{{(\w+)}}/g, (_, name: string) => {
-    if (!(name in values)) throw new Error(`unknown template token: ${name}`);
-    return values[name as keyof typeof values];
-  });
-  if (output.includes("{{")) throw new Error("unresolved template token");
+  const values = {
+    ...palette,
+    Name: `gg-${mode}`,
+    Background: mode,
+    AnsiBlack: mode === "dark" ? palette.BG : palette.FGDim,
+    AnsiWhite: mode === "dark" ? palette.FG : palette.Overlay,
+    BrightBlack: palette.Overlay,
+    BrightWhite: mode === "dark" ? palette.FG : palette.Surface,
+  };
+  const outputs = [
+    [join(root, "home", ".config", "nvim", "colors", `gg-${mode}.lua`), render(neovimTemplate, values)],
+    [join(root, "home", ".config", "ghostty", "themes", `gg-${mode}`), render(ghosttyTemplate, values)],
+  ];
 
-  const destination = join(root, "home", ".config", "nvim", "colors", `gg-${mode}.lua`);
-  await writeAtomic(destination, output);
-  console.log(`generated ${destination.slice(root.length)}`);
+  for (const [destination, output] of outputs) {
+    await writeAtomic(destination, output);
+    console.log(`generated ${destination.slice(root.length)}`);
+  }
 }
