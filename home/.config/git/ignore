@@ -1,0 +1,16 @@
+.DS_Store
+**/.claude/settings.local.json
+
+# Generated assistant state
+.cursor/rules/global_rule_*
+.cursor/rules/devplan_*
+.entire
+.claude/agents/entire-search.md
+.codex/agents/entire-search.toml
+.gemini/agents/entire-search.md
+.opencode/plugins/entire.ts
+.pi/extensions/entire/
+
+.clanker-plans/**
+.md-web/**
+.codex-bin/
