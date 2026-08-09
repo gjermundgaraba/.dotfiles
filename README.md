@@ -14,7 +14,7 @@ Run the same Stow command after moving, adding, or deleting managed files. `-R` 
 
 ## Local state
 
-Whole configuration directories are symlinked into this repository. Machine-local files therefore live inside the checkout but are excluded by `.gitignore`, including:
+Managed files are symlinked from this repository. Configuration directories are linked whole where safe; Claude Code files are linked individually so its runtime data stays local. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
 
 - Fish universal variables, generated completions, and installer environment snippets
 - Ghostty's local Claude settings

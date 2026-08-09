@@ -1,3 +1,7 @@
+home/.claude/*
+!home/.claude/settings.json
+!home/.claude/keybindings.json
+!home/.claude/statusline-command.sh
 home/.config/github-copilot/
 home/.config/atuin/atuin-receipt.json
 home/.config/ghostty/.claude/settings.local.json
