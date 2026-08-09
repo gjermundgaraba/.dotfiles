@@ -1,0 +1,18 @@
+filter_mode_shell_up_key_binding = "directory"
+enter_accept = false
+search_mode = "daemon-fuzzy"
+
+[dotfiles]
+enabled = true
+
+[ai]
+enabled = true
+
+[daemon]
+enabled = true
+autostart = true
+
+[search]
+## Tilt daemon-fuzzy ranking toward recency over raw frequency.
+recency_score_multiplier = 3.0
+frequency_score_multiplier = 0.5
