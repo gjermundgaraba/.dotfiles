@@ -1,1 +1,8 @@
 home/.config/github-copilot/
+home/.config/ghostty/.claude/settings.local.json
+home/.config/fish/fish_variables
+home/.config/fish/completions/
+home/.config/fish/conf.d/atuin.env.fish
+home/.config/fish/conf.d/uv.env.fish
+home/.config/fish/conf.d/vite-plus.fish
+.DS_Store

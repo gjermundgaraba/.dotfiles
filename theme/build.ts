@@ -6,6 +6,7 @@ import { palettes } from "./palette.ts";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const neovimTemplate = await readFile(new URL("./templates/neovim.lua", import.meta.url), "utf8");
 const ghosttyTemplate = await readFile(new URL("./templates/ghostty", import.meta.url), "utf8");
+const fishTemplate = await readFile(new URL("./templates/fish.theme", import.meta.url), "utf8");
 const modes = ["dark", "light"] as const;
 const expectedKeys = Object.keys(palettes.dark).sort().join(",");
 
@@ -78,9 +79,13 @@ for (const mode of modes) {
     BrightBlack: palette.Overlay,
     BrightWhite: mode === "dark" ? palette.FG : palette.Surface,
   };
+  const fishValues = Object.fromEntries(
+    Object.entries(values).map(([name, value]) => [name, value.replace(/^#/, "")]),
+  );
   const outputs = [
     [join(root, "home", ".config", "nvim", "colors", `gg-${mode}.lua`), render(neovimTemplate, values)],
     [join(root, "home", ".config", "ghostty", "themes", `gg-${mode}`), render(ghosttyTemplate, values)],
+    [join(root, "home", ".config", "fish", "themes", `gg-${mode}.theme`), render(fishTemplate, fishValues)],
   ];
 
   for (const [destination, output] of outputs) {
