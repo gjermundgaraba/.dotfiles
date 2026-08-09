@@ -1,0 +1,166 @@
+{
+    "window.commandCenter": true,
+    "go.lintFlags": [
+        "run",
+        "--issues-exit-code=0",
+        "--path-mode=abs",
+        "--output.text.colors=true",
+        "--output.text.path=stdout",
+        "--output.text.print-issued-lines=false",
+        "--show-stats=false"
+    ],
+    "go.lintTool": "golangci-lint-v2",
+    "go.testTimeout": "30m",
+    "gopls": {
+        "buildFlags": ["-tags=integration,e2e"]
+    },
+    "vim.useSystemClipboard": true,
+    "vim.leader": "<space>",
+    "vim.highlightedyank.enable": true,
+    "vim.highlightedyank.color": "rgba(245, 40, 145, 0.8)",
+    "vim.normalModeKeyBindings": [
+        {
+            "before": ["<S-k>"],
+            "commands": ["editor.action.showHover"]
+        },
+        {
+            "before": ["<C-o>"],
+            "commands": ["workbench.action.navigateBack"]
+        },
+        {
+            "before": ["<C-i>"],
+            "commands": ["workbench.action.navigateForward"]
+        },
+        {
+            "before": ["u"],
+            "commands": ["undo"]
+        },
+        {
+            "before": ["<C-r>"],
+            "commands": ["redo"]
+        },
+        {
+            "before": ["<S-h>"],
+            "commands": ["workbench.action.previousEditor"]
+        },
+        {
+            "before": ["<S-l>"],
+            "commands": ["workbench.action.nextEditor"]
+        },
+        {
+            "before": ["<leader>", "c", "d", "n"],
+            "commands": ["editor.action.marker.next"]
+        },
+        {
+            "before": ["<leader>", "c", "c", "n"],
+            "commands": ["editor.action.inlineDiffs.nextChange"]
+        },
+        {
+            "before": ["<leader>", "c", "r", "n"],
+            "commands": ["editor.action.rename"]
+        },
+        {
+            "before": ["<C-space>"],
+            "commands": ["editor.action.triggerParameterHints"]
+        },
+        {
+            "before": ["g", "a"],
+            "commands": ["editor.action.quickFix"],
+            "when": "editorHasCodeActionsProvider && textInputFocus && !editorReadonly"
+        },
+        {
+            "before": ["g", "r"],
+            "commands": ["editor.action.goToReferences"]
+        },
+        {
+
+            "before": ["g", "i"],
+            "commands": ["editor.action.goToImplementation"]
+        },
+        {
+            "before": ["g", "t"],
+            "commands": ["editor.action.goToTypeDefinition"]
+        },
+        {
+            "before": ["<leader>", "s", "f"],
+            "commands": ["workbench.action.quickOpen"]
+        },
+        {
+            "before": ["<leader>", "s", "g"],
+            "commands": ["workbench.action.quickTextSearch"]
+        },
+        {
+            "before": ["<leader>", "E"],
+            "commands": ["workbench.files.action.focusFilesExplorer"]
+        }
+    ],
+    "cursor.cpp.enablePartialAccepts": true,
+    "cursor.general.enableShadowWorkspace": true,
+    "solidity.telemetry": false,
+    "cursor.composer.shouldChimeAfterChatFinishes": true,
+    "json.schemaDownload.enable": true,
+    "explorer.confirmDragAndDrop": false,
+    "workbench.tree.indent": 12,
+    "workbench.editor.enablePreview": false,
+    "go.toolsManagement.autoUpdate": true,
+    "editor.fontFamily": "BerkeleyMono Nerd Font Mono",
+    "editor.fontSize": 14,
+    "terminal.integrated.fontFamily": "BerkeleyMono Nerd Font Mono",
+    "makefile.configureOnOpen": true,
+    "terminal.integrated.fontSize": 14,
+    "terminal.integrated.profiles.osx": {
+        "fish": {
+            "path": "/opt/homebrew/bin/fish",
+            "args": []
+        }
+    },
+    "terminal.integrated.defaultProfile.osx": "fish",
+    "window.openFoldersInNewWindow": "on",
+    "window.autoDetectColorScheme": true,
+    "window.autoDetectHighContrast": true,
+    "editor.accessibilitySupport": "on",
+    "accessibility.signalOptions.volume": 0,
+    "explorer.confirmDelete": false,
+    "git.blame.editorDecoration.enabled": false,
+    "git.blame.statusBarItem.enabled": true,
+    "git.openRepositoryInParentFolders": "never",
+    "security.promptForLocalFileProtocolHandling": false,
+    "[lua]": {
+        "editor.defaultFormatter": "sumneko.lua"
+    },
+    "files.associations": {
+        "*.hcl": "hcl"
+    },
+    "[dockercompose]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "advanced",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[github-actions-workflow]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "redhat.telemetry.enabled": false,
+    "vim.smartRelativeLine": true,
+    "extensions.ignoreRecommendations": true,
+    "workbench.colorTheme": "Default Dark+",
+    "cursor.composer.usageSummaryDisplay": "always",
+    "claudeCode.preferredLocation": "sidebar",
+    "remote.SSH.remotePlatform": {
+        "*.gitpod.local": "linux",
+        "*.gitpod.remote": "linux"
+    },
+    "amp.url": "https://ampcode.com/",
+    "editor.wordBasedSuggestions": "off",
+    "diffEditor.renderSideBySide": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "workbench.preferredLightColorTheme": "GG Light",
+    "workbench.iconTheme": "pierre-icons-complete",
+    "workbench.preferredDarkColorTheme": "Pierre Dark Soft",
+    "claudeCode.useTerminal": true,
+}
