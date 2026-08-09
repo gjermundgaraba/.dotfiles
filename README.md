@@ -18,7 +18,7 @@ Managed files are symlinked from this repository. Configuration directories are 
 
 - Fish universal variables, generated completions, and installer environment snippets
 - Ghostty's local Claude settings
-- GitHub Copilot authentication
+- GitHub CLI and Copilot authentication
 - Tool runtime files covered by configuration-specific ignore rules
 
 Optional Git signing and other machine-specific overrides live in `~/.gitconfig`, outside this repository. Git reads them after the shared `~/.config/git/config`, and `git config --global` writes there.

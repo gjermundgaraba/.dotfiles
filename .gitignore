@@ -3,6 +3,7 @@ home/.claude/*
 !home/.claude/keybindings.json
 !home/.claude/statusline-command.sh
 home/.config/github-copilot/
+home/.config/gh/hosts.yml
 home/.config/atuin/atuin-receipt.json
 home/.config/ghostty/.claude/settings.local.json
 home/.config/fish/fish_variables
