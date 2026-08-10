@@ -1,0 +1,22 @@
+[
+  {
+    "command": "composer.decreaseReasoningEffort",
+    "key": "Ctrl+T"
+  },
+  {
+    "command": "composer.increaseReasoningEffort",
+    "key": "Ctrl+Shift+T"
+  },
+  {
+    "command": "globalDictationHold",
+    "key": null
+  },
+  {
+    "command": "globalDictationToggle",
+    "key": null
+  },
+  {
+    "command": "realtimeVoice",
+    "key": "Ctrl+F12"
+  }
+]

@@ -6,19 +6,22 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 1. Install Fish and Stow: `brew install fish stow`
 2. Clone this repository to `~/.dotfiles`.
-3. Run `stow -R -d ~/.dotfiles -t ~ home`.
-4. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
-5. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
+3. Run `stow -R --no-folding -d ~/.dotfiles -t ~ home`.
+4. Run `mkdir -p ~/.codex/skills ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles -t ~ skills`.
+5. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
+6. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
+7. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
 
-Run the same Stow command after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout.
+Run the same Stow commands after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout.
 
 ## Local state
 
-Managed files are symlinked from this repository. Configuration directories are linked whole where safe; Claude Code, Herdr, OpenCode, and Pi files are linked individually so their runtime data stays local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
+Managed files are symlinked individually from this repository so unmanaged runtime data stays in local directories. Skill packages are linked as complete directories because Codex does not discover symlinked `SKILL.md` files. Codex's durable CLI defaults are linked separately at `/etc/codex/config.toml`; its mutable user config remains local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
 
 - Fish universal variables, generated completions, and installer environment snippets
 - Ghostty's local Claude settings
 - GitHub CLI and Copilot authentication
+- Codex authentication, sessions, generated state, plugin installs, and mutable user config
 - Herdr sessions, pane history, plugin installs, state, logs, and sockets
 - Pi credentials, sessions, caches, package installs, and extension state
 - Tool runtime files covered by configuration-specific ignore rules

@@ -1,0 +1,52 @@
+personality = "pragmatic"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+plan_mode_reasoning_effort = "xhigh"
+tool_output_token_limit = 25_000
+suppress_unstable_features_warning = true
+mcp_oauth_callback_port = 5_555
+service_tier = "fast"
+approvals_reviewer = "user"
+
+[agents]
+max_concurrent_threads_per_session = 10
+max_depth = 2
+
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "current-dir",
+  "git-branch",
+  "context-used",
+  "weekly-limit"
+]
+session_picker_view = "comfortable"
+
+[tui.keymap.chat]
+increase_reasoning_effort = "ctrl-shift-t"
+decrease_reasoning_effort = "ctrl-t"
+
+[tui.keymap.global]
+open_transcript = "ctrl-alt-t"
+copy = "alt-c"
+
+[features]
+hooks = true
+goals = true
+prevent_idle_sleep = true
+memories = false
+chronicle = false
+
+
+[mcp_servers.1password]
+command = "/Applications/1Password.app/Contents/MacOS/onepassword-mcp"
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+
+[otel]
+environment = "local"
+
+[otel.trace_exporter."otlp-http"]
+endpoint = "http://127.0.0.1:5899/v1/traces"
+protocol = "binary"

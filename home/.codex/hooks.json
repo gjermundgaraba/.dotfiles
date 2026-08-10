@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/gg/.codex/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "command": "sh '/Users/gg/skills/tldraw-offline/inject-server-context.sh' SubagentStart",
+            "type": "command"
+          }
+        ],
+        "matcher": "tldraw-offline"
+      }
+    ]
+  }
+}
