@@ -1,0 +1,5 @@
+[actions.agents]
+mode = "vim"
+
+[actions.workspaces]
+mode = "vim"

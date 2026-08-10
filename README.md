@@ -14,11 +14,12 @@ Run the same Stow command after moving, adding, or deleting managed files. `-R` 
 
 ## Local state
 
-Managed files are symlinked from this repository. Configuration directories are linked whole where safe; Claude Code files are linked individually so its runtime data stays local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
+Managed files are symlinked from this repository. Configuration directories are linked whole where safe; Claude Code and Herdr files are linked individually so their runtime data stays local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
 
 - Fish universal variables, generated completions, and installer environment snippets
 - Ghostty's local Claude settings
 - GitHub CLI and Copilot authentication
+- Herdr sessions, pane history, plugin installs, state, logs, and sockets
 - Tool runtime files covered by configuration-specific ignore rules
 
 Optional Git signing and other machine-specific overrides live in `~/.gitconfig`, outside this repository. Git reads them after the shared `~/.config/git/config`, and `git config --global` writes there.

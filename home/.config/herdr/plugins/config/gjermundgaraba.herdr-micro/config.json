@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "controls": {
+    "buttons": {
+      "1": {
+        "byAgent": {
+          "codex": {
+            "action": "prompt",
+            "prompt": "$deslop $ponytail:ponytail-review\nReview scope: uncommitted changes",
+            "submit": false
+          },
+          "claude": {
+            "action": "prompt",
+            "prompt": "/deslop /ponytail:ponytail-review\nReview scope: uncommitted changes",
+            "submit": false
+          },
+          "pi": {
+            "action": "prompt",
+            "prompt": "$deslop $ponytail-review\nReview scope: uncommitted changes",
+            "submit": false
+          },
+          "default": null
+        }
+      },
+      "2": {
+        "action": "diff"
+      },
+      "3": {
+        "byAgent": {
+          "codex": {
+            "action": "fast"
+          },
+          "pi": {
+            "action": "fast"
+          },
+          "default": null
+        }
+      },
+      "4": {
+        "action": "prompt",
+        "prompt": "/copy",
+        "submit": true
+      },
+      "5": {
+        "action": "key",
+        "key": "F19"
+      },
+      "6": null,
+      "7": {
+        "action": "submit"
+      }
+    },
+    "dial": {
+      "clockwise": {
+        "action": "effort",
+        "direction": "raise"
+      },
+      "counterclockwise": {
+        "action": "effort",
+        "direction": "lower"
+      },
+      "press": {
+        "action": "prompt",
+        "prompt": "/model",
+        "submit": true
+      }
+    },
+    "joystick": {
+      "engageDistance": 0.75,
+      "releaseDistance": 0.3,
+      "up": {
+        "action": "scroll",
+        "direction": "up",
+        "percent": 50
+      },
+      "down": {
+        "action": "scroll",
+        "direction": "down",
+        "percent": 50
+      },
+      "left": {
+        "action": "focus-pane",
+        "direction": "left"
+      },
+      "right": {
+        "action": "focus-pane",
+        "direction": "right"
+      }
+    }
+  },
+  "effort": {
+    "codex": {
+      "raise": "ctrl+shift+t",
+      "lower": "ctrl+t"
+    }
+  },
+  "lighting": {
+    "states": {
+      "blocked": {
+        "color": "#ffaa00",
+        "brightness": 1,
+        "effect": "solid",
+        "speed": 0
+      },
+      "done": {
+        "color": "#22cc55",
+        "brightness": 1,
+        "effect": "solid",
+        "speed": 0
+      },
+      "working": {
+        "color": "#2277ff",
+        "brightness": 1,
+        "effect": "breath",
+        "speed": 0.35
+      },
+      "idle": {
+        "color": "#ffffff",
+        "brightness": 0.25,
+        "effect": "solid",
+        "speed": 0
+      },
+      "unknown": {
+        "color": "#ffffff",
+        "brightness": 0.08,
+        "effect": "solid",
+        "speed": 0
+      }
+    },
+    "focusedBrightness": 1,
+    "ambient": "status",
+    "keys": null
+  }
+}
