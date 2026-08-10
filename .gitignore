@@ -23,4 +23,9 @@ home/.config/fish/completions/
 home/.config/fish/conf.d/atuin.env.fish
 home/.config/fish/conf.d/uv.env.fish
 home/.config/fish/conf.d/vite-plus.fish
+home/.pi/agent/*
+!home/.pi/agent/AGENTS.md
+!home/.pi/agent/footer.json
+!home/.pi/agent/keybindings.json
+!home/.pi/agent/raindrop.json
 .DS_Store

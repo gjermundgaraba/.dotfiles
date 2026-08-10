@@ -1,0 +1,12 @@
+{
+  "app.message.followUp": "shift+tab",
+  "app.thinking.cycle": "ctrl+shift+t",
+  "app.model.select": "ctrl+shift+l",
+  "app.session.toggleSort": "ctrl+alt+s",
+  "app.session.rename": [],
+  "app.models.save": "ctrl+alt+s",
+  "app.message.copy": "alt+c",
+  "app.tree.filter.labeledOnly": "ctrl+shift+l",
+  "app.tree.filter.userOnly": "ctrl+shift+u",
+  "tui.editor.deleteToLineStart": "ctrl+shift+u"
+}

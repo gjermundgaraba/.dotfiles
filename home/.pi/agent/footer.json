@@ -1,0 +1,38 @@
+{
+  "enabled": true,
+  "iconFamily": "nerd",
+  "rows": [
+    {
+      "center": [],
+      "left": [
+        "footer.cwd",
+        "footer.git"
+      ],
+      "right": [
+        "footer.model",
+        "status:codex-fast",
+        "footer.thinking"
+      ]
+    },
+    {
+      "center": [],
+      "left": [
+        "footer.context"
+      ],
+      "right": [
+        "clanker.usage.active"
+      ]
+    },
+    {
+      "center": [],
+      "left": [
+        "footer.widgets",
+        "footer.statuses"
+      ],
+      "right": []
+    }
+  ],
+  "separator": "·",
+  "version": 1,
+  "widgets": {}
+}
