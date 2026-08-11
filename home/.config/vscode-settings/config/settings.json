@@ -162,5 +162,5 @@
     "workbench.preferredLightColorTheme": "GG Light",
     "workbench.iconTheme": "pierre-icons-complete",
     "workbench.preferredDarkColorTheme": "Pierre Dark Soft",
-    "claudeCode.useTerminal": true,
+    "claudeCode.useTerminal": true
 }

@@ -20,7 +20,8 @@
         "footer.context"
       ],
       "right": [
-        "clanker.usage.active"
+        "clanker.usage.active",
+        "clanker.usage.details"
       ]
     },
     {
@@ -34,5 +35,9 @@
   ],
   "separator": "·",
   "version": 1,
-  "widgets": {}
+  "widgets": {
+    "clanker.usage.details": {
+      "enabled": true
+    }
+  }
 }
