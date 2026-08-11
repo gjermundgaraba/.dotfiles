@@ -65,6 +65,12 @@ command = "gjermundgaraba.herdr-command-palette.agents"
 description = "agents"
 
 [[keys.command]]
+key = "prefix+f"
+type = "plugin_action"
+command = "gjermundgaraba.herdr-fork-to-pane.fork"
+description = "fork agent into right pane"
+
+[[keys.command]]
 key = "prefix+o"
 type = "plugin_action"
 command = "gjermundgaraba.herdr-history.back"
