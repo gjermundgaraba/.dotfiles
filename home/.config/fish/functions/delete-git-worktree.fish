@@ -26,15 +26,15 @@ function delete-git-worktree --description 'Delete the current worktree after sa
         return 1
     end
 
-    set -l current_branch (git -C $worktree_dir branch --show-current)
+    set -l unpushed (git -C $worktree_dir rev-list --all --not --remotes)
+    or begin
+        echo "could not check for unpushed commits" >&2
+        return 1
+    end
 
-    if test -n "$current_branch"
-        set -l unpushed (git -C $worktree_dir log --oneline origin/$current_branch..HEAD 2>/dev/null)
-
-        if set -q unpushed[1]
-            echo "there are unpushed commits on branch $current_branch" >&2
-            return 1
-        end
+    if set -q unpushed[1]
+        echo "there are commits not reachable from any remote" >&2
+        return 1
     end
 
     read -P "Delete git worktree: $worktree_dir? [y/N] " -l confirm

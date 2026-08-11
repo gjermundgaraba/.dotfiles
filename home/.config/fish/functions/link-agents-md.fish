@@ -14,6 +14,10 @@ function link-agents-md --description 'Create CLAUDE.md symlinks next to AGENTS.
     end
 
     for claude_link in (find $resolved_path -type l -name CLAUDE.md 2>/dev/null)
+        if test (readlink -- $claude_link) != AGENTS.md
+            continue
+        end
+
         rm $claude_link
         or return 1
 
@@ -26,8 +30,8 @@ function link-agents-md --description 'Create CLAUDE.md symlinks next to AGENTS.
         set -l dir (path dirname -- $agents_file)
         set -l claude_file $dir/CLAUDE.md
 
-        if test -e $claude_file
-            echo "Skipping: $claude_file (non-symlink file exists)"
+        if test -e $claude_file; or test -L $claude_file
+            echo "Skipping: $claude_file (another file exists)"
             continue
         end
 

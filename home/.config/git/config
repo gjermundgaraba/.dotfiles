@@ -16,8 +16,8 @@
 
 [alias]
 	list-untracked-branches = "!git for-each-ref --omit-empty --sort=committerdate --format='%(if)%(upstream)%(then)%(else)%(committerdate:iso8601) %(committerdate:relative) %(refname:short)%(end)' refs/heads"
-	delete-untracked = "!git for-each-ref --omit-empty --format='%(if)%(upstream)%(then)%(else)%(refname:short)%(end)' refs/heads | while IFS= read -r branch; do git branch -D -- \"$branch\"; done"
+	delete-untracked = "!git for-each-ref --omit-empty --format='%(if)%(upstream)%(then)%(else)%(refname:short)%(end)' refs/heads | while IFS= read -r branch; do git branch -d -- \"$branch\"; done"
 	list-gone-branches = "!git fetch --all --prune --quiet && git for-each-ref --omit-empty --format='%(if:equals=[gone])%(upstream:track)%(then)%(refname:short)%(end)' refs/heads"
-	delete-gone-branches = "!git fetch --all --prune --quiet && git for-each-ref --omit-empty --format='%(if:equals=[gone])%(upstream:track)%(then)%(refname:short)%(end)' refs/heads | while IFS= read -r branch; do git branch -D -- \"$branch\"; done"
+	delete-gone-branches = "!git fetch --all --prune --quiet && git for-each-ref --omit-empty --format='%(if:equals=[gone])%(upstream:track)%(then)%(refname:short)%(end)' refs/heads | while IFS= read -r branch; do git branch -d -- \"$branch\"; done"
 	delete-branches-select = "!git for-each-ref --format='%(refname:short)  [%(upstream:short)] %(upstream:track) %(HEAD)' refs/heads | fzf -m | while read -r branch _; do git branch -d -- \"$branch\"; done"
 	switch-select = "!git for-each-ref --format='%(refname:short)  [%(upstream:short)] %(upstream:track) %(HEAD)' refs/heads | fzf | while read -r branch _; do git switch -- \"$branch\"; done"
