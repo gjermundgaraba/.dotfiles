@@ -1,0 +1,48 @@
+{
+  "lastChangelogVersion": "0.84.1",
+  "packages": [
+    "npm:@raindrop-ai/pi-agent",
+    "git:github.com/earendil-works/pi-review-loop",
+    "git:github.com/DietrichGebert/ponytail",
+    "npm:@clanker-stuff/ask-question",
+    "npm:@clanker-stuff/stash",
+    "npm:@clanker-stuff/timer",
+    "npm:@clanker-stuff/mcp",
+    "npm:@clanker-stuff/tools",
+    "npm:@clanker-stuff/codex-skills",
+    "npm:@clanker-stuff/codex-reverse-i-search",
+    "npm:@clanker-stuff/shell-resume-history",
+    "npm:@clanker-stuff/side",
+    "npm:@clanker-stuff/plannotator",
+    "npm:@clanker-stuff/voice",
+    "npm:@clanker-stuff/footer",
+    "npm:@clanker-stuff/usage",
+    "npm:sideshow",
+    "npm:@clanker-stuff/codex-provider"
+  ],
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-sol",
+  "defaultThinkingLevel": "max",
+  "treeFilterMode": "no-tools",
+  "enabledModels": [
+    "opencode-go/glm-5.2",
+    "fugu-proxy/fugu",
+    "fugu-proxy/fugu-ultra",
+    "openai-codex/gpt-5.6-luna",
+    "openai-codex/gpt-5.6-sol",
+    "openai-codex/gpt-5.6-terra",
+    "opencode-go/kimi-k3",
+    "xai/grok-4.5"
+  ],
+  "showHardwareCursor": true,
+  "terminal": {
+    "showTerminalProgress": true
+  },
+  "theme": "dark",
+  "outputPad": 0,
+  "showCacheMissNotices": true,
+  "defaultProjectTrust": "always",
+  "tuiMode": "fullscreen",
+  "editorPaddingX": 1,
+  "enableSkillCommands": false
+}

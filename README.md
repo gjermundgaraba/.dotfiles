@@ -4,13 +4,14 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## Setup
 
-1. Install Fish and Stow: `brew install fish stow`
+1. Install Fish, Stow, and Gitleaks: `brew install fish stow gitleaks`
 2. Clone this repository to `~/.dotfiles`.
-3. Run `stow -R --no-folding -d ~/.dotfiles -t ~ home`.
-4. Run `mkdir -p ~/.codex/skills ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles -t ~ skills`.
-5. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
-6. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
-7. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
+3. Enable the repository's commit checks: `git -C ~/.dotfiles config core.hooksPath .githooks`.
+4. Run `stow -R --no-folding -d ~/.dotfiles -t ~ home`.
+5. Run `mkdir -p ~/.codex/skills ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles -t ~ skills`.
+6. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
+7. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
+8. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
 
 Run the same Stow commands after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout.
 
@@ -23,12 +24,14 @@ Managed files are symlinked individually from this repository so unmanaged runti
 - GitHub CLI and Copilot authentication
 - Codex authentication, sessions, generated state, plugin installs, and mutable user config
 - Herdr sessions, pane history, plugin installs, state, logs, and sockets
-- Pi settings, model and MCP configuration, credentials, sessions, caches, package installs, and extension state
+- Pi model and MCP configuration, credentials, sessions, caches, package installs, and extension state
 - Tool runtime files covered by configuration-specific ignore rules
 
 Optional Git signing and other machine-specific overrides live in `~/.gitconfig`, outside this repository. Git reads them after the shared `~/.config/git/config`, and `git config --global` writes there.
 
 OrbStack and Grok own their Fish completion files and recreate or update them when those tools are installed or updated. Do not force-add ignored local files.
+
+Pi tracks npm package names in `settings.json`. During local extension development, the corresponding directories under `~/.pi/agent/npm/node_modules` may be symlinked to local package checkouts; these links remain machine-local.
 
 ## Themes
 

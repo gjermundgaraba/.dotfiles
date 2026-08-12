@@ -37,4 +37,5 @@ home/.pi/agent/*
 !home/.pi/agent/footer.json
 !home/.pi/agent/keybindings.json
 !home/.pi/agent/raindrop.json
+!home/.pi/agent/settings.json
 .DS_Store
