@@ -15,7 +15,7 @@ palette = 13={{Magenta}}
 palette = 14={{Cyan}}
 palette = 15={{BrightWhite}}
 background = {{BG}}
-foreground = {{FG}}
+foreground = {{TerminalFG}}
 cursor-color = {{Cursor}}
 cursor-text = {{CursorText}}
 selection-background = {{SelectionBG}}

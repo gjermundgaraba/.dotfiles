@@ -7,8 +7,11 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const neovimTemplate = await readFile(new URL("./templates/neovim.lua", import.meta.url), "utf8");
 const ghosttyTemplate = await readFile(new URL("./templates/ghostty", import.meta.url), "utf8");
 const fishTemplate = await readFile(new URL("./templates/fish.theme", import.meta.url), "utf8");
+const herdrTemplate = await readFile(new URL("./templates/herdr.toml", import.meta.url), "utf8");
 const modes = ["dark", "light"] as const;
 const expectedKeys = Object.keys(palettes.dark).sort().join(",");
+const herdrThemeStart = "# BEGIN generated Herdr theme — edit theme/palette.ts";
+const herdrThemeEnd = "# END generated Herdr theme";
 
 function luminance(hex: string): number {
   const channels = hex.match(/[0-9a-f]{2}/gi)!.map((value) => parseInt(value, 16) / 255);
@@ -33,7 +36,10 @@ function validate(mode: (typeof modes)[number], palette: Record<string, string>)
   }
 
   const pairs: [string, string, number][] = [
+    ["Accent", "BG", 3],
     ["FG", "BG", 4.5],
+    ["TerminalFG", "BG", 4.5],
+    ["AnsiWhite", "BG", 3],
     ["Overlay", "BG", 3],
     ["FG", "Overlay", 3],
     ["FGDim", "BG", 3],
@@ -50,6 +56,20 @@ function validate(mode: (typeof modes)[number], palette: Record<string, string>)
     }
   }
 }
+
+for (const mode of modes) validate(mode, palettes[mode]);
+
+const herdrConfigPath = join(root, "home", ".config", "herdr", "config.toml");
+const herdrConfig = await readFile(herdrConfigPath, "utf8");
+const start = herdrConfig.indexOf(herdrThemeStart);
+const end = herdrConfig.indexOf(herdrThemeEnd, start);
+if (start < 0 || end < 0) throw new Error("generated Herdr theme markers are missing");
+const generatedHerdrTheme = render(herdrTemplate, palettes.dark).trimEnd();
+await writeAtomic(
+  herdrConfigPath,
+  `${herdrConfig.slice(0, start)}${herdrThemeStart}\n${generatedHerdrTheme}\n${herdrConfig.slice(end)}`,
+);
+console.log(`generated ${herdrConfigPath.slice(root.length)}`);
 
 async function writeAtomic(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
@@ -69,13 +89,11 @@ function render(template: string, values: Record<string, string>): string {
 
 for (const mode of modes) {
   const palette: Record<string, string> = palettes[mode];
-  validate(mode, palette);
   const values = {
     ...palette,
     Name: `gg-${mode}`,
     Background: mode,
     AnsiBlack: mode === "dark" ? palette.BG : palette.FGDim,
-    AnsiWhite: mode === "dark" ? palette.FG : palette.Overlay,
     BrightBlack: palette.Overlay,
     BrightWhite: mode === "dark" ? palette.FG : palette.Surface,
   };

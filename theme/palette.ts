@@ -1,9 +1,12 @@
 export const palettes = {
   dark: {
+    Accent: "#ffd60a",
     BG: "#282a27",
     Surface: "#383c36",
     Overlay: "#767d72",
     FG: "#e2e6e0",
+    TerminalFG: "#c5cbc3",
+    AnsiWhite: "#a8afa6",
     FGDim: "#888f84",
     Cursor: "#e2e6e0",
     CursorText: "#282a27",
@@ -23,10 +26,13 @@ export const palettes = {
     Orange: "#ff8200",
   },
   light: {
+    Accent: "#0052c8",
     BG: "#e0e2df",
     Surface: "#d1d6cf",
     Overlay: "#6b7268",
     FG: "#0f130e",
+    TerminalFG: "#0f130e",
+    AnsiWhite: "#6b7268",
     FGDim: "#3f443c",
     Cursor: "#0f130e",
     CursorText: "#e0e2df",

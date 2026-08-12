@@ -1,8 +1,5 @@
 onboarding = false
 
-[theme.custom]
-accent = "#ffd60a" # vivid gold for the active-pane border
-
 [terminal]
 # Keep macOS login-shell PATH behavior when using Fish.
 default_shell = "fish"
@@ -133,3 +130,27 @@ key = "prefix+y"
 type = "shell"
 command = 'ref="$HERDR_ACTIVE_PANE_ID"; "${HERDR_BIN_PATH:-herdr}" agent get "$ref" >/dev/null && printf "%s" "$ref" | pbcopy && "${HERDR_BIN_PATH:-herdr}" notification show "Copied agent reference" --body "$ref"'
 description = "copy active agent reference"
+
+# BEGIN generated Herdr theme — edit theme/palette.ts
+[theme]
+name = "terminal"
+auto_switch = false
+
+[theme.custom]
+accent = "#ffd60a"
+panel_bg = "#282a27"
+surface0 = "#383c36"
+surface1 = "#383c36"
+surface_dim = "#383c36"
+overlay0 = "#767d72"
+overlay1 = "#a8afa6"
+text = "#c5cbc3"
+subtext0 = "#a8afa6"
+mauve = "#e786ed"
+green = "#4cc157"
+yellow = "#f7cd3a"
+red = "#ff7992"
+blue = "#009aff"
+teal = "#00c9cb"
+peach = "#ff8200"
+# END generated Herdr theme

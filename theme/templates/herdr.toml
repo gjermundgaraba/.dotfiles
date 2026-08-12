@@ -1,0 +1,21 @@
+[theme]
+name = "terminal"
+auto_switch = false
+
+[theme.custom]
+accent = "{{Accent}}"
+panel_bg = "{{BG}}"
+surface0 = "{{Surface}}"
+surface1 = "{{Surface}}"
+surface_dim = "{{Surface}}"
+overlay0 = "{{Overlay}}"
+overlay1 = "{{AnsiWhite}}"
+text = "{{TerminalFG}}"
+subtext0 = "{{AnsiWhite}}"
+mauve = "{{Magenta}}"
+green = "{{Green}}"
+yellow = "{{Yellow}}"
+red = "{{Red}}"
+blue = "{{Blue}}"
+teal = "{{Cyan}}"
+peach = "{{Orange}}"
