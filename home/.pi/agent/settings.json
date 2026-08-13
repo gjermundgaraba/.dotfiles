@@ -3,7 +3,12 @@
   "packages": [
     "npm:@raindrop-ai/pi-agent",
     "git:github.com/earendil-works/pi-review-loop",
-    "git:github.com/DietrichGebert/ponytail",
+    {
+      "source": "git:github.com/DietrichGebert/ponytail",
+      "skills": [
+        "+skills/ponytail-debt/SKILL.md"
+      ]
+    },
     "npm:@clanker-stuff/ask-question",
     "npm:@clanker-stuff/stash",
     "npm:@clanker-stuff/timer",
@@ -17,12 +22,20 @@
     "npm:@clanker-stuff/voice",
     "npm:@clanker-stuff/footer",
     "npm:@clanker-stuff/usage",
-    "npm:sideshow",
+    {
+      "source": "npm:sideshow",
+      "extensions": [
+        "-extensions/sideshow.js"
+      ],
+      "skills": [
+        "-skills/sideshow/SKILL.md"
+      ]
+    },
     "npm:@clanker-stuff/codex-provider"
   ],
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "max",
+  "defaultThinkingLevel": "xhigh",
   "treeFilterMode": "no-tools",
   "enabledModels": [
     "opencode-go/glm-5.2",
