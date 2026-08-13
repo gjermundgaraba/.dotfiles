@@ -32,6 +32,8 @@ home/.config/fish/conf.d/*.local.fish
 home/.config/fish/conf.d/atuin.env.fish
 home/.config/fish/conf.d/uv.env.fish
 home/.config/fish/conf.d/vite-plus.fish
+home/.plannotator/*
+!home/.plannotator/config.json
 home/.pi/agent/*
 !home/.pi/agent/AGENTS.md
 !home/.pi/agent/footer.json
