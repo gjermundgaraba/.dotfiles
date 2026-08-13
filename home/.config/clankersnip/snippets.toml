@@ -14,14 +14,15 @@ text = """
 ```
 """
 
-# [[snippet]]
-# title = "paste in tag"
-# keyword = "_pt"
-# text = """
-# <TODO-TAG>
-# {clipboard}
-# </TODO-TAG>
-# """
+[[snippet]]
+title = "paste in tag"
+keyword = "_pt"
+text = """
+<{tag}>
+{clipboard}
+</{tag}>
+"""
+args = [{ name = "tag" }]
 
 [[snippet]]
 title = "grilling"
@@ -59,10 +60,50 @@ We got a review from another agent:
 {clipboard}
 </agent-review>
 
-Consider the review, validate the findings and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the reviewer might be wrong or miss some important context), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides.  Do not review the classification or severity rankings themselves - only validate the findings and if they are worthwhile issues to consider doing something about.
-For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement)
+Validate every substantive finding against the relevant code, tests, documentation, and runtime behavior. Gather any context needed to make an informed judgment.
 
-Do not propose any specific solutions yet. Do not make any edits or changes.
+Take an adversarial stance: the reviewer may be wrong, lack context, or propose work that is not worthwhile. Do not assess the review's severity or classification labels.
+
+For every finding:
+- Steelman the case for fixing it.
+- Steelman the case for dismissing it.
+- Give a verdict: **Fix**, **Partial**, or **Dismiss**.
+- Use **Partial** when only part of a composite finding is valid, and state exactly which part.
+- For subjective findings, give your own judgment.
+- Evaluate whether the underlying issue warrants change, not whether the reviewer's proposed solution is correct.
+
+Use this output structure:
+
+# Validation result
+
+Briefly state what was validated, followed by:
+- Finding verdict counts.
+- Any important scope qualifications.
+- Confirmation that no files were changed.
+
+Define the verdict meanings in one short paragraph.
+
+## Important reviewer corrections
+
+List only material factual errors, unsupported claims, or scope corrections. Omit this section if there are none.
+
+# Findings
+
+Preserve the review's original IDs, ordering, and natural section boundaries. Use one Markdown table per original section; if the review has no sections, use a single table:
+
+| ID | Steelman for fixing | Steelman for dismissing | Verdict |
+|---|---|---|---|
+
+Keep each cell concise but specific and evidence-based. Every substantive finding must appear exactly once.
+
+If the review includes separate cleanup proposals, architectural proposals, or an overall line-count/dependency claim, evaluate those in separate sections using the same table structure.
+
+End with:
+
+**Current state:** validation complete, no implementation started, no files changed.
+
+Do not propose specific solutions. Do not make edits or changes.
+Make sure to verify/validate all findings before presenting them.
 """
 
 [[snippet]]
@@ -73,8 +114,8 @@ We got a review from another agent:
 $herdr agent: {clipboard}
 </agent-review>
 
-Consider the review, validate the findings and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the reviewer might be wrong or miss some important context), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides.  Do not review the classification or severity rankings themselves - only validate the findings and if they are worthwhile issues to consider doing something about.
-For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement)
+Consider the review, validate the findings and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the reviewer might be wrong or miss some important context), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides. Do not review the classification or severity rankings themselves - only validate the findings and if they are worthwhile issues to consider doing something about. Make sure to verify/validate all findings before presenting them.
+For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement).
 
 Do not propose any specific solutions yet. Do not make any edits or changes.
 """
@@ -87,8 +128,7 @@ We got a plan from another agent:
 {clipboard}
 </agent-plan>
 
-Consider the plan, validate and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the planner might be wrong or miss some important context), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides.
-For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement)
+Consider the plan, validate and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the planner might be wrong or miss some important context). Make sure to verify/validate all findings before presenting them.
 
 Do not make any edits or changes.
 """
@@ -115,7 +155,7 @@ I got this response from the other agent:
 {clipboard}
 </agent-response>
 
-Review/validate/consider the response and give me your opinion and take based on your own judgement.
+Consider the response, review/validate it and if anything in the response is correct _and_ worth acting on (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the agent might be wrong or miss some important context). Give me your opinion and take based on your own judgement.
 """
 
 [[snippet]]
