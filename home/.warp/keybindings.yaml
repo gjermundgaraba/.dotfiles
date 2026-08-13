@@ -1,0 +1,19 @@
+---
+"pane_group:navigate_left": alt-cmd-h
+"terminal:clear_blocks": none
+"pane_group:navigate_down": alt-cmd-j
+"pane_group:toggle_maximize_pane": none
+"pane_group:navigate_right": alt-cmd-l
+"ai_assistant_panel:reset_context": none
+"editor:edit_link": none
+"code_view:save": none
+"workspace:toggle_command_palette": cmd-k
+"workspace:toggle_maximize_code_review_panel": none
+"input:set_mode_unlocked_agent": cmd-i
+"code_review:save_all_unsaved_files": none
+"input:set_mode_agent": cmd-i
+"workflowview:save": none
+"workspace:toggle_right_panel": shift-cmd-enter
+"pane_group:navigate_up": alt-cmd-k
+"terminal:toggle_teams_modal": none
+"workspace:open_code_review_pane": shift-cmd-R
