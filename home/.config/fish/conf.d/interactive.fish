@@ -58,6 +58,7 @@ abbr -a cfgpi "cd ~/.pi/agent/ && nve"
 ## misc
 abbr -a codx-luna "codex -c 'model_reasoning_effort=xhigh' --model gpt-5.6-luna"
 abbr -a codx-terra "codex -c 'model_reasoning_effort=xhigh' --model gpt-5.6-terra"
+abbr -a codx-ultra "codex -c 'model_reasoning_effort=ultra' --model gpt-5.6-sol"
 abbr -a oc "OPENCODE_ENABLE_EXA=1 opencode"
 abbr -a cc "claude"
 abbr -a cc-opus "claude --model opus"
