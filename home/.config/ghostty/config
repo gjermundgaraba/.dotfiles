@@ -61,8 +61,8 @@ keybind = performable:cmd+alt+l=goto_split:right
 keybind = performable:cmd+alt+h=goto_split:left
 keybind = performable:cmd+alt+k=goto_split:up
 keybind = performable:cmd+alt+j=goto_split:down
-keybind = cmd+alt+shift+l=resize_split:right,75
-keybind = cmd+alt+shift+h=resize_split:left,75
-keybind = cmd+alt+shift+k=resize_split:up,75
-keybind = cmd+alt+shift+j=resize_split:down,75
+keybind = performable:cmd+alt+shift+l=resize_split:right,75
+keybind = performable:cmd+alt+shift+h=resize_split:left,75
+keybind = performable:cmd+alt+shift+k=resize_split:up,75
+keybind = performable:cmd+alt+shift+j=resize_split:down,75
 keybind = cmd+alt+shift+0=equalize_splits
