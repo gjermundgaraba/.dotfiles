@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.84.1",
+  "lastChangelogVersion": "0.84.2",
   "packages": [
     "npm:@raindrop-ai/pi-agent",
     "git:github.com/earendil-works/pi-review-loop",
@@ -33,19 +33,20 @@
     },
     "npm:@clanker-stuff/codex-provider@0.1.0"
   ],
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "xhigh",
+  "defaultProvider": "zai",
+  "defaultModel": "glm-5.3",
+  "defaultThinkingLevel": "high",
   "treeFilterMode": "no-tools",
   "enabledModels": [
-    "opencode-go/glm-5.2",
     "fugu-proxy/fugu",
     "fugu-proxy/fugu-ultra",
     "openai-codex/gpt-5.6-luna",
     "openai-codex/gpt-5.6-sol",
     "openai-codex/gpt-5.6-terra",
     "opencode-go/kimi-k3",
-    "xai/grok-4.5"
+    "xai/grok-4.5",
+    "opencode-go/glm-5.3",
+    "zai/glm-5.3"
   ],
   "showHardwareCursor": true,
   "terminal": {
