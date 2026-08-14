@@ -9,19 +9,19 @@
         "+skills/ponytail-debt/SKILL.md"
       ]
     },
-    "npm:@clanker-stuff/ask-question",
-    "npm:@clanker-stuff/stash",
-    "npm:@clanker-stuff/timer",
-    "npm:@clanker-stuff/mcp",
-    "npm:@clanker-stuff/tools",
-    "npm:@clanker-stuff/codex-skills",
-    "npm:@clanker-stuff/codex-reverse-i-search",
-    "npm:@clanker-stuff/shell-resume-history",
-    "npm:@clanker-stuff/side",
-    "npm:@clanker-stuff/plannotator",
-    "npm:@clanker-stuff/voice",
-    "npm:@clanker-stuff/footer",
-    "npm:@clanker-stuff/usage",
+    "npm:@clanker-stuff/ask-question@0.1.0",
+    "npm:@clanker-stuff/stash@0.1.0",
+    "npm:@clanker-stuff/timer@0.1.0",
+    "npm:@clanker-stuff/mcp@0.1.0",
+    "npm:@clanker-stuff/tools@0.1.0",
+    "npm:@clanker-stuff/codex-skills@0.1.0",
+    "npm:@clanker-stuff/codex-reverse-i-search@0.1.0",
+    "npm:@clanker-stuff/shell-resume-history@0.1.0",
+    "npm:@clanker-stuff/side@0.1.0",
+    "npm:@clanker-stuff/plannotator@0.2.0",
+    "npm:@clanker-stuff/voice@0.1.0",
+    "npm:@clanker-stuff/footer@0.1.0",
+    "npm:@clanker-stuff/usage@0.1.0",
     {
       "source": "npm:sideshow",
       "extensions": [
@@ -31,7 +31,7 @@
         "-skills/sideshow/SKILL.md"
       ]
     },
-    "npm:@clanker-stuff/codex-provider"
+    "npm:@clanker-stuff/codex-provider@0.1.0"
   ],
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-sol",
