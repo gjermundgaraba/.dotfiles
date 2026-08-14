@@ -10,14 +10,24 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 4. Run `stow -R --no-folding -d ~/.dotfiles -t ~ home`.
 5. Run `mkdir -p ~/.codex/skills ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles -t ~ skills`.
 6. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
-7. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
-8. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
+7. Install the macOS LaunchAgent as a regular file because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/local.capslock-f20.plist ~/Library/LaunchAgents/local.capslock-f20.plist`.
+8. Load or reload the LaunchAgent after any previous instance finishes unloading:
+   ```sh
+   service="gui/$(id -u)/local.capslock-f20"
+   if launchctl print "$service" >/dev/null 2>&1; then
+     launchctl bootout "$service"
+     while launchctl print "$service" >/dev/null 2>&1; do sleep 0.1; done
+   fi
+   launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/local.capslock-f20.plist
+   ```
+9. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
+10. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
 
-Run the same Stow commands after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout.
+Run the same Stow commands after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout. Repeat steps 7–8 after changing the LaunchAgent.
 
 ## Local state
 
-Managed files are symlinked individually from this repository so unmanaged runtime data stays in local directories. Skill packages are linked as complete directories because Codex does not discover symlinked `SKILL.md` files. Codex's durable CLI defaults are linked separately at `/etc/codex/config.toml`; its mutable user config remains local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Machine-specific Fish work helpers and browser-tunnel functions remain as regular local files outside this repository. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
+Most managed files are symlinked individually from this repository so unmanaged runtime data stays in local directories. The macOS LaunchAgent is copied instead because launchd may ignore symlinks. Skill packages are linked as complete directories because Codex does not discover symlinked `SKILL.md` files. Codex's durable CLI defaults are linked separately at `/etc/codex/config.toml`; its mutable user config remains local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Machine-specific Fish work helpers and browser-tunnel functions remain as regular local files outside this repository. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
 
 - Fish universal variables, generated completions, and installer environment snippets
 - Ghostty's local Claude settings

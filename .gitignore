@@ -1,4 +1,5 @@
 home/.claude/*
+!home/.claude/CLAUDE.md
 !home/.claude/keybindings.json
 !home/.claude/statusline-command.sh
 home/.codex/*
@@ -17,12 +18,14 @@ home/.config/herdr/*
 home/.config/herdr/plugins/*
 !home/.config/herdr/plugins/config/
 home/.config/herdr/plugins/config/*
-!home/.config/herdr/plugins/config/gjermundgaraba.herdr-command-palette/
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/
+!home/.config/herdr/plugins/config/gjermundgaraba.herdr-picker/
 home/.config/herdr/plugins/config/*/*
-!home/.config/herdr/plugins/config/gjermundgaraba.herdr-command-palette/config.toml
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/config.json
+!home/.config/herdr/plugins/config/gjermundgaraba.herdr-picker/config.toml
 home/.config/atuin/atuin-receipt.json
+home/.config/clankersnip/*
+!home/.config/clankersnip/snippets.toml
 home/.config/ghostty/.claude/settings.local.json
 home/.config/fish/fish_variables
 home/.config/fish/completions/
@@ -30,6 +33,9 @@ home/.config/fish/conf.d/*.local.fish
 home/.config/fish/conf.d/atuin.env.fish
 home/.config/fish/conf.d/uv.env.fish
 home/.config/fish/conf.d/vite-plus.fish
+home/.config/opencode/*
+!home/.config/opencode/opencode.json
+home/Library/LaunchAgents/
 home/.warp/*
 !home/.warp/keybindings.yaml
 home/.plannotator/*
