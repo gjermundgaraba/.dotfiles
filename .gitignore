@@ -1,10 +1,8 @@
 home/.claude/*
-!home/.claude/settings.json
 !home/.claude/keybindings.json
 !home/.claude/statusline-command.sh
 home/.codex/*
 !home/.codex/AGENTS.md
-!home/.codex/hooks.json
 !home/.codex/keybindings.json
 home/.agents/*
 !home/.agents/plugins/
