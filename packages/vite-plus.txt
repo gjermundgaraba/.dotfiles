@@ -1,0 +1,5 @@
+@openai/codex
+@earendil-works/pi-coding-agent
+gh-actions-language-server
+typescript@7
+vscode-solidity-server

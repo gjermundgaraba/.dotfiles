@@ -4,14 +4,15 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## Setup
 
-1. Install Fish, Stow, and Gitleaks: `brew install fish stow gitleaks`
+1. Install the Xcode Command Line Tools and [Homebrew](https://brew.sh/).
 2. Clone this repository to `~/.dotfiles`.
-3. Enable the repository's commit checks: `git -C ~/.dotfiles config core.hooksPath .githooks`.
-4. Run `stow -R --no-folding -d ~/.dotfiles -t ~ home`.
-5. Run `mkdir -p ~/.codex/skills ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles -t ~ skills`.
-6. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
-7. Install the macOS LaunchAgent as a regular file because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/local.capslock-f20.plist ~/Library/LaunchAgents/local.capslock-f20.plist`.
-8. Load or reload the LaunchAgent after any previous instance finishes unloading:
+3. Install the tracked Homebrew, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
+4. Enable the repository's commit checks: `git -C ~/.dotfiles config core.hooksPath .githooks`.
+5. Run `stow -R --no-folding -d ~/.dotfiles -t ~ home`.
+6. Run `mkdir -p ~/.codex/skills ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles -t ~ skills`.
+7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
+8. Install the macOS LaunchAgent as a regular file because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/local.capslock-f20.plist ~/Library/LaunchAgents/local.capslock-f20.plist`.
+9. Load or reload the LaunchAgent after any previous instance finishes unloading:
    ```sh
    service="gui/$(id -u)/local.capslock-f20"
    if launchctl print "$service" >/dev/null 2>&1; then
@@ -20,10 +21,21 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
    fi
    launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/local.capslock-f20.plist
    ```
-9. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
-10. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
+10. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
+11. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
 
-Run the same Stow commands after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout. Repeat steps 7–8 after changing the LaunchAgent.
+Run the same Stow commands after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout. Repeat steps 8–9 after changing the LaunchAgent.
+
+## Packages
+
+`Brewfile` and `packages/vite-plus.txt` are the reviewed package baseline, not a snapshot of everything installed on this machine. List or verify them without installing anything:
+
+```sh
+./bootstrap.sh list
+./bootstrap.sh check
+```
+
+Project-specific, private, and manually installed tools stay outside these manifests.
 
 ## Local state
 

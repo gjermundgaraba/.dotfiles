@@ -17,7 +17,7 @@ This config enables the following language servers (see `lua/config/lsp.lua`). E
 
 ### Install
 
-Requires [Node.js](https://nodejs.org). At least one of the listed methods per server is needed.
+The repository bootstrap installs these dependencies. The methods below are alternatives for using this Neovim configuration independently.
 
 #### `lua_ls` — Lua
 
