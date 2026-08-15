@@ -33,9 +33,9 @@
     },
     "npm:@clanker-stuff/codex-provider@0.1.0"
   ],
-  "defaultProvider": "zai",
-  "defaultModel": "glm-5.3",
-  "defaultThinkingLevel": "high",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-sol",
+  "defaultThinkingLevel": "xhigh",
   "treeFilterMode": "no-tools",
   "enabledModels": [
     "fugu-proxy/fugu",
