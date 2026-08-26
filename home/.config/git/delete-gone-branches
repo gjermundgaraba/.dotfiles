@@ -1,0 +1,200 @@
+#!/bin/sh
+
+# Delete local branches only when their tip is contained in the head commit of
+# a merged GitHub pull request for their gone upstream.
+
+set -u
+
+usage() {
+	cat <<'EOF'
+Usage: git delete-gone-branches [--dry-run]
+
+Fetch and prune remotes, then delete gone local branches whose current tip is
+the head commit of, or an ancestor of, a merged GitHub pull request. Branches
+checked out in a worktree, closed without merging, missing a PR, or not
+contained in the merged PR head are skipped.
+EOF
+}
+
+dry_run=false
+case "${1-}" in
+	"")
+		;;
+	-n | --dry-run)
+		dry_run=true
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		usage >&2
+		exit 2
+		;;
+esac
+
+for command in gh jq; do
+	if ! command -v "$command" >/dev/null 2>&1; then
+		printf 'error: required command not found: %s\n' "$command" >&2
+		exit 1
+	fi
+done
+
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+	printf 'error: not inside a Git repository\n' >&2
+	exit 1
+fi
+
+printf 'Fetching and pruning remotes...\n'
+if ! git fetch --all --prune --quiet; then
+	printf 'error: fetch failed; no branches were deleted\n' >&2
+	exit 1
+fi
+
+if ! repo=$(gh repo view --json nameWithOwner --jq '.nameWithOwner'); then
+	printf 'error: could not determine the GitHub repository\n' >&2
+	exit 1
+fi
+owner=${repo%%/*}
+
+gone_branches=$(
+	git for-each-ref \
+		--omit-empty \
+		--format='%(if:equals=[gone])%(upstream:track)%(then)%(refname:lstrip=2)%(end)' \
+		refs/heads
+)
+
+if [ -z "$gone_branches" ]; then
+	printf 'No gone branches found.\n'
+	exit 0
+fi
+
+deleted=0
+skipped=0
+errors=0
+
+for branch in $gone_branches; do
+	ref=refs/heads/$branch
+	if ! sha=$(git rev-parse --verify "$ref" 2>/dev/null); then
+		printf 'SKIP   %s: branch disappeared during verification\n' "$branch"
+		skipped=$((skipped + 1))
+		continue
+	fi
+
+	if ! pulls=$(
+		gh api --method GET "repos/$repo/pulls" \
+			-f state=all \
+			-f "head=$owner:$branch" \
+			-f per_page=100
+	); then
+		printf 'ERROR  %s: GitHub PR lookup failed\n' "$branch" >&2
+		errors=$((errors + 1))
+		continue
+	fi
+
+	merged_pulls=$(
+		printf '%s' "$pulls" |
+			jq -r '
+				.[] |
+				select(.merged_at != null) |
+				"\(.number)|\(.html_url)|\(.head.sha)"
+			'
+	)
+
+	match=
+	match_type=
+	for pull in $merged_pulls; do
+		pr_number=${pull%%|*}
+		pull=${pull#*|}
+		pr_url=${pull%%|*}
+		pr_head=${pull#*|}
+
+		if [ "$sha" = "$pr_head" ]; then
+			match=$pr_number
+			match_type="exact PR head"
+			break
+		fi
+
+		if git cat-file -e "$pr_head^{commit}" 2>/dev/null &&
+			git merge-base --is-ancestor "$sha" "$pr_head"; then
+			match=$pr_number
+			match_type="local tip included in PR head"
+			break
+		fi
+	done
+
+	if [ -z "$match" ]; then
+		summary=$(
+			printf '%s' "$pulls" |
+				jq -r '
+					if length == 0 then
+						"no PR found"
+					else
+						map(
+							"#\(.number) " +
+							if .merged_at != null then
+								"merged, but the local tip is not verified in its PR head"
+							elif .state == "closed" then
+								"closed without merging"
+							else
+								(.state | ascii_upcase)
+							end
+						) |
+						join(", ")
+					end
+				'
+		)
+		printf 'SKIP   %s: %s\n' "$branch" "$summary"
+		skipped=$((skipped + 1))
+		continue
+	fi
+
+	worktree=$(
+		git worktree list --porcelain |
+			awk -v ref="refs/heads/$branch" '
+				$1 == "worktree" {
+					path = substr($0, 10)
+				}
+				$1 == "branch" && $2 == ref {
+					print path
+					exit
+				}
+			'
+	)
+
+	if [ -n "$worktree" ]; then
+		printf 'SKIP   %s: Git cannot delete a branch checked out in worktree %s (merged PR #%s, %s)\n' \
+			"$branch" "$worktree" "$pr_number" "$match_type"
+		skipped=$((skipped + 1))
+		continue
+	fi
+
+	if ! current_sha=$(git rev-parse --verify "$ref" 2>/dev/null) ||
+		[ "$current_sha" != "$sha" ]; then
+		printf 'SKIP   %s: branch changed during verification\n' "$branch"
+		skipped=$((skipped + 1))
+		continue
+	fi
+
+	if [ "$dry_run" = true ]; then
+		printf 'WOULD DELETE %s: merged PR #%s (%s) %s\n' \
+			"$branch" "$pr_number" "$match_type" "$pr_url"
+		deleted=$((deleted + 1))
+	elif git branch -D -- "$branch"; then
+		printf '       verified by merged PR #%s (%s) %s\n' \
+			"$pr_number" "$match_type" "$pr_url"
+		deleted=$((deleted + 1))
+	else
+		errors=$((errors + 1))
+	fi
+done
+
+if [ "$dry_run" = true ]; then
+	printf '\nDry run: %s would be deleted, %s skipped, %s errors.\n' \
+		"$deleted" "$skipped" "$errors"
+else
+	printf '\nDone: %s deleted, %s skipped, %s errors.\n' \
+		"$deleted" "$skipped" "$errors"
+fi
+
+[ "$errors" -eq 0 ]
