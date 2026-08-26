@@ -7,16 +7,18 @@ shell_mode = "auto"
 
 [keys]
 prefix = "f20"
-settings = "prefix+shift+s"
+settings = "prefix+comma"
 open_notification_target = "" # prefix+o is used by Herdr History
 
-goto = "" # prefix+g is used by clankersnip
+goto = "prefix+n" # prefix+g is used by clankersnip
 new_workspace = "prefix+shift+c"
+new_worktree = "prefix+shift+b"
 remove_worktree = "prefix+backspace"
 previous_workspace = "prefix+shift+p"
 next_workspace = "prefix+shift+n"
 focus_agent = "prefix+alt+1..9"
 
+new_tab = "prefix+t"
 previous_tab = "prefix+shift+h"
 next_tab = "prefix+shift+l"
 switch_workspace = "prefix+shift+1..9"
@@ -31,8 +33,8 @@ swap_pane_down = "cmd+alt+shift+j"
 swap_pane_up = "cmd+alt+shift+k"
 swap_pane_right = "cmd+alt+shift+l"
 split_vertical = ["prefix+d", "prefix+v"]
-split_horizontal = ["prefix+shift+d", "prefix+s"]
-zoom = "prefix+m"
+split_horizontal = "prefix+shift+d"
+zoom = "prefix+z"
 
 # Forward these chords into Vim/Neovim when focused; otherwise move between Herdr panes.
 [[keys.command]]
@@ -61,9 +63,11 @@ description = "Navigate right (Vim/Herdr)"
 
 [[keys.command]]
 key = "prefix+a"
-type = "plugin_action"
-command = "gjermundgaraba.herdr-picker.agents"
+type = "popup"
+command = "herdr-picker run agents"
 description = "agents"
+width = "88%"
+height = "80%"
 
 [[keys.command]]
 key = "prefix+f"
@@ -91,8 +95,16 @@ prompt_new_tab_name = false
 prompt_new_workspace_name = true
 show_agent_labels_on_pane_borders = true
 
+agent_panel_sort = "priority"
+
+[ui.sidebar.spaces]
+rows = [
+  ["state_icon", { token = "$numbered_workspace", bold = true, dim = false }],
+  ["$branch_line", "git_status"],
+]
+
 [ui.toast]
-delivery = "terminal"
+delivery = "herdr"
 
 [ui.toast.herdr]
 position = "top-right"
@@ -105,26 +117,27 @@ kitty_graphics = true
 [advanced]
 scrollback_limit_bytes = 52428800
 
-[[keys.command]]
-key = "prefix+p"
-type = "plugin_action"
-command = "gjermundgaraba.herdr-picker.open"
-description = "resource picker"
+# Custom fork build (see ~/ws/pers/forks/herdr); silence update nags so
+# `herdr update` doesn't get run reflexively and clobber the patched binary.
+[update]
+version_check = false
 
 [[keys.command]]
 key = "prefix+w"
-type = "plugin_action"
-command = "gjermundgaraba.herdr-picker.workspaces"
+type = "popup"
+command = "herdr-picker run workspaces"
 description = "workspace picker"
+width = "88%"
+height = "80%"
 
 [[keys.command]]
-key = "prefix+g"
+key = "prefix+s"
 type = "plugin_action"
 command = "gjermundgaraba.clankersnip.open"
 description = "snippets"
 
 [[keys.command]]
-key = "prefix+t"
+key = "cmd+shift+t"
 type = "popup"
 command = "exec fish"
 description = "open native Fish popup terminal"
@@ -132,8 +145,55 @@ description = "open native Fish popup terminal"
 [[keys.command]]
 key = "prefix+y"
 type = "shell"
-command = 'ref="$HERDR_ACTIVE_PANE_ID"; "${HERDR_BIN_PATH:-herdr}" agent get "$ref" >/dev/null && printf "%s" "$ref" | pbcopy && "${HERDR_BIN_PATH:-herdr}" notification show "Copied agent reference" --body "$ref"'
+command = 'printf "%s" "$HERDR_ACTIVE_PANE_ID" | pbcopy && "${HERDR_BIN_PATH:-herdr}" notification show "Copied pane id" --body "$HERDR_ACTIVE_PANE_ID"'
 description = "copy active agent reference"
+
+[[keys.command]]
+key = "prefix+u"
+type = "popup"
+command = "herdr-picker run agents-unseen"
+description = "jump to agent, mark this pane unseen"
+width = "88%"
+height = "80%"
+
+[[keys.command]]
+key = "prefix+shift+u"
+type = "shell"
+description = "history back, mark this pane unseen"
+command = '''origin=$HERDR_ACTIVE_PANE_ID
+[ -n "$origin" ] || exit 0
+"${HERDR_BIN_PATH:-herdr}" plugin action invoke gjermundgaraba.herdr-history.back || exit 0
+python3 - "$origin" <<'PY'
+import json, os, socket, sys, time
+
+origin = sys.argv[1]
+
+def rpc(method, params):
+    with socket.socket(socket.AF_UNIX) as conn:
+        conn.connect(os.environ["HERDR_SOCKET_PATH"])
+        conn.sendall((json.dumps({"id": "back-unseen", "method": method, "params": params}) + "\n").encode())
+        return json.loads(conn.makefile().readline())
+
+# plugin.action.invoke returns when the plugin starts, not finishes: poll
+# until the back jump actually moves focus off the origin pane.
+deadline = time.monotonic() + 2
+while True:
+    focused = rpc("session.snapshot", {})["result"]["snapshot"].get("focused_pane_id")
+    if focused not in (None, origin):
+        error = rpc("pane.mark_unseen", {"pane_id": origin}).get("error") or {}
+        sys.exit(0 if not error or error.get("code") == "pane_not_idle" else 1)
+    if time.monotonic() >= deadline:
+        sys.exit(0)  # no jump landed (at oldest, or history inactive)
+    time.sleep(0.02)
+PY'''
+
+[[keys.command]]
+key = "prefix+m"
+type = "popup"
+command = "herdr-picker-move-pane.py"
+description = "move pane to tab"
+width = "88%"
+height = "80%"
 
 [ui.sound]
 enabled = false
@@ -149,6 +209,8 @@ panel_bg = "#282a27"
 surface0 = "#383c36"
 surface1 = "#383c36"
 surface_dim = "#383c36"
+active_row_bg = "#383c36"
+selection_bg = "#643c4c"
 overlay0 = "#767d72"
 overlay1 = "#a8afa6"
 text = "#c5cbc3"

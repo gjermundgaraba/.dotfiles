@@ -51,12 +51,64 @@
     },
     "dial": {
       "clockwise": {
-        "action": "effort",
-        "direction": "raise"
+        "byAgent": {
+          "codex": {
+            "action": "script",
+            "command": "/bin/sh",
+            "args": [
+              "./integrations/thinking-effort.sh",
+              "alt+."
+            ]
+          },
+          "claude": {
+            "action": "script",
+            "command": "/bin/sh",
+            "args": [
+              "./integrations/thinking-effort.sh",
+              "claude",
+              "raise"
+            ]
+          },
+          "pi": {
+            "action": "script",
+            "command": "/bin/sh",
+            "args": [
+              "./integrations/thinking-effort.sh",
+              "ctrl+shift+right"
+            ]
+          },
+          "default": null
+        }
       },
       "counterclockwise": {
-        "action": "effort",
-        "direction": "lower"
+        "byAgent": {
+          "codex": {
+            "action": "script",
+            "command": "/bin/sh",
+            "args": [
+              "./integrations/thinking-effort.sh",
+              "alt+,"
+            ]
+          },
+          "claude": {
+            "action": "script",
+            "command": "/bin/sh",
+            "args": [
+              "./integrations/thinking-effort.sh",
+              "claude",
+              "lower"
+            ]
+          },
+          "pi": {
+            "action": "script",
+            "command": "/bin/sh",
+            "args": [
+              "./integrations/thinking-effort.sh",
+              "ctrl+shift+left"
+            ]
+          },
+          "default": null
+        }
       },
       "press": {
         "action": "prompt",
@@ -85,12 +137,6 @@
         "action": "focus-pane",
         "direction": "right"
       }
-    }
-  },
-  "effort": {
-    "codex": {
-      "raise": "ctrl+shift+t",
-      "lower": "ctrl+t"
     }
   },
   "lighting": {
@@ -127,7 +173,7 @@
       }
     },
     "focusedBrightness": 1,
-    "ambient": "status",
-    "keys": null
+    "ambient": true,
+    "keys": false
   }
 }

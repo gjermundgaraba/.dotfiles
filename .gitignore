@@ -19,10 +19,8 @@ home/.config/herdr/plugins/*
 !home/.config/herdr/plugins/config/
 home/.config/herdr/plugins/config/*
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/
-!home/.config/herdr/plugins/config/gjermundgaraba.herdr-picker/
 home/.config/herdr/plugins/config/*/*
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/config.json
-!home/.config/herdr/plugins/config/gjermundgaraba.herdr-picker/config.toml
 home/.config/atuin/atuin-receipt.json
 home/.config/clankersnip/*
 !home/.config/clankersnip/snippets.toml
