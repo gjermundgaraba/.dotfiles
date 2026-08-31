@@ -2,7 +2,7 @@ local add = require "utils.pack"
 
 add({
   {
-    src = "https://github.com/dmtrKovalenko/fff.nvim",
+    src = "https://github.com/dmtrKovalenko/fff",
     version = "main",
   },
   {

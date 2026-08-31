@@ -2,7 +2,7 @@ local hooks = {
   ["nvim-treesitter"] = function()
     vim.cmd "TSUpdate"
   end,
-  ["fff.nvim"] = function()
+  ["fff"] = function()
     require("fff.download").download_or_build_binary()
   end,
 }

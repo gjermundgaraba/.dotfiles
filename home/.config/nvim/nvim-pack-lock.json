@@ -25,9 +25,9 @@
       "src": "https://github.com/saecki/crates.nvim",
       "version": "'stable'"
     },
-    "fff.nvim": {
-      "rev": "b6f351d7295d3f89d4f9ecaa94d72089964edc0f",
-      "src": "https://github.com/dmtrKovalenko/fff.nvim",
+    "fff": {
+      "rev": "c9d13021b9e7961a45da2f26ca80722ceaae87bd",
+      "src": "https://github.com/dmtrKovalenko/fff",
       "version": "'main'"
     },
     "fzf-lua": {
