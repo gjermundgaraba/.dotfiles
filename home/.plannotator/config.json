@@ -1,5 +1,9 @@
 {
   "diffOptions": {
     "diffStyle": "unified"
+  },
+  "reviewAnalysis": {
+    "semanticDiff": true,
+    "callFlow": false
   }
 }
