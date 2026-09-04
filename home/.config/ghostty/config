@@ -33,6 +33,8 @@ macos-titlebar-style = tabs
 ## Fonts
 font-size = 15
 font-family = BerkeleyMono Nerd Font Mono
+# Animated Thinking Orbs glyphs — see clanker-stuff docs/thinking-orbs-font.md
+# font-codepoint-map = U+10E000-U+10FFFF=Thinking Orbs 3
 
 # Keybindings
 
@@ -66,3 +68,7 @@ keybind = performable:cmd+alt+shift+h=resize_split:left,75
 keybind = performable:cmd+alt+shift+k=resize_split:up,75
 keybind = performable:cmd+alt+shift+j=resize_split:down,75
 keybind = cmd+alt+shift+0=equalize_splits
+
+# Native GPU Thinking Orb overlay (Pi extension control surface)
+# custom-shader = ~/.config/ghostty/shaders/thinking-orb-overlay.glsl
+# custom-shader-animation = false
