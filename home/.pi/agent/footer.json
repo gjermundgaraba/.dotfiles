@@ -10,7 +10,8 @@
       ],
       "right": [
         "footer.model",
-        "status:codex-fast",
+        "clanker.codex.code-mode",
+        "clanker.codex.fast",
         "footer.thinking"
       ]
     },

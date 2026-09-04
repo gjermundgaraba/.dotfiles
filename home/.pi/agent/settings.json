@@ -1,25 +1,17 @@
 {
   "lastChangelogVersion": "0.84.2",
   "packages": [
-    "npm:@raindrop-ai/pi-agent",
     "git:github.com/earendil-works/pi-review-loop",
-    {
-      "source": "git:github.com/DietrichGebert/ponytail",
-      "skills": [
-        "+skills/ponytail-debt/SKILL.md"
-      ]
-    },
     "npm:@clanker-stuff/ask-question@0.1.0",
     "npm:@clanker-stuff/stash@0.1.0",
     "npm:@clanker-stuff/timer@0.1.0",
     "npm:@clanker-stuff/mcp@0.1.0",
     "npm:@clanker-stuff/tools@0.1.0",
-    "npm:@clanker-stuff/codex-skills@0.1.0",
-    "npm:@clanker-stuff/codex-reverse-i-search@0.1.0",
+    "npm:@clanker-stuff/dollah-skills@0.1.0",
+    "npm:@clanker-stuff/reverse-i-search@0.1.0",
     "npm:@clanker-stuff/shell-resume-history@0.1.0",
     "npm:@clanker-stuff/side@0.1.0",
     "npm:@clanker-stuff/plannotator@0.2.0",
-    "npm:@clanker-stuff/voice@0.1.0",
     "npm:@clanker-stuff/footer@0.1.0",
     "npm:@clanker-stuff/usage@0.1.0",
     {
@@ -31,6 +23,7 @@
         "-skills/sideshow/SKILL.md"
       ]
     },
+    "npm:@clanker-stuff/subagents@0.1.0",
     "npm:@clanker-stuff/codex-provider@0.1.0"
   ],
   "defaultProvider": "openai-codex",
@@ -44,9 +37,11 @@
     "openai-codex/gpt-5.6-sol",
     "openai-codex/gpt-5.6-terra",
     "opencode-go/kimi-k3",
-    "xai/grok-4.5",
-    "opencode-go/glm-5.3",
-    "zai/glm-5.3"
+    "zai/glm-5.3",
+    "github-copilot/grok-4.6",
+    "xai/grok-4.6",
+    "cursorapi/grok-4.6",
+    "cursorapi/grok-4.6-fast"
   ],
   "showHardwareCursor": true,
   "terminal": {
@@ -58,5 +53,6 @@
   "defaultProjectTrust": "always",
   "tuiMode": "fullscreen",
   "editorPaddingX": 1,
-  "enableSkillCommands": false
+  "enableSkillCommands": true,
+  "hideThinkingBlock": false
 }
