@@ -7,7 +7,7 @@ add({
   },
   {
     src = "https://github.com/saecki/crates.nvim",
-    version = "stable",
+    version = "v0.7.1",
   },
 })
 

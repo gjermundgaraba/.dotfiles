@@ -1,7 +1,7 @@
 {
   "plugins": {
     "auto-session": {
-      "rev": "6cde3874a9283c2db55627acca5f28e4fa402320",
+      "rev": "c8e6139a2e52a38101fecaba6014d7dd75489044",
       "src": "https://github.com/rmagatti/auto-session",
       "version": "'main'"
     },
@@ -11,19 +11,19 @@
       "version": "'main'"
     },
     "conform.nvim": {
-      "rev": "619363c30309d29ffa631e67c8183f2a72caa373",
+      "rev": "016802de402556da54c36bd7359b441266b01cdd",
       "src": "https://github.com/stevearc/conform.nvim",
       "version": "'master'"
     },
     "copilot.lua": {
-      "rev": "e51d8519c79c073c41107c108be97548c115455e",
+      "rev": "7e6723aabea044519462958ffcea68d7985c5ed0",
       "src": "https://github.com/zbirenbaum/copilot.lua",
       "version": "'master'"
     },
     "crates.nvim": {
       "rev": "afcd1cc3eeceb5783676fc8464389b9216a29d05",
       "src": "https://github.com/saecki/crates.nvim",
-      "version": "'stable'"
+      "version": "'v0.7.1'"
     },
     "fff": {
       "rev": "c9d13021b9e7961a45da2f26ca80722ceaae87bd",
@@ -31,7 +31,7 @@
       "version": "'main'"
     },
     "fzf-lua": {
-      "rev": "8671012a7b2a1648595952c655039d51fb301c14",
+      "rev": "05e44d38de0a79c11fba5f7bf8138791b1dbdd1e",
       "src": "https://github.com/ibhagwan/fzf-lua",
       "version": "'main'"
     },
@@ -51,7 +51,7 @@
       "version": "'v3.x'"
     },
     "nui.nvim": {
-      "rev": "de740991c12411b663994b2860f1a4fd0937c130",
+      "rev": "10fc361835c856ba4233ef5ea135b919bf3dce97",
       "src": "https://github.com/MunifTanjim/nui.nvim",
       "version": "'main'"
     },
@@ -61,7 +61,7 @@
       "version": "4.0.0 - 5.0.0"
     },
     "nvim-treesitter": {
-      "rev": "3d3321b560a63ff92a8692401f303a5123336b86",
+      "rev": "19071296d3d643b48615ee574a20e8a03ac40872",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
@@ -71,7 +71,7 @@
       "version": "'main'"
     },
     "nvim-web-devicons": {
-      "rev": "2ae6958df7ced50baac5035cec0c15799eedfbf7",
+      "rev": "5f032a85be210cd1c6ac98861eb3b187ff3bd5eb",
       "src": "https://github.com/nvim-tree/nvim-web-devicons",
       "version": "'master'"
     },
@@ -86,7 +86,7 @@
       "version": "'v2.16.0'"
     },
     "package-info.nvim": {
-      "rev": "1eb438ca04d7ab2f8c1fc64c28cfa12463eacfe7",
+      "rev": "e2469495215f576771b4567786b3c5709e98d87a",
       "src": "https://github.com/vuki656/package-info.nvim",
       "version": "'master'"
     },
@@ -101,7 +101,7 @@
       "version": "'master'"
     },
     "rustaceanvim": {
-      "rev": "a95e54462d069c7bdb2095d8cdbcef813f225288",
+      "rev": "c221b712315c5072fe246124603b2733408a5efa",
       "src": "https://github.com/mrcjkb/rustaceanvim",
       "version": "'main'"
     },
