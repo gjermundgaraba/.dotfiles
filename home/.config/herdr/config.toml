@@ -13,6 +13,7 @@ open_notification_target = "" # prefix+o is used by Herdr History
 goto = "prefix+n" # prefix+g is used by clankersnip
 new_workspace = "prefix+shift+c"
 new_worktree = "prefix+shift+b"
+open_worktree = "prefix+b"
 remove_worktree = "prefix+backspace"
 previous_workspace = "prefix+shift+p"
 next_workspace = "prefix+shift+n"
@@ -35,6 +36,7 @@ swap_pane_right = "cmd+alt+shift+l"
 split_vertical = ["prefix+d", "prefix+v"]
 split_horizontal = "prefix+shift+d"
 zoom = "prefix+z"
+close_pane = "prefix+shift+x"
 
 # Forward these chords into Vim/Neovim when focused; otherwise move between Herdr panes.
 [[keys.command]]
@@ -147,6 +149,12 @@ key = "prefix+y"
 type = "shell"
 command = 'printf "%s" "$HERDR_ACTIVE_PANE_ID" | pbcopy && "${HERDR_BIN_PATH:-herdr}" notification show "Copied pane id" --body "$HERDR_ACTIVE_PANE_ID"'
 description = "copy active agent reference"
+
+[[keys.command]]
+key = "prefix+p"
+type = "shell"
+command = 'printf "%s" "$HERDR_ACTIVE_PANE_CWD" | pbcopy && "${HERDR_BIN_PATH:-herdr}" notification show "Copied pane path" --body "$HERDR_ACTIVE_PANE_CWD"'
+description = "copy active pane path"
 
 [[keys.command]]
 key = "prefix+u"

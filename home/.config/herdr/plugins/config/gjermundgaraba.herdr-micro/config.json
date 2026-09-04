@@ -5,17 +5,17 @@
         "byAgent": {
           "codex": {
             "action": "prompt",
-            "prompt": "$deslop $ponytail:ponytail-review\nReview scope: uncommitted changes",
+            "prompt": "$deslop $ponytail-review\nReview scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
             "submit": false
           },
           "claude": {
             "action": "prompt",
-            "prompt": "/deslop /ponytail:ponytail-review\nReview scope: uncommitted changes",
+            "prompt": "/deslop /ponytail-review\nReview scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
             "submit": false
           },
           "pi": {
             "action": "prompt",
-            "prompt": "$deslop $ponytail-review\nReview scope: uncommitted changes",
+            "prompt": "$deslop $ponytail-review\nReview scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
             "submit": false
           },
           "default": null
@@ -40,10 +40,7 @@
         "prompt": "/copy",
         "submit": true
       },
-      "5": {
-        "action": "key",
-        "key": "F19"
-      },
+      "5": null,
       "6": null,
       "7": {
         "action": "submit"
@@ -119,16 +116,8 @@
     "joystick": {
       "engageDistance": 0.75,
       "releaseDistance": 0.3,
-      "up": {
-        "action": "scroll",
-        "direction": "up",
-        "percent": 50
-      },
-      "down": {
-        "action": "scroll",
-        "direction": "down",
-        "percent": 50
-      },
+    "up": null,
+    "down": null,
       "left": {
         "action": "focus-pane",
         "direction": "left"
