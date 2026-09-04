@@ -63,7 +63,7 @@ etc
 
 Each round the answers reshapes the tree — settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
 
-Finding _facts_ is your job, never mine! When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent to find it — don't ask me for anything you could look up yourself. The _decisions_ are mine — put each to them and wait.
+Finding _facts_ is your job, never mine! When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent to find it — don't ask me for anything you could look up yourself. The _decisions_ are mine — put each to me and wait.
 
 The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until I confirm we have reached a shared understanding.
 
@@ -73,10 +73,7 @@ Whenever a specific choice has important tradeoffs that would increase complexit
 [[snippet]]
 title = "review review"
 text = """
-We got a review from another agent:
-<agent-review>
-{clipboard}
-</agent-review>
+{snippet:· agent handoff}
 
 Validate every substantive finding against the relevant code, tests, documentation, and runtime behavior. Gather any context needed to make an informed judgment.
 
@@ -121,8 +118,11 @@ End with:
 **Current state:** validation complete, no implementation started, no files changed.
 
 Do not propose specific solutions. Do not make edits or changes.
-Make sure to verify/validate all findings before presenting them.
 """
+args = [
+  { name = "thing", default = "a review" },
+  { name = "tag", default = "agent-review" },
+]
 
 [[snippet]]
 title = "herdr review review"
@@ -132,49 +132,50 @@ We got a review from another agent:
 $herdr agent: {clipboard}
 </agent-review>
 
-Consider the review, validate the findings and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the reviewer might be wrong or miss some important context), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides. Do not review the classification or severity rankings themselves - only validate the findings and if they are worthwhile issues to consider doing something about. Make sure to verify/validate all findings before presenting them.
-For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement).
-
-Do not propose any specific solutions yet. Do not make any edits or changes.
+{snippet:· review validation core}
 """
+args = [{ name = "who", default = "reviewer" }]
 
 [[snippet]]
 title = "plan review"
 text = """
-We got a plan from another agent:
-<agent-plan>
-{clipboard}
-</agent-plan>
+{snippet:· agent handoff}
 
-Consider the plan, validate and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the planner might be wrong or miss some important context). Make sure to verify/validate all findings before presenting them.
+Review the plan and assess whether its parts are correct and worth doing ({snippet:· adversarial stance}). Verify each finding against the code before presenting it.
 
 Do not make any edits or changes.
 """
+args = [
+  { name = "thing", default = "a plan" },
+  { name = "tag", default = "agent-plan" },
+  { name = "who", default = "planner" },
+]
 
 [[snippet]]
 title = "plan review review"
 text = """
-We got a review on the plan from another agent:
-<agent-plan-review>
-{clipboard}
-</agent-plan-review>
+{snippet:· agent handoff}
 
-Consider the review, validate the findings and if they worth doing/updating for (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the reviewer might be wrong or miss some important context), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides.  Do not review the classification or severity rankings themselves - only validate the findings and if they are worthwhile issues to consider doing something about.
-For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement)
-
-Do not propose any specific solutions yet. Do not make any edits or changes.
+{snippet:· review validation core}
 """
+args = [
+  { name = "thing", default = "a review on the plan" },
+  { name = "tag", default = "agent-plan-review" },
+  { name = "who", default = "reviewer" },
+]
 
 [[snippet]]
 title = "response review"
 text = """
-I got this response from the other agent:
-<agent-response>
-{clipboard}
-</agent-response>
+{snippet:· agent handoff}
 
-Consider the response, review/validate it and if anything in the response is correct _and_ worth acting on (but make sure to take a adversial stance instead of just accepting them as correct or worth fixing - the agent might be wrong or miss some important context). Give me your opinion and take based on your own judgement.
+Consider the response, review/validate it, and tell me whether anything in it is correct _and_ worth acting on ({snippet:· adversarial stance}). Give me your opinion and take based on your own judgement.
 """
+args = [
+  { name = "thing", default = "a response" },
+  { name = "tag", default = "agent-response" },
+  { name = "who", default = "agent" },
+]
 
 [[snippet]]
 title = "solution finding"
@@ -211,7 +212,7 @@ $deslop
 {clipboard}
 </proposed-agent-plan>
 
-Deslop review scope: the proposed-plan above Make sure to also read related files to be able to do an informed review Review proposed-plan both correctness and slop (the agent might have made mistakes or missed some important context).
+Deslop review scope: the proposed plan above. Review it for both correctness and slop against the actual code it touches (the agent might have made mistakes or missed some important context).
 """
 
 [[snippet]]
@@ -219,11 +220,11 @@ title = "concrete impl plan"
 text = """
 Turn this into a concrete implementation plan.
 
-To avoid slop, make sure the plan take these carefully into account:
+To avoid slop, make sure the plan takes these carefully into account:
 <anti-slop-guidelines>
   <implementation>
   - Don't consider backwards compatibility or add any fallbacks or migrations (there are no users or deployments to worry about)
-  - Don't overengineer solutions, or add _unecessary_ abstraction or indirection where a simpler, cleaner and more clear solution would do
+  - Don't overengineer solutions, or add _unnecessary_ abstraction or indirection where a simpler, cleaner and more clear solution would do
   - Prefer elegant and readable code over comments when the code can speak for itself
     - Use clear naming and structure so intent is obvious — don't paper over confusing code with comments
   - Don't add defensive guards or null checks for states that are unlikely to happen
@@ -245,8 +246,7 @@ To avoid slop, make sure the plan take these carefully into account:
 
 The output must be a stand-alone handoff document that an independent agent implementer can execute without prior context. Include the relevant context explicitly rather than assuming the reader knows it.
 
-If there scope questions or there is ambiguity that would materially change the implementation approach, ask
-clarifying questions using the ask_question tool - before presenting the final plan. Otherwise, proceed and state the assumptions clearly.
+If there are scope questions or ambiguity that would materially change the implementation approach, ask me clarifying questions before presenting the final plan. Otherwise, proceed and state the assumptions clearly.
 Requirements for the plan:
 - Summarize the problem being solved and the target outcome.
 - Identify the relevant code areas, modules, or systems likely to be touched.
@@ -255,7 +255,7 @@ Requirements for the plan:
 - Include a focused testing/verification section.
 - Include any notable risks or non-goals only if they materially affect implementation.
 - Include any .md files that needs to be updated
-- Append the full `anti-slop-guidelines` section below verbatim under a `Constraints` heading
+- Append the full `anti-slop-guidelines` section above verbatim under a `Constraints` heading
 """
 
 [[snippet]]
@@ -271,10 +271,11 @@ scope: uncomitted changes
 
 review, validate and implement the findings that are valid and worth doing for this.
 then make sure build, lints and all tests pass again.
+Report the actual build, lint and test output in your summary; only claim they pass if you ran them in this session.
 """
 
 [[snippet]]
-title = "ultra review"
+title = "ultra deslop review"
 text = """
 $deslop $ponytail-audit
 Review scope: the entire repo.
@@ -290,8 +291,7 @@ Review target: {target}.
 
 Below are some default guidelines for determining whether the original author would appreciate the issue being flagged.
 
-These are not the final word in determining whether an issue is a bug. In many cases, you will encounter other, more specific guidelines. These may be present elsewhere in a developer message, a user message, or a file.
-Those guidelines should be considered to override these general instructions.
+More specific guidelines, whether in project instruction files or in my own instructions, override these general ones.
 
 Here are the general guidelines for determining whether something is a bug and should be flagged.
 
@@ -304,30 +304,26 @@ Here are the general guidelines for determining whether something is a bug and s
 7. It is not enough to speculate that a change may disrupt another part of the codebase, to be considered a bug, one must identify the other parts of the code that are provably affected.
 8. The bug is clearly not just an intentional change by the original author.
 
-When flagging a bug, you will also provide an accompanying comment. Once again, these guidelines are not the final word on how to construct a comment -- defer to any subsequent guidelines that you may encounter.
+When flagging a bug, you will also provide an accompanying comment.
 
 1. The comment should be clear about why the issue is a bug.
 2. The comment should appropriately communicate the severity of the issue. It should not claim that an issue is more severe than it actually is.
-3. The comment should be brief. The body should be at most 1 paragraph. It should not introduce line breaks within the natural language flow unless it is necessary for the code fragment.
-4. The comment should not include any chunks of code longer than 3 lines. Any code chunks should be wrapped in markdown inline code tags or a code block.
+3. The comment should be brief.
+4. Quote only the minimal code needed to locate or illustrate the issue, in inline code or a code block.
 5. The comment should clearly and explicitly communicate the scenarios, environments, or inputs that are necessary for the bug to arise. The comment should immediately indicate that the issue's severity depends on these factors.
-6. The comment's tone should be matter-of-fact and not accusatory or overly positive. It should read as a helpful AI assistant suggestion without sounding too much like a human reviewer.
+6. The comment's tone should be matter-of-fact and not accusatory or overly positive.
 7. The comment should be written such that the original author can immediately grasp the idea without close reading.
-8. The comment should avoid excessive flattery and comments that are not helpful to the original author. The comment should avoid phrasing like "Great job ...", "Thanks for ...".
 
 Below are some more detailed guidelines that you should apply to this specific review.
 
 HOW MANY FINDINGS TO RETURN:
 
-Output all findings that the original author would fix if they knew about it. If there is no finding that a person would definitely love to see and fix, prefer outputting no findings. Do not stop at the first qualifying finding. Continue until you've listed every qualifying finding.
+Report every finding that meets the criteria above; if none does, report none.
 
 GUIDELINES:
 
 - Ignore trivial style unless it obscures meaning or violates documented standards.
 - Use one comment per distinct issue (or a multi-line range if necessary).
-- Use ```suggestion blocks ONLY for concrete replacement code (minimal lines; no commentary inside the block).
-- In every ```suggestion block, preserve the exact leading whitespace of the replaced lines (spaces vs tabs, number of spaces).
-- Do NOT introduce or remove outer indentation levels unless that is the actual fix.
 
 ## Repository Rule Attribution
 
@@ -336,8 +332,6 @@ Use the root and scoped project instruction files applicable to changed files (e
 Review the diff independently and deduplicate findings by changed location and defect/remedy. A finding is rule-supported only when applicable guidance materially contributes repository-specific scope, an invariant, remedy, convention, or confirmation behavior beyond generic correctness advice. Do not omit ordinary findings or invent findings solely because a rule file exists.
 
 For each rule-supported final finding, verify the applicable project instruction file that supplies the rule, then include one compact reference to it in the finding body. Do not fabricate citations.
-
-The comments will be presented as inline review comments. You should avoid providing unnecessary location details in the comment body. Always keep the line range as short as possible for interpreting the issue. Avoid ranges longer than 5-10 lines; instead, choose the most suitable subrange that pinpoints the problem.
 
 At the beginning of the finding title, tag the bug with priority level. For example "[P1] Un-padding slices along wrong tensor dimensions". [P0] - Drop everything to fix. Blocking release, operations, or major usage. Only use for universal issues that do not depend on any assumptions about the inputs. [P1] - Urgent. Should be addressed in the next cycle. [P2] - Normal. To be fixed eventually. [P3] - Low. Nice to have.
 
@@ -400,11 +394,11 @@ Treat this inventory as the coverage contract. Do not assume broad catch-all row
 
 Use fresh, read-only agents where available. Give every worker one distinct subsystem with an exact, non-overlapping ownership boundary.
 
-Keep concurrency bounded to the number of lanes you can actively coordinate. Use one consolidated wait mechanism, do not interrupt productive workers merely because they are slow, and close completed workers after harvesting their results.
+Run as many workers in parallel as you can actively coordinate, keep working while they run, and let slow workers finish.
 
 Each worker receives this brief:
 
-Review the assigned subsystem for at most two materially useful simplifications in its data structures, state representation, or organizing model.
+Review the assigned subsystem for materially useful simplifications in its data structures, state representation, or organizing model.
 
 Inspect its implementation, public interfaces, major call sites, and existing tests. Stay within the assigned ownership boundary. You may identify cross-subsystem concerns, but do not expand the scope to solve them.
 
@@ -421,7 +415,7 @@ Do not force an abstraction. Prefer boring local code when it is already clear.
 
 Do not recommend changes solely for stylistic consistency, hypothetical extensibility, minor line-count reduction, or moving existing branching behind a new type.
 
-Return at most two opportunities. If nothing clearly meets the threshold, return `skip`.
+Return only the opportunities that clearly meet the threshold, most material first. If none does, return `skip`.
 
 For every recommendation, provide:
 
@@ -480,6 +474,35 @@ We're done here. Land this worktree's changes onto the local main branch as a si
 
 Do not push. Do not delete the worktree or its branch.
 """
+
+# --- fragments (· prefix): included via {snippet:...}, args declared by consumers ---
+
+[[snippet]]
+title = "· adversarial stance"
+text = "but make sure to take an adversarial stance instead of just accepting them as correct or worth fixing - the {who} might be wrong or miss some important context"
+
+[[snippet]]
+title = "· agent handoff"
+text = """
+We got {thing} from another agent:
+<{tag}>
+{clipboard}
+</{tag}>"""
+
+[[snippet]]
+title = "· review validation core"
+text = """
+Verify each finding against the code and assess whether it is correct and worth acting on ({snippet:· adversarial stance}), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides. Do not review the classification or severity rankings themselves - only whether the findings are real and worthwhile issues to consider doing something about.
+For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement).
+
+Do not propose any specific solutions yet. Do not make any edits or changes."""
+
+[[snippet]]
+title = "deslop review"
+text = """
+$deslop $ponytail-review
+Review {scope} for correctness, slop, over-engineering, and best practices."""
+args = [{ name = "scope", default = "uncomitted changes", separator = "," }]
 
 # [[snippet]]
 # title = ""
