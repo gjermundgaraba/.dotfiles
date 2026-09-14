@@ -71,6 +71,18 @@ Whenever a specific choice has important tradeoffs that would increase complexit
 """
 
 [[snippet]]
+title = "light-grilling"
+text = """
+Interview me until we agree on the goal, scope, and key decisions. Focus on questions whose answers would materially change the approach or outcome. Skip minor details, unlikely edge cases, and decisions that can safely wait.
+
+Ask a few concise, numbered questions per round, each with your recommended answer and any significant tradeoff. Only ask questions whose prerequisites are settled, then wait for my answers before the next round.
+
+Look up facts yourself. Use sensible defaults for minor details and briefly state any assumptions that matter.
+
+Once the important decisions are settled, summarize our shared understanding and ask for confirmation before acting. Don't keep digging just to cover every possible branch.
+"""
+
+[[snippet]]
 title = "review review"
 text = """
 {snippet:· agent handoff}
@@ -500,8 +512,9 @@ Do not propose any specific solutions yet. Do not make any edits or changes."""
 [[snippet]]
 title = "deslop review"
 text = """
-$deslop $ponytail-review
-Review {scope} for correctness, slop, over-engineering, and best practices."""
+$deslop
+Review {scope} for correctness, slop, over-engineering, and best practices.
+Also review for architecture best-practices, modern idiomatic best practices, design, etc focusing on where we can make the code simpler, more maintainable, or if there are potentially unecessary strictness/invariants for the product."""
 args = [{ name = "scope", default = "uncomitted changes", separator = "," }]
 
 # [[snippet]]
