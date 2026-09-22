@@ -1,0 +1,43 @@
+{
+  "name": "@gjermundgaraba/gg-theme",
+  "version": "0.4.0",
+  "description": "Coordinated light and dark CSS variables for web apps. Tailwind v4 and shadcn/ui compatible.",
+  "type": "module",
+  "main": "./index.css",
+  "style": "./index.css",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./index.css",
+    "./tailwind": "./tailwind.css",
+    "./primitives": "./primitives.css",
+    "./tokens": "./tokens.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.css",
+    "tailwind.css",
+    "primitives.css",
+    "tokens.json",
+    "README.md"
+  ],
+  "keywords": [
+    "theme",
+    "css-variables",
+    "tailwindcss",
+    "shadcn",
+    "design-tokens",
+    "oklch"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gjermundgaraba/.dotfiles.git",
+    "directory": "theme/web"
+  },
+  "author": "Gjermund Garaba"
+}

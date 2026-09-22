@@ -1,0 +1,85 @@
+/* gg-theme — generated from theme/palette.ts. Do not edit. */
+
+:root {
+  --background: #faf8f4;
+  --foreground: #0f130e;
+  --card: #eeebe3;
+  --card-foreground: #0f130e;
+  --popover: #eeebe3;
+  --popover-foreground: #0f130e;
+  --primary: #d10069;
+  --primary-foreground: #faf8f4;
+  --secondary: #eeebe3;
+  --secondary-foreground: #0f130e;
+  --muted: #eeebe3;
+  --muted-foreground: #3a3f37;
+  --accent: #eeebe3;
+  --accent-foreground: #0f130e;
+  --destructive: #a10036;
+  --destructive-foreground: #faf8f4;
+  --success: #006400;
+  --success-foreground: #faf8f4;
+  --warning: #a34700;
+  --warning-foreground: #faf8f4;
+  --info: #00666e;
+  --info-foreground: #faf8f4;
+  --border: color-mix(in oklab, var(--foreground) 12%, transparent);
+  --input: color-mix(in oklab, var(--foreground) 18%, transparent);
+  --ring: #d10069;
+  --link: #d10069;
+  --link-visited: #963456;
+  --selection: #d6bcc6;
+  --selection-foreground: #0f130e;
+  --chart-1: #0052c8;
+  --chart-2: #006400;
+  --chart-3: #a34700;
+  --chart-4: #7f1087;
+  --chart-5: #00666e;
+  --radius: 0.5rem;
+
+  color-scheme: light;
+}
+
+.dark {
+  --background: #282a27;
+  --foreground: #e2e6e0;
+  --card: #383c36;
+  --card-foreground: #e2e6e0;
+  --popover: #383c36;
+  --popover-foreground: #e2e6e0;
+  --primary: #fb6d9c;
+  --primary-foreground: #282a27;
+  --secondary: #383c36;
+  --secondary-foreground: #e2e6e0;
+  --muted: #383c36;
+  --muted-foreground: #a0a89c;
+  --accent: #383c36;
+  --accent-foreground: #e2e6e0;
+  --destructive: #e1909c;
+  --destructive-foreground: #282a27;
+  --success: #78b77a;
+  --success-foreground: #282a27;
+  --warning: #e09564;
+  --warning-foreground: #282a27;
+  --info: #72c0c0;
+  --info-foreground: #282a27;
+  --border: color-mix(in oklab, var(--foreground) 14%, transparent);
+  --input: color-mix(in oklab, var(--foreground) 22%, transparent);
+  --ring: #fb6d9c;
+  --link: #ff77a5;
+  --link-visited: #cb98a5;
+  --selection: #643c4c;
+  --selection-foreground: #e2e6e0;
+  --chart-1: #009aff;
+  --chart-2: #4cc157;
+  --chart-3: #ff8200;
+  --chart-4: #e786ed;
+  --chart-5: #00c9cb;
+
+  color-scheme: dark;
+}
+
+::selection {
+  background: var(--selection);
+  color: var(--selection-foreground);
+}

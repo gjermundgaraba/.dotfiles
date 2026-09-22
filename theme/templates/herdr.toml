@@ -1,8 +1,4 @@
-[theme]
-name = "terminal"
-auto_switch = false
-
-[theme.custom]
+[theme.custom.{{Mode}}]
 accent = "{{Accent}}"
 panel_bg = "{{BG}}"
 surface0 = "{{Surface}}"

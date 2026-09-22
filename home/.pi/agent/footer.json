@@ -21,8 +21,7 @@
         "footer.context"
       ],
       "right": [
-        "clanker.usage.active",
-        "clanker.usage.details"
+        "clanker.usage.active"
       ]
     },
     {
@@ -38,7 +37,7 @@
   "version": 1,
   "widgets": {
     "clanker.usage.details": {
-      "enabled": true
+      "enabled": false
     }
   }
 }

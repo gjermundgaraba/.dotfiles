@@ -9,10 +9,10 @@ fish_color_end ff8200
 fish_color_error ff7992
 fish_color_param e2e6e0
 fish_color_option 009aff
-fish_color_comment 888f84
+fish_color_comment a0a89c
 fish_color_operator e786ed
 fish_color_escape 4cc157
-fish_color_autosuggestion 888f84
+fish_color_autosuggestion a0a89c
 fish_color_cancel -r
 fish_color_search_match --background=643c4c --bold
 fish_color_selection --background=643c4c --bold
@@ -25,7 +25,7 @@ fish_color_host --reset
 fish_color_host_remote f7cd3a
 fish_color_status ff7992
 fish_pager_color_completion --reset
-fish_pager_color_description 888f84
+fish_pager_color_description a0a89c
 fish_pager_color_prefix --bold --underline
 fish_pager_color_progress 282a27 --background=00c9cb --bold
 fish_pager_color_selected_background --background=643c4c

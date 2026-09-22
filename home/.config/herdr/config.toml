@@ -4,11 +4,12 @@ onboarding = false
 # Keep macOS login-shell PATH behavior when using Fish.
 default_shell = "fish"
 shell_mode = "auto"
+kitty_graphics = true
 
 [keys]
 prefix = "f20"
 settings = "prefix+comma"
-open_notification_target = "" # prefix+o is used by Herdr History
+open_notification_target = "" # prefix+o copies agent session id
 
 goto = "prefix+n" # prefix+g is used by clankersnip
 new_workspace = "prefix+shift+c"
@@ -38,6 +39,20 @@ split_horizontal = "prefix+shift+d"
 zoom = "prefix+z"
 close_pane = "prefix+shift+x"
 
+# Client-side actions (custom Herdr build): flat agent/workspace lists,
+# pane history, and the unread hold. See docs/frontend-api.md.
+agent_picker = "prefix+a"
+workspace_list = "prefix+w"
+history_back = "prefix+shift+o"
+history_forward = "prefix+shift+i"
+mark_unread = "prefix+u"
+
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "gjermundgaraba.herdr-move-pane.move"
+description = "Move pane to tab"
+
 # Forward these chords into Vim/Neovim when focused; otherwise move between Herdr panes.
 [[keys.command]]
 key = "ctrl+h"
@@ -64,30 +79,10 @@ command = "vim-herdr-navigation.right"
 description = "Navigate right (Vim/Herdr)"
 
 [[keys.command]]
-key = "prefix+a"
-type = "popup"
-command = "herdr-picker run agents"
-description = "agents"
-width = "88%"
-height = "80%"
-
-[[keys.command]]
 key = "prefix+f"
 type = "plugin_action"
 command = "gjermundgaraba.herdr-fork-to-pane.fork"
 description = "fork agent into right pane"
-
-[[keys.command]]
-key = "prefix+o"
-type = "plugin_action"
-command = "gjermundgaraba.herdr-history.back"
-description = "History back"
-
-[[keys.command]]
-key = "prefix+i"
-type = "plugin_action"
-command = "gjermundgaraba.herdr-history.forward"
-description = "History forward"
 
 [ui]
 sidebar_width = 32
@@ -99,10 +94,11 @@ show_agent_labels_on_pane_borders = true
 
 agent_panel_sort = "priority"
 
+status_indicators = "dots"
 [ui.sidebar.spaces]
 rows = [
   ["state_icon", { token = "$numbered_workspace", bold = true, dim = false }],
-  ["$branch_line", "git_status"],
+  ["$branch_line", { token = "$git_dirty", fg = "#e5c07b", dim = false, separator_before = " " }, "git_status"],
 ]
 
 [ui.toast]
@@ -114,7 +110,6 @@ position = "top-right"
 [experimental]
 # Pane history persists terminal contents and may include secrets.
 pane_history = true
-kitty_graphics = true
 
 [advanced]
 scrollback_limit_bytes = 52428800
@@ -123,14 +118,6 @@ scrollback_limit_bytes = 52428800
 # `herdr update` doesn't get run reflexively and clobber the patched binary.
 [update]
 version_check = false
-
-[[keys.command]]
-key = "prefix+w"
-type = "popup"
-command = "herdr-picker run workspaces"
-description = "workspace picker"
-width = "88%"
-height = "80%"
 
 [[keys.command]]
 key = "prefix+s"
@@ -145,6 +132,22 @@ command = "exec fish"
 description = "open native Fish popup terminal"
 
 [[keys.command]]
+key = "prefix+i"
+type = "shell"
+command = '''pane=$HERDR_ACTIVE_PANE_ID
+[ -n "$pane" ] || exit 0
+herdr="${HERDR_BIN_PATH:-herdr}"
+session=$("$herdr" pane get "$pane" | python3 -c 'import json,sys; p=(json.load(sys.stdin).get("result") or {}).get("pane") or {}; s=p.get("agent_session") or {}; print(s.get("value") or "")')
+if [ -z "$session" ]; then
+  "$herdr" notification show "No agent session" --body "$pane"
+  exit 0
+fi
+printf "%s" "$session" | pbcopy
+"$herdr" notification show "Copied agent session" --body "$session"
+'''
+description = "copy active agent session id"
+
+[[keys.command]]
 key = "prefix+y"
 type = "shell"
 command = 'printf "%s" "$HERDR_ACTIVE_PANE_ID" | pbcopy && "${HERDR_BIN_PATH:-herdr}" notification show "Copied pane id" --body "$HERDR_ACTIVE_PANE_ID"'
@@ -156,63 +159,18 @@ type = "shell"
 command = 'printf "%s" "$HERDR_ACTIVE_PANE_CWD" | pbcopy && "${HERDR_BIN_PATH:-herdr}" notification show "Copied pane path" --body "$HERDR_ACTIVE_PANE_CWD"'
 description = "copy active pane path"
 
-[[keys.command]]
-key = "prefix+u"
-type = "popup"
-command = "herdr-picker run agents-unseen"
-description = "jump to agent, mark this pane unseen"
-width = "88%"
-height = "80%"
-
-[[keys.command]]
-key = "prefix+shift+u"
-type = "shell"
-description = "history back, mark this pane unseen"
-command = '''origin=$HERDR_ACTIVE_PANE_ID
-[ -n "$origin" ] || exit 0
-"${HERDR_BIN_PATH:-herdr}" plugin action invoke gjermundgaraba.herdr-history.back || exit 0
-python3 - "$origin" <<'PY'
-import json, os, socket, sys, time
-
-origin = sys.argv[1]
-
-def rpc(method, params):
-    with socket.socket(socket.AF_UNIX) as conn:
-        conn.connect(os.environ["HERDR_SOCKET_PATH"])
-        conn.sendall((json.dumps({"id": "back-unseen", "method": method, "params": params}) + "\n").encode())
-        return json.loads(conn.makefile().readline())
-
-# plugin.action.invoke returns when the plugin starts, not finishes: poll
-# until the back jump actually moves focus off the origin pane.
-deadline = time.monotonic() + 2
-while True:
-    focused = rpc("session.snapshot", {})["result"]["snapshot"].get("focused_pane_id")
-    if focused not in (None, origin):
-        error = rpc("pane.mark_unseen", {"pane_id": origin}).get("error") or {}
-        sys.exit(0 if not error or error.get("code") == "pane_not_idle" else 1)
-    if time.monotonic() >= deadline:
-        sys.exit(0)  # no jump landed (at oldest, or history inactive)
-    time.sleep(0.02)
-PY'''
-
-[[keys.command]]
-key = "prefix+m"
-type = "popup"
-command = "herdr-picker-move-pane.py"
-description = "move pane to tab"
-width = "88%"
-height = "80%"
-
 [ui.sound]
 enabled = false
 
 # BEGIN generated Herdr theme — edit theme/palette.ts
 [theme]
 name = "terminal"
-auto_switch = false
+auto_switch = true
+dark_name = "terminal"
+light_name = "terminal"
 
-[theme.custom]
-accent = "#ffd60a"
+[theme.custom.dark]
+accent = "#fb6d9c"
 panel_bg = "#282a27"
 surface0 = "#383c36"
 surface1 = "#383c36"
@@ -230,4 +188,24 @@ red = "#ff7992"
 blue = "#009aff"
 teal = "#00c9cb"
 peach = "#ff8200"
+
+[theme.custom.light]
+accent = "#d10069"
+panel_bg = "#faf8f4"
+surface0 = "#eeebe3"
+surface1 = "#eeebe3"
+surface_dim = "#eeebe3"
+active_row_bg = "#eeebe3"
+selection_bg = "#d6bcc6"
+overlay0 = "#5f665c"
+overlay1 = "#565d53"
+text = "#0f130e"
+subtext0 = "#565d53"
+mauve = "#7f1087"
+green = "#006400"
+yellow = "#6e5200"
+red = "#a10036"
+blue = "#0052c8"
+teal = "#00666e"
+peach = "#a34700"
 # END generated Herdr theme
