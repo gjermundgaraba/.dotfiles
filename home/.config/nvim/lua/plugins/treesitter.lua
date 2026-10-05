@@ -6,6 +6,10 @@ add({
     version = "main",
   },
   {
+    src = "https://github.com/MeanderingProgrammer/render-markdown.nvim",
+    version = "main",
+  },
+  {
     src = "https://github.com/kylechui/nvim-surround",
     version = vim.version.range "^4",
   },

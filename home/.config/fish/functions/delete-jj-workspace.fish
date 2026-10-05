@@ -1,5 +1,5 @@
 function delete-jj-workspace --description 'Delete the current jj workspace after safety checks'
-    set -l workspaces_base /Users/gg/code/jj-ws
+    set -l workspaces_base $HOME/code/jj-ws
 
     if set -q JJ_WORKSPACES_BASE
         set workspaces_base $JJ_WORKSPACES_BASE

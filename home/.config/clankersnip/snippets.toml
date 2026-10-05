@@ -45,29 +45,13 @@ args = [{ name = "tag" }]
 [[snippet]]
 title = "grilling"
 text = """
-Interview me relentlessly until we reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
+Interview me thoroughly until we agree on the goal, scope, and design. Track decisions and their dependencies as a design tree.
 
-Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
+Ask manageable batches of numbered questions whose prerequisites are settled. For each, give your recommended answer, relevant choices, and significant tradeoffs, especially added complexity. Wait for my answers before asking dependent questions.
 
-Each question should be formatted like so:
+Look up accessible facts yourself; delegate when useful. Bring design decisions to me rather than silently choosing for me.
 
-```
-❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
-<!-- IF MULTIPLE CHOICES, _ALSO_ LIST THEM HERE LIKE THIS: -->
-- a: <choice a>
-- b: <choice b>
-etc
-
-➡️ <your recommended answer>
-```
-
-Each round the answers reshapes the tree — settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
-
-Finding _facts_ is your job, never mine! When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent to find it — don't ask me for anything you could look up yourself. The _decisions_ are mine — put each to me and wait.
-
-The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until I confirm we have reached a shared understanding.
-
-Whenever a specific choice has important tradeoffs that would increase complexity significantly, note that.
+Continue until the decisions needed for the agreed scope are settled and deferred questions are explicit. Summarize our shared understanding and ask for confirmation before acting.
 """
 
 [[snippet]]
@@ -79,7 +63,7 @@ Ask a few concise, numbered questions per round, each with your recommended answ
 
 Look up facts yourself. Use sensible defaults for minor details and briefly state any assumptions that matter.
 
-Once the important decisions are settled, summarize our shared understanding and ask for confirmation before acting. Don't keep digging just to cover every possible branch.
+Once the important decisions are settled, summarize our shared understanding and ask for confirmation before acting.
 """
 
 [[snippet]]
@@ -87,49 +71,7 @@ title = "review review"
 text = """
 {snippet:· agent handoff}
 
-Validate every substantive finding against the relevant code, tests, documentation, and runtime behavior. Gather any context needed to make an informed judgment.
-
-Take an adversarial stance: the reviewer may be wrong, lack context, or propose work that is not worthwhile. Do not assess the review's severity or classification labels.
-
-For every finding:
-- Steelman the case for fixing it.
-- Steelman the case for dismissing it.
-- Give a verdict: **Fix**, **Partial**, or **Dismiss**.
-- Use **Partial** when only part of a composite finding is valid, and state exactly which part.
-- For subjective findings, give your own judgment.
-- Evaluate whether the underlying issue warrants change, not whether the reviewer's proposed solution is correct.
-
-Use this output structure:
-
-# Validation result
-
-Briefly state what was validated, followed by:
-- Finding verdict counts.
-- Any important scope qualifications.
-- Confirmation that no files were changed.
-
-Define the verdict meanings in one short paragraph.
-
-## Important reviewer corrections
-
-List only material factual errors, unsupported claims, or scope corrections. Omit this section if there are none.
-
-# Findings
-
-Preserve the review's original IDs, ordering, and natural section boundaries. Use one Markdown table per original section; if the review has no sections, use a single table:
-
-| ID | Steelman for fixing | Steelman for dismissing | Verdict |
-|---|---|---|---|
-
-Keep each cell concise but specific and evidence-based. Every substantive finding must appear exactly once.
-
-If the review includes separate cleanup proposals, architectural proposals, or an overall line-count/dependency claim, evaluate those in separate sections using the same table structure.
-
-End with:
-
-**Current state:** validation complete, no implementation started, no files changed.
-
-Do not propose specific solutions. Do not make edits or changes.
+{snippet:· review validation core}
 """
 args = [
   { name = "thing", default = "a review" },
@@ -146,21 +88,19 @@ $herdr agent: {clipboard}
 
 {snippet:· review validation core}
 """
-args = [{ name = "who", default = "reviewer" }]
 
 [[snippet]]
 title = "plan review"
 text = """
 {snippet:· agent handoff}
 
-Review the plan and assess whether its parts are correct and worth doing ({snippet:· adversarial stance}). Verify each finding against the code before presenting it.
+Assess whether the plan is correct and worth doing. {snippet:· adversarial stance} Verify code-related claims against the relevant implementation before presenting findings.
 
-Do not make any edits or changes.
+Do not edit files.
 """
 args = [
   { name = "thing", default = "a plan" },
   { name = "tag", default = "agent-plan" },
-  { name = "who", default = "planner" },
 ]
 
 [[snippet]]
@@ -173,7 +113,6 @@ text = """
 args = [
   { name = "thing", default = "a review on the plan" },
   { name = "tag", default = "agent-plan-review" },
-  { name = "who", default = "reviewer" },
 ]
 
 [[snippet]]
@@ -181,29 +120,34 @@ title = "response review"
 text = """
 {snippet:· agent handoff}
 
-Consider the response, review/validate it, and tell me whether anything in it is correct _and_ worth acting on ({snippet:· adversarial stance}). Give me your opinion and take based on your own judgement.
+Assess what is correct and worth acting on, using relevant evidence. {snippet:· adversarial stance} Give your own judgment on subjective claims.
+
+Do not edit files.
 """
 args = [
   { name = "thing", default = "a response" },
   { name = "tag", default = "agent-response" },
-  { name = "who", default = "agent" },
 ]
 
 [[snippet]]
 title = "solution finding"
 text = """
-How should we resolve this/these given that we are OK with churn and backwards compatibility is not a problem. We want to include cleanups (if any are mentioned) and durable, but simple and clean/elegant solutions that ideally (not a hard requirements if not applicable) reduce code and complexity.
-Dont make any changes yet."""
+Propose simple, durable solutions to these issues, including worthwhile cleanups. Churn and breaking compatibility are acceptable.
+Prefer reduced complexity, simpler solutions, design and code where feasible.
+Also suggest loosening up overly strict requirements if it can help with reducing complexity or open up the path for cleaner designs or less hand-rolled solutions.
+
+Do not edit files."""
 
 [[snippet]]
 title = "simplification audit"
 text = """
-Perform a read-only, repo-wide simplification audit. Find hand-rolled code that could be replaced by, in order of preference: standard-library or platform features, idiomatic language/framework patterns, existing dependencies, or popular well-maintained libraries (which you should search for).
+Perform a read-only, repo-wide simplification audit. Find hand-rolled code that could be replaced by, in order of preference: standard-library or platform features, idiomatic language/framework patterns, existing dependencies, or well-maintained libraries. Search for new libraries when a concrete opportunity warrants it.
+Report only worthwhile opportunities. For each, include file locations, the proposed replacement, expected benefit, tradeoffs, and confidence. Verify behavior and call sites first; reject changes that merely trade local code for dependency or abstraction overhead.
 
-Report only concrete, worthwhile opportunities. For each, include file locations, the proposed replacement, expected benefit, tradeoffs, and confidence. Verify behavior and call sites first; do not recommend changes that merely trade local code for dependency or abstraction overhead.
+Churn and breaking compatibility are acceptable.
+Also suggest loosening up overly strict requirements if it can help with reducing complexity or open up the path for cleaner designs or less hand-rolled solutions.
 
-Do not edit files.
-"""
+Do not edit files."""
 
 [[snippet]]
 title = "implemented. validate + review"
@@ -213,7 +157,9 @@ Implemented.
 {clipboard}
 </implementer-summary>
 
-Review the changes and verify that the implementation was fully completed
+Review the actual changes against the agreed requirements; identify incomplete work and defects. Treat the summary as context and verify its claims. State any material verification limits.
+
+Do not edit files.
 """
 
 [[snippet]]
@@ -224,274 +170,117 @@ $deslop
 {clipboard}
 </proposed-agent-plan>
 
-Deslop review scope: the proposed plan above. Review it for both correctness and slop against the actual code it touches (the agent might have made mistakes or missed some important context).
+Review the proposed plan for correctness and slop against the relevant code.
+
+Do not edit files.
 """
 
 [[snippet]]
 title = "concrete impl plan"
 text = """
-Turn this into a concrete implementation plan.
+Turn this into a concrete implementation plan for a prelaunch project: there are no users or deployments, so omit compatibility fallbacks and migrations.
 
-To avoid slop, make sure the plan takes these carefully into account:
-<anti-slop-guidelines>
-  <implementation>
-  - Don't consider backwards compatibility or add any fallbacks or migrations (there are no users or deployments to worry about)
-  - Don't overengineer solutions, or add _unnecessary_ abstraction or indirection where a simpler, cleaner and more clear solution would do
-  - Prefer elegant and readable code over comments when the code can speak for itself
-    - Use clear naming and structure so intent is obvious — don't paper over confusing code with comments
-  - Don't add defensive guards or null checks for states that are unlikely to happen
-  - Don't add unnecessary type casts, aliases, or redefinitions — respect the existing source of truth
-  - Don't leave placeholder logic, debug leftovers, or deprecated paths behind
-  - Keep tests focused on meaningful behavior; skip low-value tests and prefer direct coverage over mocks.
-  - Trust internal code and framework guarantees; only test our own code.
-  </implementation>
-  <design>
-  - Avoid shallow abstractions — if an interface is as complex as its implementation, inline it
-  - Respect module boundaries — don't reach past a module's public API or dump unrelated code into "common"/shared modules
-  - Keep dependency direction clean — domain/core logic shouldn't depend on UI, transport, persistence, or framework details
-  - Avoid change amplification — if a small behavior change needs coordinated edits across many files, switches, or registries, the structure is wrong
-  - Translate errors at module boundaries so infrastructure errors (DB, HTTP, filesystem) don't leak raw through higher-level APIs
-  - Give mutable state a clear owner; don't create shared state that anyone can reach into
-  - Avoid temporal coupling — don't require implicit invocation order or objects that are invalid until some init/setup method runs
-  </design>
-</anti-slop-guidelines>
+Prefer simple, readable code and abstractions that reduce complexity. Respect existing sources of truth and module boundaries. Give mutable state a clear owner and make lifecycle requirements explicit. Isolate dependencies and translate errors where the boundary benefits callers; avoid layers that merely move complexity.
 
-The output must be a stand-alone handoff document that an independent agent implementer can execute without prior context. Include the relevant context explicitly rather than assuming the reader knows it.
+Rely on established internal invariants; validate untrusted inputs and handle relevant failure modes. Remove superseded paths and implementation leftovers. Test meaningful behavior and integrations, avoiding tests of library internals and unnecessary mocks.
 
-If there are scope questions or ambiguity that would materially change the implementation approach, ask me clarifying questions before presenting the final plan. Otherwise, proceed and state the assumptions clearly.
-Requirements for the plan:
-- Summarize the problem being solved and the target outcome.
-- Identify the relevant code areas, modules, or systems likely to be touched.
-- Break the work into ordered implementation steps (but no commits or PRs mentioned)
-- Call out important assumptions and decisions.
-- Include a focused testing/verification section.
-- Include any notable risks or non-goals only if they materially affect implementation.
-- Include any .md files that needs to be updated
-- Append the full `anti-slop-guidelines` section above verbatim under a `Constraints` heading
+Produce a standalone handoff an independent implementer can execute without prior context. Include:
+
+- The problem, target outcome, and relevant code areas.
+- Ordered implementation steps, without commit or PR planning.
+- Material decisions, assumptions, and implementation constraints.
+- Focused verification and relevant documentation updates.
+- Risks and non-goals only where they affect implementation.
+
+Ask about ambiguity that would materially change the approach before finalizing the plan; otherwise state reasonable assumptions. Do not implement the plan yet.
 """
 
 [[snippet]]
 title = "herdr impl"
 text = """
-implement this end-to-end now. make sure build, lints and tests pass.
+Implement this end-to-end and run the repository's required build, lint, and test checks.
 
-Then run 4 $herdr agent reviews. 2 codex with /review and 2 with this prompt:
-```
-$deslop $ponytail:ponytail-review
-scope: uncomitted changes
-```
+Then run four $herdr agent reviews of the uncommitted changes:
 
-review, validate and implement the findings that are valid and worth doing for this.
-then make sure build, lints and all tests pass again.
-Report the actual build, lint and test output in your summary; only claim they pass if you ran them in this session.
+- Two Codex /review passes: one focused on correctness and regressions, the other on interfaces, integration, and missing behavior.
+- Two using `$deslop $ponytail:ponytail-review`: one focused on local simplification, the other on architecture and ownership.
+
+Validate and deduplicate the findings, implement those that are valid and worthwhile, and rerun checks affected by the fixes. Continue until the agreed scope is complete and required checks pass, or report a concrete blocker.
+
+Summarize the commands and results, including output for failures or material qualifications. Only claim checks passed if you ran them in this session.
 """
 
 [[snippet]]
 title = "ultra deslop review"
 text = """
-$deslop $ponytail-audit
-Review scope: the entire repo.
-Also review for architecture best-practices, modern idiomatic best practices, design, etc focusing on where we can make the code simpler, more maintainable, more performant, etc.
-no edits."""
+$deslop
+Review the entire repo for correctness and worthwhile improvements to simplicity, maintainability, and performance. Ground architectural recommendations in concrete benefits.
+
+Do not edit files.
+"""
 
 [[snippet]]
 title = "code review"
 text = """
-You are acting as a reviewer for a proposed code change made by another engineer.
+Review {target} without editing files or generating a fix.
 
-Review target: {target}.
+Report every discrete, actionable issue introduced by the change that materially affects correctness, security, performance, or maintainability and warrants fixing at this repository's level of rigor. Verify the affected behavior; exclude speculative concerns, pre-existing issues, intentional changes, and trivial style. If no findings qualify, report none.
 
-Below are some default guidelines for determining whether the original author would appreciate the issue being flagged.
+Apply the project instructions relevant to changed files, respecting their scope and precedence. Cite a verified instruction file when its repository-specific guidance materially supports a finding; ordinary correctness findings need no rule citation.
 
-More specific guidelines, whether in project instruction files or in my own instructions, override these general ones.
-
-Here are the general guidelines for determining whether something is a bug and should be flagged.
-
-1. It meaningfully impacts the accuracy, performance, security, or maintainability of the code.
-2. The bug is discrete and actionable (i.e. not a general issue with the codebase or a combination of multiple issues).
-3. Fixing the bug does not demand a level of rigor that is not present in the rest of the codebase (e.g. one doesn't need very detailed comments and input validation in a repository of one-off scripts in personal projects)
-4. The bug was introduced in the change (pre-existing bugs should not be flagged).
-5. The author of the original change would likely fix the issue if they were made aware of it.
-6. The bug does not rely on unstated assumptions about the codebase or author's intent.
-7. It is not enough to speculate that a change may disrupt another part of the codebase, to be considered a bug, one must identify the other parts of the code that are provably affected.
-8. The bug is clearly not just an intentional change by the original author.
-
-When flagging a bug, you will also provide an accompanying comment.
-
-1. The comment should be clear about why the issue is a bug.
-2. The comment should appropriately communicate the severity of the issue. It should not claim that an issue is more severe than it actually is.
-3. The comment should be brief.
-4. Quote only the minimal code needed to locate or illustrate the issue, in inline code or a code block.
-5. The comment should clearly and explicitly communicate the scenarios, environments, or inputs that are necessary for the bug to arise. The comment should immediately indicate that the issue's severity depends on these factors.
-6. The comment's tone should be matter-of-fact and not accusatory or overly positive.
-7. The comment should be written such that the original author can immediately grasp the idea without close reading.
-
-Below are some more detailed guidelines that you should apply to this specific review.
-
-HOW MANY FINDINGS TO RETURN:
-
-Report every finding that meets the criteria above; if none does, report none.
-
-GUIDELINES:
-
-- Ignore trivial style unless it obscures meaning or violates documented standards.
-- Use one comment per distinct issue (or a multi-line range if necessary).
-
-## Repository Rule Attribution
-
-Use the root and scoped project instruction files applicable to changed files (e.g. `AGENTS.md`, `CLAUDE.md`, or configured fallback filenames), respecting normal project-document precedence. More-specific guidance wins on conflict, and user instructions about review scope or style take precedence.
-
-Review the diff independently and deduplicate findings by changed location and defect/remedy. A finding is rule-supported only when applicable guidance materially contributes repository-specific scope, an invariant, remedy, convention, or confirmation behavior beyond generic correctness advice. Do not omit ordinary findings or invent findings solely because a rule file exists.
-
-For each rule-supported final finding, verify the applicable project instruction file that supplies the rule, then include one compact reference to it in the finding body. Do not fabricate citations.
-
-At the beginning of the finding title, tag the bug with priority level. For example "[P1] Un-padding slices along wrong tensor dimensions". [P0] - Drop everything to fix. Blocking release, operations, or major usage. Only use for universal issues that do not depend on any assumptions about the inputs. [P1] - Urgent. Should be addressed in the next cycle. [P2] - Normal. To be fixed eventually. [P3] - Low. Nice to have.
-
-At the end of your findings, output an "overall correctness" verdict of whether or not the patch should be considered "correct".
-Correct implies that existing code and tests will not break, and the patch is free of bugs and other blocking issues.
-Ignore non-blocking issues such as style, formatting, typos, documentation, and other nits.
-
-OUTPUT FORMAT:
-
-For each finding:
+Use one finding per distinct issue:
 
 ### [Pn] <short imperative title>
 
-<body: one paragraph of valid Markdown explaining *why* this is a problem, citing files/lines/functions, with the code location>
+Give the precise file and line location and one concise, factual paragraph explaining the trigger and impact. Quote only code needed to illustrate the issue.
 
-Then finish with:
+Priorities:
 
-**Verdict: patch is correct | patch is incorrect** followed by a 1-3 sentence justification.
+- P0: Immediate action; blocks release, operations, or major usage regardless of input conditions.
+- P1: Urgent; address in the next cycle.
+- P2: Normal; fix eventually.
+- P3: Low priority.
 
-Do not generate a fix or make any edits.
+Finish with **Verdict: No blocking issues found | Blocking issues found**, a brief justification, and any material verification limits. Distinguish blocking defects from non-blocking findings; do not imply the review proves the absence of bugs.
 """
 args = [{ name = "target", default = "Uncommitted changes" }]
 
 [[snippet]]
 title = "aaron-audit"
 text = """
-Audit this entire codebase for materially useful simplifications in its data structures, state representation, control flow, algorithms, and ownership.
+Audit the entire codebase for materially useful simplifications in data structures, state representation, control flow, algorithms, and ownership.
 
-This is an audit-only exercise. Do not edit files, run tests, implement recommendations, commit, or push. Read-only inspection commands are allowed.
+Use read-only inspection commands. Do not edit files, run tests, implement recommendations, commit, or push. Keep the coverage checklist in agent context and the final response, not a file.
 
-You are the coordinator. Continue until the complete codebase has been reviewed and the final audit is validated.
+Inventory identifiable subsystems with concrete boundaries and key files. Inspect each subsystem's implementation, interfaces, major call sites, and existing tests. Record either recommendations or an explicit skip for each. Delegate bounded, non-overlapping reviews when useful; independently verify delegated findings before accepting them.
 
-1. Establish the coverage contract
+Look for invalid state combinations, duplicated branching or shape assumptions, unclear ownership, unnecessarily repeated transformations or lookups, and lifecycle or concurrency models that allow contradictory state. Prefer clear local code over abstractions that merely relocate complexity. Reject changes justified only by style, hypothetical extensibility, or minor line-count reduction.
 
-Inspect the repository and inventory every identifiable subsystem.
+For each recommendation, explain the current complexity, proposed simplification, and concrete benefit with file and line evidence. Include the smallest credible scope, material risks, required validation, and confidence.
 
-Give each subsystem:
+Before finishing, check coverage, verify findings against the current code, remove duplicates and weak recommendations, and resolve ownership overlaps. Use independent review where it helps resolve uncertainty. Continue until every identified subsystem is reviewed; disclose any inaccessible areas rather than claiming complete coverage.
 
-- a stable ID and descriptive name;
-- an exact ownership boundary;
-- its key implementation files;
-- relevant public interfaces, major call sites, and tests;
-- a status: queued, in review, recommend, or skip.
-
-Include frontend, backend, shared infrastructure, platform bridges, generated-contract ownership, and test/tooling infrastructure where materially relevant.
-
-Create one canonical scratchpad or report containing:
-
-- the subsystem inventory;
-- confirmed opportunities;
-- explicit skip decisions;
-- cross-cutting patterns;
-- duplicates and superseded findings;
-- final priorities and dependencies;
-- an audit log.
-
-Treat this inventory as the coverage contract. Do not assume broad catch-all rows prove coverage.
-
-2. Run bounded subsystem reviews
-
-Use fresh, read-only agents where available. Give every worker one distinct subsystem with an exact, non-overlapping ownership boundary.
-
-Run as many workers in parallel as you can actively coordinate, keep working while they run, and let slow workers finish.
-
-Each worker receives this brief:
-
-Review the assigned subsystem for materially useful simplifications in its data structures, state representation, or organizing model.
-
-Inspect its implementation, public interfaces, major call sites, and existing tests. Stay within the assigned ownership boundary. You may identify cross-subsystem concerns, but do not expand the scope to solve them.
-
-Look for:
-
-- scattered booleans or nullable fields that permit invalid combinations and should become a state machine or discriminated union;
-- repeated assumptions about object shape that need a shared typed model;
-- duplicated branching that a small map, registry, reducer, or command model would remove;
-- unclear state or behavior ownership that a small module boundary would clarify;
-- repeated scans, transformations, or lookups where a more appropriate collection or index would materially simplify behavior;
-- lifecycle, concurrency, or async states whose representation permits stale or contradictory state.
-
-Do not force an abstraction. Prefer boring local code when it is already clear.
-
-Do not recommend changes solely for stylistic consistency, hypothetical extensibility, minor line-count reduction, or moving existing branching behind a new type.
-
-Return only the opportunities that clearly meet the threshold, most material first. If none does, return `skip`.
-
-For every recommendation, provide:
-
-1. Verdict: recommend or skip.
-2. Evidence with exact file and line references.
-3. Current complexity or invalid states.
-4. Proposed representation and why it is simpler.
-5. Smallest credible implementation scope, including affected files and interfaces.
-6. Regression risks and migration concerns.
-7. Existing and additional validation required.
-8. Confidence: high, medium, or low.
-
-3. Validate and synthesize
-
-The coordinator must independently verify every finding against the current repository before accepting it.
-
-Reject, narrow, or demote recommendations that are vague, duplicate another finding, misunderstand intentional semantics, or merely relocate complexity.
-
-Record skips as completed coverage. Deduplicate overlapping findings and assign each accepted recommendation to one authoritative subsystem.
-
-Continue opening bounded review batches until every inventory row is complete.
-
-4. Audit the audit
-
-Before finishing, run fresh independent passes for:
-
-- repository coverage and missing subsystem boundaries;
-- duplication and ownership overlap;
-- materiality and over-abstraction;
-- schema completeness;
-- dependency-aware priority ranking.
-
-If the coverage pass finds a real omission, add an explicit subsystem row and audit it. Do not hide it by broadening a previously completed boundary.
-
-Rank the final recommendations by concrete impact, confidence, implementation effort, blast radius, and prerequisites. Identify the best first implementation slices.
-
-The audit is complete only when:
-
-- every identifiable subsystem has been reviewed;
-- every subsystem has a recommendation or explicit skip;
-- every finding has complete evidence, scope, risk, and validation fields;
-- duplicates and weak abstractions have been removed;
-- priorities and dependencies are internally consistent;
-- the repository remains unchanged."""
-
+Return the coverage checklist and recommendations ranked by impact, confidence, effort, blast radius, and dependencies. Identify useful first implementation slices.
+"""
 
 [[snippet]]
 title = "squash to main"
 text = """
-We're done here. Land this worktree's changes onto the local main branch as a single squashed commit:
+Land this worktree's changes onto the local main branch as a single squashed commit:
 
-1. Commit everything in this worktree to its branch if anything uncomitted is left.
-2. Find the main checkout with `git worktree list`; confirm it's on main and clean — if dirty, stop and report.
-3. From there (`git -C <path> ...`), run `git merge --squash <worktree-branch>`, resolve any conflicts, and create ONE commit with a message summarizing the entire change.
+1. Commit any remaining changes belonging to this task on the worktree branch. If unrelated changes prevent a clean task-only squash, stop and report.
+2. Find the main checkout with `git worktree list`; confirm it is on main and clean. If dirty, stop and report.
+3. From that checkout (`git -C <path> ...`), run `git merge --squash <worktree-branch>`, resolve conflicts, and create one commit summarizing the entire change.
 4. Verify with `git -C <path> log -1 --stat`.
 
-Do not push. Do not delete the worktree or its branch.
+Do not push or delete the worktree or its branch.
 """
 
 # --- fragments (· prefix): included via {snippet:...}, args declared by consumers ---
 
 [[snippet]]
 title = "· adversarial stance"
-text = "but make sure to take an adversarial stance instead of just accepting them as correct or worth fixing - the {who} might be wrong or miss some important context"
+text = "Assess independently; the supplied analysis may be incorrect, incomplete, or not worth acting on."
 
 [[snippet]]
 title = "· agent handoff"
@@ -504,22 +293,20 @@ We got {thing} from another agent:
 [[snippet]]
 title = "· review validation core"
 text = """
-Verify each finding against the code and assess whether it is correct and worth acting on ({snippet:· adversarial stance}), then make an argument for each finding: fix or dismiss. Make a steelman argument for both sides. Do not review the classification or severity rankings themselves - only whether the findings are real and worthwhile issues to consider doing something about.
-For findings that are not correctness issues, but more subjective, give your own opinion based on your own judgement (gathering any relevant context you need to make a judgement).
+Validate every substantive finding against relevant evidence. {snippet:· adversarial stance} Evaluate whether the underlying issue warrants change, independently of the proposed solution. Give your own judgment on subjective findings; do not assess severity or classification labels.
 
-Do not propose any specific solutions yet. Do not make any edits or changes."""
+Preserve original IDs, order, and section boundaries. Cover each finding once, giving concise, evidence-based steelman arguments for fixing and dismissing it, followed by **Fix**, **Partial**, or **Dismiss**. Use **Partial** when only part of a finding is valid and specify which part. Note material factual corrections and verification limits.
+
+Do not propose specific solutions or edit files.
+"""
 
 [[snippet]]
 title = "deslop review"
 text = """
 $deslop
-Review {scope} for correctness, slop, over-engineering, and best practices.
-Also review for architecture best-practices, modern idiomatic best practices, design, etc focusing on where we can make the code simpler, more maintainable, or if there are potentially unecessary strictness/invariants for the product."""
-args = [{ name = "scope", default = "uncomitted changes", separator = "," }]
+Review {scope} for correctness and worthwhile simplifications in code and architecture. 
+Identify concrete opportunities to improve maintainability, reduce hand-rolled solution and product constraints that are unnecessarily restrictive.
+Do not assume all requirements and special cases need to be maintained, especially if removing them opens up opportunities.
 
-# [[snippet]]
-# title = ""
-# text = """
-#
-# """
-#
+Do not edit files."""
+args = [{ name = "scope", default = "uncommitted changes" }]

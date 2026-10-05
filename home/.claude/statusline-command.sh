@@ -11,6 +11,7 @@ input=$(cat)
   IFS= read -r output_style
   IFS= read -r five_pct
   IFS= read -r week_pct
+  IFS= read -r used_tokens
 } < <(jq -r '
   .workspace.current_dir // .cwd // "",
   .model.display_name // "",
@@ -18,8 +19,18 @@ input=$(cat)
   (.effort.level // ""),
   (.output_style.name // ""),
   (.rate_limits.five_hour.used_percentage // ""),
-  (.rate_limits.seven_day.used_percentage // "")
+  (.rate_limits.seven_day.used_percentage // ""),
+  (.context_window.total_input_tokens // "")
 ' <<<"$input")
+
+# Claude Code doesn't expose its auto-compact window here, so read the user
+# setting (an integer token count). Unset keeps the model-window percentage.
+compact_window=$(jq -r '.autoCompactWindow | numbers' "$HOME/.claude/settings.json" 2>/dev/null)
+
+if [ -n "$compact_window" ] && [ "$compact_window" -gt 0 ] && [ -n "$remaining" ] && [ -n "$used_tokens" ]; then
+  remaining=$(( 100 - used_tokens * 100 / compact_window ))
+  [ "$remaining" -lt 0 ] && remaining=0
+fi
 
 # ANSI helpers — no colors, weight/style only
 reset=$'\033[0m'
@@ -51,7 +62,7 @@ if [ -n "$model" ]; then
   segments+=("${dim}󰭆 ${reset}${model}")
 fi
 
-# Context remaining — phrased as "left" so the number is unambiguous at a glance,
+# Context remaining (until auto-compact when a window is set) — phrased as "left" so the number is unambiguous at a glance,
 # curly underline as a low-context warning once less than 25% remains
 if [ -n "$remaining" ]; then
   rem_int=$(printf "%.0f" "$remaining")
@@ -59,6 +70,16 @@ if [ -n "$remaining" ]; then
     ctx_val="${curly_ul}${rem_int}%${reset} left"
   else
     ctx_val="${rem_int}% left"
+  fi
+  # Current context size, compacted to one decimal (71234 -> 71.2k, 1250000 -> 1.3M)
+  if [ -n "$used_tokens" ]; then
+    used_fmt=$(awk -v n="$used_tokens" 'BEGIN{
+      if (n >= 999950) { s = sprintf("%.1f", n/1000000); u = "M" }
+      else if (n >= 1000) { s = sprintf("%.1f", n/1000); u = "k" }
+      else { s = n; u = "" }
+      sub(/\.0$/, "", s); print s u
+    }')
+    ctx_val="${used_fmt}, ${ctx_val}"
   fi
   segments+=("${dim}ctx ${reset}${ctx_val}")
 fi

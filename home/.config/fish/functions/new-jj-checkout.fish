@@ -5,7 +5,7 @@ function new-jj-checkout --description 'Create or refresh a jj workspace for che
     end
 
     set -l branch_name $argv[1]
-    set -l workspaces_base /Users/gg/code/jj-ws
+    set -l workspaces_base $HOME/code/jj-ws
 
     if set -q JJ_WORKSPACES_BASE
         set workspaces_base $JJ_WORKSPACES_BASE

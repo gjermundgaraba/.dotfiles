@@ -53,29 +53,28 @@ abbr -a telpi "cd ~/.pi/agent/"
 
 ## configs
 abbr -a cfgclaude "nvim ~/.claude/settings.json"
-abbr -a cfgpi "cd ~/.pi/agent/ && nve"
+abbr -a cfgpi "cd ~/.pi/agent/ && nvim"
 
 ## misc
-abbr -a codx-luna "codex -c 'model_reasoning_effort=xhigh' --model gpt-5.6-luna"
-abbr -a codx-terra "codex -c 'model_reasoning_effort=xhigh' --model gpt-5.6-terra"
-abbr -a codx-ultra "codex -c 'model_reasoning_effort=ultra' --model gpt-5.6-sol"
+abbr -a cb clankerbox
+alias librarian-checkout "$HOME/.agents/skills/librarian/checkout.sh"
+abbr -a codx-luna "codex -c 'model_reasoning_effort=xhigh' --model gpt-6.1-luna"
+abbr -a codx-ultra "codex -c 'model_reasoning_effort=ultra' --model gpt-6-astra"
+
 abbr -a oc "opencode"
+
 abbr -a cc "claude"
 abbr -a cc-opus "claude --model opus"
 abbr -a cc-sonnet "claude --model sonnet"
+abbr -a cc-fable "claude --model fable"
 abbr -a cc-workflows 'claude --settings \'{"disableWorkflows": false}\''
+abbr -a cc-artifacts 'claude --settings \'{"enableArtifact": true}\''
 
 ### pi
-abbr -a pi-cheap "pi --model openai-codex/gpt-5.6-luna --thinking xhigh"
-abbr -a pi-fast "pi --model openai-codex/gpt-5.6-luna --thinking low"
-abbr -a pi-terra "pi --model openai-codex/gpt-5.6-terra --thinking xhigh"
-abbr -a pi-grok "pi --model xai/grok-4.5 --thinking high"
-
-
-## actua aliases
-alias pa-agent "cd /Users/gg/.pa-agent && ./start.fish"
-alias restart-process-composer "/Users/gg/.config/process-compose/restart.sh"
-alias librarian-checkout "/Users/gg/.agents/skills/librarian/checkout.sh"
+abbr -a pi-grok "pi --model xai/grok-4.6 --thinking xhigh"
+abbr -a pi-glm "pi --model zai/glm-5.3 --thinking max"
+abbr -a pi-flash "pi --model radius/deepseek-v4.1-flash --thinking high"
+abbr -a pi-astra "pi --model openai/gpt-6-astra --thinking high"
 
 if test "$PWD" = "$HOME"
     fastfetch

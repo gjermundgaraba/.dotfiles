@@ -33,6 +33,8 @@ macos-titlebar-style = tabs
 ## Fonts
 font-size = 15
 font-family = BerkeleyMono Nerd Font Mono
+# Machine-local font-codepoint-map entries for locally built glyph fonts.
+config-file = ?local
 # Animated Thinking Orbs glyphs — see clanker-stuff docs/thinking-orbs-font.md
 # font-codepoint-map = U+10E000-U+10FFFF=Thinking Orbs 3
 

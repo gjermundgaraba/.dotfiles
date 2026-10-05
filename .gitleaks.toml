@@ -8,3 +8,9 @@ condition = "AND"
 paths = ['''^home/\.config/ghostty/config$''']
 regexTarget = "line"
 regexes = ['''^\s*keybind\s*=\s*chain=equalize_splits\s*$''']
+
+[[rules]]
+id = "pi-device-id"
+description = "Pi writes a machine identifier into its settings"
+regex = '''"deviceId"\s*:'''
+path = '''^home/\.pi/agent/settings\.json$'''

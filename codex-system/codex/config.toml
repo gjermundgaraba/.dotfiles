@@ -1,3 +1,5 @@
+developer_instructions = "When selecting a deferred tool from ALL_TOOLS, inspect its full name and argument declaration, then invoke its exact full identifier. For programmatic selection, require exactly one exact full-name match. Do not use broad substring matching or first-match fallbacks: a namespace may contain the operation name. If the intended tool remains unclear, inspect the candidates instead of guessing."
+
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
@@ -7,10 +9,6 @@ suppress_unstable_features_warning = true
 mcp_oauth_callback_port = 5_555
 service_tier = "fast"
 approvals_reviewer = "user"
-
-[agents]
-max_concurrent_threads_per_session = 10
-max_depth = 2
 
 [tui]
 status_line = [
@@ -42,10 +40,3 @@ command = "/Applications/1Password.app/Contents/MacOS/onepassword-mcp"
 
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"
-
-[otel]
-environment = "local"
-
-[otel.trace_exporter."otlp-http"]
-endpoint = "http://127.0.0.1:5899/v1/traces"
-protocol = "binary"

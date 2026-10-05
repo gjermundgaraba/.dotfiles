@@ -16,7 +16,7 @@ function new-jj-workspace --description 'Create a new jj workspace for the curre
         set workspace_revset $argv[2]
     end
 
-    set -l workspaces_base /Users/gg/code/jj-ws
+    set -l workspaces_base $HOME/code/jj-ws
 
     if set -q JJ_WORKSPACES_BASE
         set workspaces_base $JJ_WORKSPACES_BASE

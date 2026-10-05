@@ -12,7 +12,9 @@ add({
 })
 
 local fff = require "fff"
-fff.setup {}
+fff.setup {
+  follow_symlinks = true,
+}
 
 local fzf = require "fzf-lua"
 local map = require "utils.keymapper"
@@ -26,9 +28,11 @@ fzf.setup {
   },
   grep = {
     hidden = true,
+    follow = true,
   },
   files = {
     hidden = true,
+    follow = true,
   },
 }
 

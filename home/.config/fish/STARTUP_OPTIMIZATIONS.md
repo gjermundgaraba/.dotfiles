@@ -3,20 +3,6 @@
 This configuration favors synchronous correctness for environment managers and
 caches only generated Fish source that is stable between tool upgrades.
 
-## Result
-
-Representative warm medians from `fish -ic exit`:
-
-| Working directory | Before | After |
-|---|---:|---:|
-| `~/.config/fish` | ~219 ms | ~71 ms |
-| `$HOME` | ~267 ms | ~119 ms |
-| Fish without configuration | ~11 ms | ~11 ms |
-
-The `$HOME` result includes `fastfetch`, which intentionally runs only when a
-shell starts there. These measurements include Fish configuration but exclude
-terminal launch and prompt drawing.
-
 ## Changes made
 
 ### Removed repeated work
@@ -42,12 +28,16 @@ terminal launch and prompt drawing.
 | Carapace | Completion registrations | Completion queries when Tab is used |
 | Atuin | Functions, bindings, and event hooks | Per-shell Atuin session UUID |
 | Zoxide | Functions and `PWD` hook | Directory database updates |
-| mise | Activation functions and hooks | `mise hook-env` project evaluation |
 | direnv | Fish event hooks | `direnv export` environment evaluation |
 
-`conf.d/mise-activate.fish` and `conf.d/direnv.fish` intentionally use the same
-basenames as Homebrew's vendor files. Fish gives user `conf.d` files precedence,
-so these cached equivalents replace rather than duplicate the vendor hooks.
+`conf.d/direnv.fish` intentionally uses the same basename as Homebrew's vendor
+file. Fish gives user `conf.d` files precedence, so it replaces rather than
+duplicates the vendor hook.
+
+mise is activated by Homebrew's vendor hook, uncached. Do not cache
+`mise activate fish`: its output embeds the generating process's PATH, and
+replaying it drops PATH entries added since. Vite+ owns the JavaScript toolchain
+(see `~/.config/mise/config.toml`) and is sourced in `config.fish`.
 
 ## Cache invalidation and safety
 

@@ -1,0 +1,4 @@
+# Vite+ owns the JavaScript toolchain. Keep mise for non-JavaScript tools.
+# This also prevents project-level mise tool declarations from competing.
+[settings]
+disable_tools = ["node", "npm", "pnpm", "yarn", "bun"]

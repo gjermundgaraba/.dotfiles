@@ -53,6 +53,12 @@ type = "plugin_action"
 command = "gjermundgaraba.herdr-move-pane.move"
 description = "Move pane to tab"
 
+[[keys.command]]
+key = "prefix+shift+g"
+type = "plugin_action"
+command = "gjermundgaraba.herdr-space-groups.assign"
+description = "Set space group"
+
 # Forward these chords into Vim/Neovim when focused; otherwise move between Herdr panes.
 [[keys.command]]
 key = "ctrl+h"
@@ -97,7 +103,7 @@ agent_panel_sort = "priority"
 status_indicators = "dots"
 [ui.sidebar.spaces]
 rows = [
-  ["state_icon", { token = "$numbered_workspace", bold = true, dim = false }],
+  ["state_icon", { token = "$numbered_workspace", bold = true, dim = false }, { token = "$space_priority", fg = "#e5c07b", dim = false, separator_before = " " }],
   ["$branch_line", { token = "$git_dirty", fg = "#e5c07b", dim = false, separator_before = " " }, "git_status"],
 ]
 

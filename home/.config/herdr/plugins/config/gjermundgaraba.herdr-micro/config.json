@@ -21,9 +21,7 @@
           "default": null
         }
       },
-      "2": {
-        "action": "diff"
-      },
+      "2": null,
       "3": {
         "byAgent": {
           "codex": {
@@ -116,8 +114,8 @@
     "joystick": {
       "engageDistance": 0.75,
       "releaseDistance": 0.3,
-    "up": null,
-    "down": null,
+      "up": null,
+      "down": null,
       "left": {
         "action": "focus-pane",
         "direction": "left"

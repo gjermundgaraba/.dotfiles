@@ -1,48 +1,47 @@
 {
-  "lastChangelogVersion": "0.87.0",
+  "lastChangelogVersion": "1.0.2",
   "packages": [
     "npm:@clanker-stuff/ask-question@0.1.0",
-    "npm:@clanker-stuff/stash@0.1.0",
-    "npm:@clanker-stuff/timer@0.1.0",
-    "npm:@clanker-stuff/mcp@0.1.0",
     "npm:@clanker-stuff/dollah-skills@0.1.0",
-    "/Users/gg/ws/pers/clanker-stuff/pi/extensions/history",
+    "npm:@clanker-stuff/history@0.1.0",
     "npm:@clanker-stuff/shell-resume-history@0.1.0",
-    {
-      "source": "npm:@clanker-stuff/side@0.1.0",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
     "npm:@clanker-stuff/plannotator@0.2.0",
     "npm:@clanker-stuff/footer@0.1.0",
     "npm:@clanker-stuff/usage@0.1.0",
-    "npm:@clanker-stuff/subagents@0.1.0",
-    "npm:@clanker-stuff/codex-provider@0.1.0",
+    {
+      "source": "npm:@clanker-stuff/subagents@0.1.0",
+      "extensions": [
+        "+index.ts"
+      ]
+    },
     "npm:@clanker-stuff/shape-spinner@0.1.0",
     "npm:@earendil-works/pi-radius",
-    "npm:@clanker-stuff/tool-picker@0.1.0",
-    "npm:@clanker-stuff/background-tasks@0.1.0",
+    {
+      "source": "npm:@clanker-stuff/background-tasks@0.1.0",
+      "extensions": [
+        "+index.ts"
+      ]
+    },
     "npm:@clanker-stuff/context@0.1.0",
-    "npm:@clanker-stuff/recap@0.1.0",
     "npm:@clanker-stuff/vim@0.1.0",
-    "npm:@clanker-stuff/border-status@0.1.0",
-    "npm:@clanker-stuff/user-attention@0.1.0"
+    "npm:@clanker-stuff/user-attention@0.1.0",
+    "npm:@clanker-stuff/turn-recap@0.1.0"
   ],
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-6-astra",
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-6.1-sol",
+  "defaultTools": [
+    "+codemode"
+  ],
+  "codemode": {
+    "mode": "only"
+  },
+  "defaultThinkingLevel": "high",
   "modelThinkingLevels": {
-    "openai-codex/gpt-6-astra": "medium",
     "xai/grok-4.6": "xhigh",
     "radius/deepseek-v4.1-flash": "high"
   },
   "treeFilterMode": "no-tools",
   "enabledModels": [
-    "openai-codex/gpt-6-astra",
-    "openai-codex/gpt-5.6-luna",
-    "openai-codex/gpt-5.6-sol",
-    "openai-codex/gpt-5.6-terra",
     "opencode-go/kimi-k3",
     "github-copilot/grok-4.6",
     "xai/grok-4.6",
@@ -52,7 +51,9 @@
     "radius/cheap",
     "radius/balanced",
     "radius/precise",
-    "openrouter/auto"
+    "openrouter/auto",
+    "openai/gpt-6.1-sol",
+    "openai/gpt-6-astra"
   ],
   "showHardwareCursor": true,
   "terminal": {

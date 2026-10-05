@@ -1,43 +1,36 @@
 {
-  "enabled": true,
   "iconFamily": "nerd",
   "rows": [
     {
-      "center": [],
       "left": [
         "footer.cwd",
         "footer.git"
       ],
       "right": [
         "footer.model",
-        "clanker.codex.code-mode",
-        "clanker.codex.fast",
         "footer.thinking"
       ]
     },
     {
-      "center": [],
       "left": [
         "footer.context"
       ],
       "right": [
-        "clanker.usage.active"
+        "status:usage"
       ]
     },
     {
-      "center": [],
       "left": [
-        "footer.widgets",
         "footer.statuses"
       ],
       "right": []
     }
   ],
-  "separator": "·",
-  "version": 1,
-  "widgets": {
-    "clanker.usage.details": {
-      "enabled": false
-    }
-  }
+  "border": [
+    "status:ask-question",
+    "status:vim",
+    "status:background-tasks.pending",
+    "status:background-tasks.active"
+  ],
+  "hidden": []
 }

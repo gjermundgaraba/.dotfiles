@@ -39,7 +39,7 @@ Project-specific, private, and manually installed tools stay outside these manif
 
 ## Local state
 
-Most managed files are symlinked individually from this repository so unmanaged runtime data stays in local directories. The macOS LaunchAgent is copied instead because launchd may ignore symlinks. Skill packages are linked as complete directories because Codex does not discover symlinked `SKILL.md` files. Codex's durable CLI defaults are linked separately at `/etc/codex/config.toml`; its mutable user config remains local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Machine-specific Fish work helpers and browser-tunnel functions remain as regular local files outside this repository. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
+Most managed files are symlinked individually from this repository so unmanaged runtime data stays in local directories. The macOS LaunchAgent is copied instead because launchd may ignore symlinks. Skill packages are linked as complete directories because Codex does not discover symlinked `SKILL.md` files. Codex's durable CLI defaults are linked separately at `/etc/codex/config.toml`; its mutable user config remains local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Cursor user rules live in `~/.cursor/rules`; only reviewed `.mdc` files are tracked, and plugin-generated rules stay local. Claude Code's `~/.claude/settings.json` is shared, so its hook commands use `$HOME`, and hooks for optional tools skip themselves when the tool is not installed; only reviewed hook scripts are tracked, and tool-installed hooks such as Herdr's stay local. Machine-specific Fish work helpers and browser-tunnel functions remain as regular local files outside this repository. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
 
 - Fish universal variables, generated completions, and installer environment snippets
 - Ghostty's local Claude settings
@@ -58,3 +58,12 @@ Pi tracks npm package names in `settings.json`. During local extension developme
 ## Themes
 
 Edit `theme/palette.ts`, then run `node theme/build.ts`.
+
+Pi themes are generated from `theme/templates/pi.json` into
+`home/.pi/agent/themes/gg-{dark,light}.json`, alongside the Neovim, Ghostty,
+Fish, and Herdr themes. Do not edit generated themes directly.
+The same build writes the web tokens in `theme/web/`, published to npm as
+`@gjermundgaraba/gg-theme`. To release, bump `version` in
+`theme/web/package.json`, rebuild, and run `npm publish` from `theme/web`.
+After Stowing, select `gg-dark` or `gg-light` via Pi's `/settings`, or run
+`pi --use-theme gg-light/gg-dark` to follow terminal appearance.
