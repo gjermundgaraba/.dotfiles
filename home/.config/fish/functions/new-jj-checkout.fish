@@ -52,6 +52,4 @@ function new-jj-checkout --description 'Create or refresh a jj workspace for che
         cd $workspace_dir
         or return 1
     end
-
-    link-agents-md .
 end

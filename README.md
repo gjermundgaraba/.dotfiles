@@ -8,8 +8,8 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 2. Clone this repository to `~/.dotfiles`.
 3. Install the tracked Homebrew, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
 4. Enable the repository's commit checks: `git -C ~/.dotfiles config core.hooksPath .githooks`.
-5. Run `stow -R --no-folding -d ~/.dotfiles -t ~ home`.
-6. Run `mkdir -p ~/.codex/skills ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles -t ~ skills`.
+5. Run `stow -R --no-folding --ignore='^/\.config/nvim/\.agents/skills(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step.
+6. Run `mkdir -p ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles/home/.config/nvim/.agents -t ~/.config/nvim/.agents/skills skills`, then `mkdir -p ~/.codex/skills ~/.agents/skills ~/.claude/skills && stow -R -d ~/.dotfiles -t ~ skills`.
 7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
 8. Install the macOS LaunchAgent as a regular file because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/local.capslock-f20.plist ~/Library/LaunchAgents/local.capslock-f20.plist`.
 9. Load or reload the LaunchAgent after any previous instance finishes unloading:
@@ -36,6 +36,25 @@ Run the same Stow commands after moving, adding, or deleting managed files. `-R`
 ```
 
 Project-specific, private, and manually installed tools stay outside these manifests.
+
+## Skills
+
+`pr-comments` is the personal skill in `skills/.agents/skills/pr-comments/`.
+`skills/.claude/skills/pr-comments` links to the same source. Reusable skills,
+including `orchestrate`, belong in the `clanker-stuff` repository's `skills/`
+catalog. The Neovim-specific `update-neovim-plugins` skill lives beside its
+configuration in `home/.config/nvim/.agents/skills/`; setup step 6 links each
+complete skill folder rather than individual files.
+
+Stow owns the personal skill links in `~/.agents/skills/` and `~/.claude/skills/`.
+Reusable skills are linked directly from `clanker-stuff/skills/` into both host
+locations; they are not part of this Stow package. Codex discovers those skills
+through `~/.agents/skills/`, without duplicate installations in
+`~/.codex/skills/`. Parent skill directories must remain real directories, as
+ensured by setup step 6.
+
+Use `AGENTS.md` for instructions. Checkout helpers do not generate `CLAUDE.md`
+aliases.
 
 ## Local state
 

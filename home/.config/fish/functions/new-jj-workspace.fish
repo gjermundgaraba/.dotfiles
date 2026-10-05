@@ -53,6 +53,4 @@ function new-jj-workspace --description 'Create a new jj workspace for the curre
 
     cd $workspace_dir
     or return 1
-
-    link-agents-md .
 end

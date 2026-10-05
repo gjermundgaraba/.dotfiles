@@ -47,6 +47,4 @@ function new-git-checkout --description 'Clone origin into worktree base and swi
         git pull
         or return 1
     end
-
-    link-agents-md .
 end

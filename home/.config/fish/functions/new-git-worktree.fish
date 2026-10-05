@@ -48,6 +48,4 @@ function new-git-worktree --description 'Clone origin into a new worktree direct
 
     git switch -c $branch_name
     or return 1
-
-    link-agents-md .
 end

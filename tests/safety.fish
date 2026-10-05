@@ -6,18 +6,6 @@ function cleanup --on-event fish_exit
 end
 
 source $root/home/.config/fish/functions/delete-git-worktree.fish
-source $root/home/.config/fish/functions/link-agents-md.fish
-
-mkdir -p $tmp/links/{managed,foreign,broken}
-touch $tmp/links/{managed,broken}/AGENTS.md $tmp/links/foreign/README.md
-ln -s README.md $tmp/links/foreign/CLAUDE.md
-ln -s missing.md $tmp/links/broken/CLAUDE.md
-link-agents-md $tmp/links >/dev/null
-test (readlink $tmp/links/managed/CLAUDE.md) = AGENTS.md
-and test (readlink $tmp/links/foreign/CLAUDE.md) = README.md
-and test (readlink $tmp/links/broken/CLAUDE.md) = missing.md
-or exit 1
-
 git init --bare --quiet --initial-branch=main $tmp/origin.git
 git init --quiet --initial-branch=main $tmp/seed
 git -C $tmp/seed config user.email test@example.com
