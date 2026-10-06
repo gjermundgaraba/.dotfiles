@@ -49,44 +49,44 @@ mark_unread = "prefix+u"
 
 [[keys.command]]
 key = "prefix+m"
-type = "plugin_action"
+type = "plugin"
 command = "gjermundgaraba.herdr-move-pane.move"
 description = "Move pane to tab"
 
 [[keys.command]]
 key = "prefix+shift+g"
-type = "plugin_action"
+type = "plugin"
 command = "gjermundgaraba.herdr-space-groups.assign"
 description = "Set space group"
 
 # Forward these chords into Vim/Neovim when focused; otherwise move between Herdr panes.
 [[keys.command]]
 key = "ctrl+h"
-type = "plugin_action"
+type = "plugin"
 command = "vim-herdr-navigation.left"
 description = "Navigate left (Vim/Herdr)"
 
 [[keys.command]]
 key = "ctrl+j"
-type = "plugin_action"
+type = "plugin"
 command = "vim-herdr-navigation.down"
 description = "Navigate down (Vim/Herdr)"
 
 [[keys.command]]
 key = "ctrl+k"
-type = "plugin_action"
+type = "plugin"
 command = "vim-herdr-navigation.up"
 description = "Navigate up (Vim/Herdr)"
 
 [[keys.command]]
 key = "ctrl+l"
-type = "plugin_action"
+type = "plugin"
 command = "vim-herdr-navigation.right"
 description = "Navigate right (Vim/Herdr)"
 
 [[keys.command]]
 key = "prefix+f"
-type = "plugin_action"
+type = "plugin"
 command = "gjermundgaraba.herdr-fork-to-pane.fork"
 description = "fork agent into right pane"
 
@@ -127,8 +127,8 @@ version_check = false
 
 [[keys.command]]
 key = "prefix+s"
-type = "plugin_action"
-command = "gjermundgaraba.clankersnip.open"
+type = "plugin"
+command = "gjermundgaraba.clankersnip.palette"
 description = "snippets"
 
 [[keys.command]]
