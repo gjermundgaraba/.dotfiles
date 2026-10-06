@@ -113,7 +113,7 @@
     },
     "joystick": {
       "engageDistance": 0.75,
-      "releaseDistance": 0.3,
+      "releaseDistance": 0.4,
       "up": null,
       "down": null,
       "left": {
