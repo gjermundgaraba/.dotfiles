@@ -99,6 +99,7 @@ prompt_new_workspace_name = true
 show_agent_labels_on_pane_borders = true
 
 agent_panel_sort = "priority"
+agent_priority_tokens = ["space_priority"]
 
 status_indicators = "dots"
 [ui.sidebar.spaces]
@@ -106,6 +107,11 @@ rows = [
   ["state_icon", { token = "$numbered_workspace", bold = true, dim = false }, { token = "$space_priority", fg = "#e5c07b", dim = false, separator_before = " " }],
   ["$branch_line", { token = "$git_dirty", fg = "#e5c07b", dim = false, separator_before = " " }, "git_status"],
 ]
+
+[[ui.sidebar.spaces.pinned]]
+title = "Priority"
+token = "space_priority"
+fg = "#e5c07b"
 
 [ui.toast]
 delivery = "herdr"
