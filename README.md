@@ -7,7 +7,7 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 1. Install the Xcode Command Line Tools and [Homebrew](https://brew.sh/).
 2. Clone this repository to `~/.dotfiles`.
 3. Install the tracked Homebrew, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
-4. Enable the repository's commit checks: `git -C ~/.dotfiles config core.hooksPath .githooks`.
+4. Enable the repository's commit checks and the filter that keeps Pi's machine-written settings out of commits: `git -C ~/.dotfiles config core.hooksPath .githooks && git -C ~/.dotfiles config filter.pi-settings.clean "jq 'del(.deviceId, .lastChangelogVersion)'"`.
 5. Run `stow -R --no-folding --ignore='^/\.config/nvim/\.agents/skills(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step.
 6. Run `mkdir -p ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles/home/.config/nvim/.agents -t ~/.config/nvim/.agents/skills skills`, then `mkdir -p ~/.codex/skills ~/.agents/skills ~/.claude/skills && stow -R -d ~/.dotfiles -t ~ skills`.
 7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
@@ -39,16 +39,18 @@ Project-specific, private, and manually installed tools stay outside these manif
 
 ## Skills
 
-`pr-comments` is the personal skill in `skills/.agents/skills/pr-comments/`.
-`skills/.claude/skills/pr-comments` links to the same source. Reusable skills,
+Personal skills live in `skills/.agents/skills/`; each has a relative link of
+the same name in `skills/.claude/skills/`. Reusable skills,
 including `orchestrate`, belong in the `clanker-stuff` repository's `skills/`
 catalog. The Neovim-specific `update-neovim-plugins` skill lives beside its
 configuration in `home/.config/nvim/.agents/skills/`; setup step 6 links each
 complete skill folder rather than individual files.
 
 Stow owns the personal skill links in `~/.agents/skills/` and `~/.claude/skills/`.
-Reusable skills are linked directly from `clanker-stuff/skills/` into both host
-locations; they are not part of this Stow package. Codex discovers those skills
+Skills owned by other repositories are linked directly from their checkouts
+into both host locations and are not part of this Stow package: reusable skills
+from `clanker-stuff/skills/`, and the Herdr skill from the personal Herdr
+fork's `skills/herdr/`. Codex discovers those skills
 through `~/.agents/skills/`, without duplicate installations in
 `~/.codex/skills/`. Parent skill directories must remain real directories, as
 ensured by setup step 6.
@@ -58,7 +60,7 @@ aliases.
 
 ## Local state
 
-Most managed files are symlinked individually from this repository so unmanaged runtime data stays in local directories. The macOS LaunchAgent is copied instead because launchd may ignore symlinks. Skill packages are linked as complete directories because Codex does not discover symlinked `SKILL.md` files. Codex's durable CLI defaults are linked separately at `/etc/codex/config.toml`; its mutable user config remains local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Cursor user rules live in `~/.cursor/rules`; only reviewed `.mdc` files are tracked, and plugin-generated rules stay local. Claude Code's `~/.claude/settings.json` is shared, so its hook commands use `$HOME`, and hooks for optional tools skip themselves when the tool is not installed; only reviewed hook scripts are tracked, and tool-installed hooks such as Herdr's stay local. Machine-specific Fish work helpers and browser-tunnel functions remain as regular local files outside this repository. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
+Most managed files are symlinked individually from this repository so unmanaged runtime data stays in local directories. The macOS LaunchAgent is copied instead because launchd may ignore symlinks. Skill packages are linked as complete directories because Codex does not discover symlinked `SKILL.md` files. Codex's durable CLI defaults are linked separately at `/etc/codex/config.toml`; its mutable user config remains local. VS Code and Cursor keep local profile symlinks to the shared files in `~/.config/vscode-settings/config`. Cursor user rules live in `~/.cursor/rules`; only reviewed `.mdc` files are tracked, and plugin-generated rules stay local. Claude Code's `~/.claude/settings.json` is shared. Hook entries written by hand use `$HOME` and skip themselves when their optional tool is not installed; entries a tool writes itself, such as tldraw offline's, are kept as written because the tool rewrites them. Only reviewed hook scripts are tracked, and tool-installed hook scripts such as Herdr's stay local. Pi writes a device identifier and its last-seen changelog version into the shared `settings.json`; the `pi-settings` filter from setup step 4 strips both from commits, and the Gitleaks `pi-device-id` rule blocks the identifier in clones without the filter. Machine-specific Fish work helpers and browser-tunnel functions remain as regular local files outside this repository. Machine-local files that land inside the checkout are excluded by `.gitignore`, including:
 
 - Fish universal variables, generated completions, and installer environment snippets
 - Ghostty's local Claude settings

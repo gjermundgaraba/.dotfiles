@@ -1,5 +1,4 @@
 {
-  "lastChangelogVersion": "1.0.2",
   "packages": [
     "npm:@clanker-stuff/ask-question@0.1.0",
     "npm:@clanker-stuff/dollah-skills@0.1.0",
