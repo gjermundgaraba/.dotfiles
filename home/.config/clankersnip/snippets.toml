@@ -81,10 +81,10 @@ args = [
 [[snippet]]
 title = "herdr review review"
 text = """
-We got a review from another agent:
-<agent-review>
-$herdr agent: {clipboard}
-</agent-review>
+{snippet:· herdr} Use Herdr to retrieve the review from this agent, and treat it as the input findings:
+<agent-review-source>
+{clipboard}
+</agent-review-source>
 
 {snippet:· review validation core}
 """
@@ -165,14 +165,10 @@ Do not edit files.
 [[snippet]]
 title = "deslop plan review"
 text = """
-$deslop
+{snippet:· deslop} Review the proposed plan for correctness and slop against the relevant code. Do not edit files.
 <proposed-agent-plan>
 {clipboard}
 </proposed-agent-plan>
-
-Review the proposed plan for correctness and slop against the relevant code.
-
-Do not edit files.
 """
 
 [[snippet]]
@@ -195,29 +191,110 @@ Produce a standalone handoff an independent implementer can execute without prio
 Ask about ambiguity that would materially change the approach before finalizing the plan; otherwise state reasonable assumptions. Do not implement the plan yet.
 """
 
+# Drive snippets: Herdr and Deslop apply to the driver; the skills argument
+# selects reviewer skills.
 [[snippet]]
-title = "herdr impl"
+title = "drive plan"
 text = """
-Implement this end-to-end and run the repository's required build, lint, and test checks.
+{snippet:· herdr} {snippet:· deslop}
+{snippet:· use herdr}
 
-Then run four $herdr agent reviews of the uncommitted changes:
+Develop a concrete implementation plan for {goal}. You are the planner. Review it with {reviewers}.
 
-- Two Codex /review passes: one focused on correctness and regressions, the other on interfaces, integration, and missing behavior.
-- Two using `$deslop $ponytail:ponytail-review`: one focused on local simplification, the other on architecture and ownership.
+Inspect the relevant implementation, consumers, and project instructions. Inspect enough of the code to ask informed questions, then run a brief scoping interview.
 
-Validate and deduplicate the findings, implement those that are valid and worthwhile, and rerun checks affected by the fixes. Continue until the agreed scope is complete and required checks pass, or report a concrete blocker.
+Ask a small batch of concise, numbered questions—usually 2–3—about the intended outcome, scope, user experience, constraints, or tradeoffs that would materially change the plan. Give your recommended answer, relevant alternatives, and significant tradeoffs.
 
-Summarize the commands and results, including output for failures or material qualifications. Only claim checks passed if you ran them in this session.
+Reuse settled decisions and look up accessible facts yourself. Use sensible defaults for minor details. Wait for my answers before asking dependent questions; ask follow-ups only when material gaps remain.
+
+Briefly summarize the agreed direction and important assumptions before drafting the plan.
+
+Write the draft plan in the run directory. Include the goal, acceptance criteria, scope, ordered milestones, relevant code areas, ownership boundaries, material decisions, and required verification.
+
+{snippet:· driver mechanics}
+
+In each brief, provide the absolute draft-plan path and relevant repository context. Ask reviewers to assess correctness, feasibility, completeness, unnecessary complexity, and simpler alternatives against the goals and existing code. In subsequent briefs, include the updated plan.
+
+Validate their findings independently and record Fix, Partial, or Dismiss with reasoning. Revise the plan for accepted findings.
+
+Use bounded spikes or prototypes when they would resolve material uncertainty. Keep them in the run directory and report their evidence and limitations.
+
+{snippet:· driver stop rule}
+
+{snippet:· driver gates}
+
+Finish with the standalone plan, the rounds run, material review dispositions with reasoning, unresolved questions and findings, and verification results and limits. Link the complete ledger for the full finding history. Ask for approval before product implementation. Do not modify product files or commit.
 """
+args = [
+  { name = "goal", default = "the task we discussed" },
+  { name = "reviewers", default = "one Claude Code and one Codex" },
+  { name = "skills", default = "deslop" },
+]
+
+[[snippet]]
+title = "drive review loop"
+text = """
+{snippet:· herdr} {snippet:· deslop}
+{snippet:· use herdr}
+
+Run review rounds on {scope} until they come back clean. You are the implementer: apply the fixes yourself. Each round, review with fresh reviewers: {reviewers}.
+
+{snippet:· driver mechanics}
+
+{snippet:· driver round}
+
+{snippet:· driver stop rule}
+
+{snippet:· driver gates}
+
+Leave all changes uncommitted.
+
+{snippet:· driver report}
+"""
+args = [
+  { name = "scope", default = "the uncommitted changes" },
+  { name = "reviewers", default = "one Claude Code and one Codex" },
+  { name = "skills", default = "deslop" },
+]
+
+[[snippet]]
+title = "drive milestones"
+text = """
+{snippet:· herdr} {snippet:· deslop}
+{snippet:· use herdr}
+
+Implement {plan} end-to-end, milestone by milestone. You are the implementer. Continue from milestone to milestone without waiting for me.
+
+Before starting, record the current HEAD in the run directory as the base commit. For each milestone:
+
+1. Implement it and run the repository's required checks.
+2. Commit it as one milestone commit.
+3. Run a single review round, without re-review, on that milestone's commit range, and commit the fixes as separate review-fix commits. Use fresh reviewers: {milestone_reviewers}.
+
+A milestone is complete once its single review has been adjudicated, accepted fixes are applied, required checks pass for the resulting state, and the milestone and review-fix commits are recorded.
+
+After the last milestone, run review rounds on the total diff from the base commit, committing fixes as review-fix commits. Each round, review with fresh reviewers: {reviewers}. {snippet:· driver stop rule}
+
+Follow the repository's commit conventions, sign as configured, and add no AI attribution. Do not push.
+
+{snippet:· driver mechanics}
+
+{snippet:· driver round}
+
+{snippet:· driver gates}
+
+{snippet:· driver report}
+"""
+args = [
+  { name = "plan", default = "the plan we agreed on" },
+  { name = "reviewers", default = "one Claude Code and one Codex" },
+  { name = "milestone_reviewers", default = "one Claude Code" },
+  { name = "skills", default = "deslop" },
+]
 
 [[snippet]]
 title = "ultra deslop review"
-text = """
-$deslop
-Review the entire repo for correctness and worthwhile improvements to simplicity, maintainability, and performance. Ground architectural recommendations in concrete benefits.
-
-Do not edit files.
-"""
+text = "{snippet:· deslop} Review the entire repo for correctness and worthwhile improvements to simplicity, maintainability, and performance. Ground architectural recommendations in concrete benefits. Do not edit files."
 
 [[snippet]]
 title = "code review"
@@ -279,6 +356,80 @@ Do not push or delete the worktree or its branch.
 # --- fragments (· prefix): included via {snippet:...}, args declared by consumers ---
 
 [[snippet]]
+title = "· herdr"
+text = "$herdr"
+
+[snippet.agent_text]
+claude = "/herdr"
+
+[[snippet]]
+title = "· deslop"
+text = "$deslop"
+
+[snippet.agent_text]
+claude = "/deslop"
+
+[[snippet]]
+title = "· use herdr"
+text = "Use Herdr to drive other agents yourself; I will not relay messages between you."
+
+[[snippet]]
+title = "· driver mechanics"
+text = """
+Before starting, inspect staged, unstaged, and untracked changes. Identify existing task changes and include them deliberately. Preserve unrelated work and exclude it from task commits and review scope. Ask only if ownership is unclear.
+
+Keep briefs, reports, and a findings ledger in a new run directory outside the repository: ~/.local/state/agent-runs/<repo>/<timestamp>/. The ledger records each finding's source, your verdict (Fix, Partial, or Dismiss), your reasoning, and its status. Save the workflow instructions you received, with their argument values, to instructions.md in the run directory at the start. After any compaction, re-read instructions.md and the ledger before continuing.
+
+For each review round:
+
+- Create a new herdr tab in the current workspace with the repository as its working directory and a label naming the run and round. Split it so each reviewer gets its own pane, start each reviewer with `herdr agent start --kind`, and never reuse a reviewer across rounds.
+- Write one brief per reviewer containing its name, review instructions, reviewer rules, agreed goals, acceptance criteria, and relevant constraints. Reference existing context documents by absolute path where useful.
+- In subsequent briefs, include prior findings relevant to the current scope, unresolved or cross-cutting findings, and the absolute ledger path for further inspection. Ask reviewers to verify resolutions, challenge dismissals they disagree with, and report new findings.
+- Start each reviewer's prompt with each of these skills: {skills}, using `/<skill>` for Claude Code and `$<skill>` for Codex, followed by "Read <absolute brief path> and follow it."
+- Reviewer rules: stay read-only. Do not edit, stage, stash, commit, or apply patches; copy anything needed into your own scratch directory under the run directory. Do not ask questions; state assumptions in the report. Write the full report to <run directory>/<round>-<name>.md and reply with only that path.
+- Request the report file in the initial prompt; this intentionally overrides the Herdr skill's guidance to use file output only as a fallback.
+- Do not end your turn after dispatching. Wait in the background. A reviewer is finished only when it is idle or done and its completed report file exists.
+- Handle reviewer prompts within existing authorization; use the approval gates otherwise.
+- For a stalled reviewer, allow one re-prompt, then one fresh replacement per reviewer per round. If the replacement also cannot complete, stop and report the unavailable reviewer, concrete blocker, and results already collected. Do not claim complete review coverage.
+- Read reports from the files, not pane scrollback. Close the tab after reading all reports."""
+
+[[snippet]]
+title = "· driver round"
+text = """
+Review instructions for the briefs: review the scope for correctness and worthwhile simplifications in code and architecture. Identify concrete opportunities to improve maintainability and reduce hand-rolled solutions and unnecessarily restrictive product constraints. Do not assume every requirement and special case must be kept. In each brief, provide the exact repository path, branch, commit range or uncommitted-change scope, and material deviations from the plan. Ask reviewers to check incomplete requirements and defects, verifying implementation-summary claims against the actual changes.
+
+After each round:
+
+1. Validate every finding against the code. {snippet:· adversarial stance} Judge whether the underlying issue warrants change, independently of the proposed solution, and record Fix, Partial, or Dismiss in the ledger. Reconsider a dismissal when a reviewer pushes back with new evidence.
+2. For Fix and Partial findings, choose simple, durable solutions, including worthwhile cleanups. Churn and breaking compatibility are acceptable; prefer reduced complexity and less hand-rolled code.
+3. Implement them and rerun the checks they affect.
+
+Keep implementation within the requested task and review scope, including directly necessary cleanups. Record worthwhile findings outside that scope separately rather than implementing them without authorization."""
+
+[[snippet]]
+title = "· driver stop rule"
+text = "Continue for at most 5 rounds of the same scope. Stop clean when a round requires no further changes, no accepted Fix or Partial finding remains unresolved, and any required checks pass for the current state. Dismissed findings do not block completion. At the cap, report unresolved findings and decisions, unverified work, and failing checks; do not describe that result as clean."
+
+[[snippet]]
+title = "· driver gates"
+text = """
+Make fix and dismissal decisions yourself. Honor decisions already authorized in the agreed plan or this conversation. Ask only about new consequential choices outside that authorization, before:
+
+- loosening a requirement, removing a feature, or reducing required documentation or test coverage;
+- choosing between product or API options that change user-facing behavior;
+- anything outward-facing or hard to reverse, such as pushing, opening PRs, publishing, deploying, or installing;
+- steps only I can do, such as unlocking 1Password, sudo, or logging in.
+
+When asking, give the context, the options, and your recommendation, then resume after my answer."""
+
+[[snippet]]
+title = "· driver report"
+text = """
+Summarize the rounds run, what changed, material dismissals with reasoning, all unresolved findings, and verification results and limits. Link the complete ledger for the full finding history. Distinguish checks you ran from checks reported by reviewers. For each, identify who ran it, the command, the tested revision or worktree state, the result, and any verification limits.
+
+Use a result as evidence for the final state only when the tested state still applies. Rerun checks when changes, failures, or unresolved concerns justify it; otherwise reuse applicable evidence."""
+
+[[snippet]]
 title = "· adversarial stance"
 text = "Assess independently; the supplied analysis may be incorrect, incomplete, or not worth acting on."
 
@@ -302,11 +453,5 @@ Do not propose specific solutions or edit files.
 
 [[snippet]]
 title = "deslop review"
-text = """
-$deslop
-Review {scope} for correctness and worthwhile simplifications in code and architecture. 
-Identify concrete opportunities to improve maintainability, reduce hand-rolled solution and product constraints that are unnecessarily restrictive.
-Do not assume all requirements and special cases need to be maintained, especially if removing them opens up opportunities.
-
-Do not edit files."""
+text = "{snippet:· deslop} Review {scope} for correctness and worthwhile simplifications in code and architecture. Identify concrete opportunities to improve maintainability, reduce hand-rolled solution and product constraints that are unnecessarily restrictive. Do not assume all requirements and special cases need to be maintained, especially if removing them opens up opportunities. Do not edit files."
 args = [{ name = "scope", default = "uncommitted changes" }]
