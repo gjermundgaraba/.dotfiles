@@ -7,6 +7,7 @@
     "npm:@clanker-stuff/plannotator@0.2.0",
     "npm:@clanker-stuff/footer@0.1.0",
     "npm:@clanker-stuff/usage@0.1.0",
+    "npm:@clanker-stuff/fast@0.1.0",
     {
       "source": "npm:@clanker-stuff/subagents@0.1.0",
       "extensions": [
