@@ -386,7 +386,7 @@ For each review round:
 - Write one brief per reviewer containing its name, review instructions, reviewer rules, agreed goals, acceptance criteria, and relevant constraints. Reference existing context documents by absolute path where useful.
 - In subsequent briefs, include prior findings relevant to the current scope, unresolved or cross-cutting findings, and the absolute ledger path for further inspection. Ask reviewers to verify resolutions, challenge dismissals they disagree with, and report new findings.
 - Start each reviewer's prompt with each of these skills: {skills}, using `/<skill>` for Claude Code and `$<skill>` for Codex, followed by "Read <absolute brief path> and follow it."
-- Reviewer rules: stay read-only. Do not edit, stage, stash, commit, or apply patches; copy anything needed into your own scratch directory under the run directory. Do not ask questions; state assumptions in the report. Write the full report to <run directory>/<round>-<name>.md and reply with only that path.
+- Reviewer rules: stay read-only. Do not ask questions; state assumptions in the report. Write the full report to <run directory>/<round>-<name>.md and reply with only that path.
 - Request the report file in the initial prompt; this intentionally overrides the Herdr skill's guidance to use file output only as a fallback.
 - Do not end your turn after dispatching. Wait in the background. A reviewer is finished only when it is idle or done and its completed report file exists.
 - Handle reviewer prompts within existing authorization; use the approval gates otherwise.
