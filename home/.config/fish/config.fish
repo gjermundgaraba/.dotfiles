@@ -15,6 +15,12 @@ end
 
 set -gx EDITOR nvim
 
+# Pi reports its state to Herdr (OSC 7501) without asking whether the
+# terminal supports it; Herdr does not answer that query.
+if test "$HERDR_ENV" = 1
+    set -gx PI_PROGRAM_STATUS 1
+end
+
 fish_add_path -g $HOME/.opencode/bin
 
 # pnpm global bin (pnpm refuses -g commands unless this is in PATH)

@@ -99,7 +99,6 @@ prompt_new_workspace_name = true
 show_agent_labels_on_pane_borders = true
 
 agent_panel_sort = "priority"
-agent_priority_tokens = ["space_priority"]
 
 status_indicators = "dots"
 [ui.sidebar.spaces]
