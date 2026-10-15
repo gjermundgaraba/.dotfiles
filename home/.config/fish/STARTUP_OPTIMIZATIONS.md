@@ -67,10 +67,9 @@ keeping required initialization synchronous.
 
 ## Deliberately left alone
 
-1. `fastfetch`: roughly 50 ms, but only when starting in `$HOME`.
-2. mise `hook-env`: roughly 12–16 ms and required for project tools and env.
-3. Atuin session UUID: roughly 9 ms and required for history session tracking.
-4. Vite+ completion: roughly 7–10 ms; changing it would duplicate
+1. mise `hook-env`: roughly 12–16 ms and required for project tools and env.
+2. Atuin session UUID: roughly 9 ms and required for history session tracking.
+3. Vite+ completion: roughly 7–10 ms; changing it would duplicate
    installer-owned shell logic for a small gain.
 
 ## Maintenance

@@ -75,7 +75,3 @@ abbr -a pi-grok "pi --model xai/grok-4.6 --thinking xhigh"
 abbr -a pi-glm "pi --model zai/glm-5.3 --thinking max"
 abbr -a pi-flash "pi --model radius/deepseek-v4.1-flash --thinking high"
 abbr -a pi-astra "pi --model openai/gpt-6-astra --thinking high"
-
-if test "$PWD" = "$HOME"
-    fastfetch
-end
