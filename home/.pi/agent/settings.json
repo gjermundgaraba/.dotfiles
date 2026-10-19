@@ -1,34 +1,85 @@
 {
   "packages": [
-    "npm:@clanker-stuff/ask-question@0.1.0",
+    {
+      "source": "npm:@clanker-stuff/ask-question@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
     "npm:@clanker-stuff/dollah-skills@0.1.0",
     "npm:@clanker-stuff/history@0.1.0",
     "npm:@clanker-stuff/shell-resume-history@0.1.0",
     "npm:@clanker-stuff/plannotator@0.2.0",
-    "npm:@clanker-stuff/footer@0.1.0",
-    "npm:@clanker-stuff/usage@0.1.0",
-    "npm:@clanker-stuff/fast@0.1.0",
+    {
+      "source": "npm:@clanker-stuff/footer@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
+    {
+      "source": "npm:@clanker-stuff/usage@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
+    {
+      "source": "npm:@clanker-stuff/fast@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
     {
       "source": "npm:@clanker-stuff/subagents@0.1.0",
       "extensions": [
-        "+index.ts"
+        "-index.ts"
       ]
     },
-    "npm:@clanker-stuff/shape-spinner@0.1.0",
-    "npm:@earendil-works/pi-radius",
+    {
+      "source": "npm:@clanker-stuff/shape-spinner@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
+    {
+      "source": "npm:@earendil-works/pi-radius",
+      "extensions": [
+        "-extensions/radius-mcp-migration.ts",
+        "-extensions/radius-notices.ts",
+        "-extensions/radius-routing.ts",
+        "-extensions/radius-web-search.ts"
+      ],
+      "skills": [
+        "-skills/radius-api/SKILL.md"
+      ]
+    },
     {
       "source": "npm:@clanker-stuff/background-tasks@0.1.0",
       "extensions": [
-        "+index.ts"
+        "-index.ts"
+      ],
+      "skills": [
+        "-skills/watchers/SKILL.md"
       ]
     },
     "npm:@clanker-stuff/context@0.1.0",
-    "npm:@clanker-stuff/vim@0.1.0",
-    "npm:@clanker-stuff/user-attention@0.1.0",
-    "npm:@clanker-stuff/turn-recap@0.1.0"
+    {
+      "source": "npm:@clanker-stuff/vim@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
+    {
+      "source": "npm:@clanker-stuff/user-attention@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
+    "npm:@clanker-stuff/turn-recap@0.1.0",
+    "npm:@clanker-stuff/claude-bridge@0.1.0",
+    "npm:@clanker-stuff/mcp-skills@0.1.0"
   ],
   "defaultProvider": "openai",
-  "defaultModel": "gpt-6.1-sol",
+  "defaultModel": "gpt-6-astra",
   "defaultTools": [
     "+codemode"
   ],
@@ -51,9 +102,12 @@
     "radius/cheap",
     "radius/balanced",
     "radius/precise",
-    "openrouter/auto",
+    "openrouter/openrouter/auto",
     "openai/gpt-6.1-sol",
-    "openai/gpt-6-astra"
+    "openai/gpt-6-astra",
+    "claude-bridge/claude-opus-5-5",
+    "claude-bridge/claude-sonnet-5-5",
+    "claude-bridge/claude-fable-5-1"
   ],
   "showHardwareCursor": true,
   "terminal": {
@@ -66,5 +120,8 @@
   "tuiMode": "fullscreen",
   "editorPaddingX": 1,
   "enableSkillCommands": true,
-  "hideThinkingBlock": false
+  "hideThinkingBlock": false,
+  "extensions": [
+    "+extensions/herdr-micro-effort.ts"
+  ]
 }
