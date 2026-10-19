@@ -99,7 +99,7 @@ if test "$argv[1]" = --self-test
     command mkdir -m 700 -- "$work"
     command touch "$dependency"
     printf '%s\n' \
-        '#!/opt/homebrew/bin/fish' \
+        "#!"(status fish-path) \
         'set -l count 0' \
         'test -f "$argv[1]"; and read count <"$argv[1]"' \
         'set count (math "$count" + 1)' \

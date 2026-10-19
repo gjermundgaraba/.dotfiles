@@ -1,7 +1,7 @@
 # Only for interactive sessions
 status is-interactive; or return
 
-source /opt/homebrew/opt/fzf/shell/key-bindings.fish
+source $HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.fish
 __cached_source atuin --dependency "$HOME/.config/atuin/config.toml" --dependency "$HOME/.config/atuin/atuin-receipt.json" -- atuin init fish --disable-up-arrow
 __cached_source zoxide -- zoxide init fish
 

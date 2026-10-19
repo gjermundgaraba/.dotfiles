@@ -6,16 +6,20 @@ brew "stow"
 # Shell
 brew "atuin"
 brew "carapace"
-brew "coreutils"
 brew "direnv"
-brew "findutils"
 brew "fzf"
-brew "gawk"
-brew "gnu-sed"
-brew "grep"
-brew "make"
 brew "mise"
 brew "zoxide"
+
+# GNU tools Linux already ships
+if OS.mac?
+  brew "coreutils"
+  brew "findutils"
+  brew "gawk"
+  brew "gnu-sed"
+  brew "grep"
+  brew "make"
+end
 
 # Editor
 brew "bat"

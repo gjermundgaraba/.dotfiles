@@ -6,6 +6,23 @@ brewfile="$root/Brewfile"
 vite_packages="$root/packages/vite-plus.txt"
 node_version=$(tr -d '[:space:]' <"$root/home/.node-version")
 
+# Find Homebrew when the caller's PATH lacks it, as in a provisioning script.
+if ! command -v brew >/dev/null 2>&1; then
+  for prefix in /opt/homebrew /home/linuxbrew/.linuxbrew; do
+    if test -x "$prefix/bin/brew"; then PATH="$prefix/bin:$PATH"; fi
+  done
+fi
+
+# Root may not run Homebrew directly; run it as the prefix owner instead. That
+# user cannot read root's home, so Brewfiles are passed on stdin.
+brew() {
+  if test "$(id -u)" -eq 0; then
+    command brew as-brew-user "$@"
+  else
+    command brew "$@"
+  fi
+}
+
 usage() {
   echo "usage: $0 <list|install|check>" >&2
   exit 2
@@ -47,7 +64,7 @@ list_packages() {
   require_brew
 
   echo "Homebrew formulae"
-  brew bundle list --formula --file "$brewfile"
+  brew bundle list --formula --file=- <"$brewfile"
 
   echo
   echo "Vite+ globals"
@@ -55,17 +72,16 @@ list_packages() {
 }
 
 install_packages() {
-  test "$(uname -s)" = Darwin || {
-    echo "bootstrap supports macOS only" >&2
-    exit 1
-  }
-  test "$(uname -m)" = arm64 || {
-    echo "bootstrap supports Apple Silicon only" >&2
-    exit 1
-  }
+  case "$(uname -s)/$(uname -m)" in
+    Darwin/arm64 | Linux/x86_64) ;;
+    *)
+      echo "bootstrap supports macOS on Apple Silicon and Linux on x86_64 only" >&2
+      exit 1
+      ;;
+  esac
   require_brew
 
-  brew bundle install --no-upgrade --file "$brewfile"
+  brew bundle install --no-upgrade --file=- <"$brewfile"
 
   vp=$(find_vp) || {
     echo "missing: Vite+" >&2
@@ -90,7 +106,7 @@ check_packages() {
   failed=0
 
   if command -v brew >/dev/null 2>&1; then
-    HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle check --verbose --file "$brewfile" || failed=1
+    brew bundle check --no-upgrade --verbose --file=- <"$brewfile" || failed=1
   else
     echo "missing: Homebrew" >&2
     failed=1
@@ -99,13 +115,13 @@ check_packages() {
   if vp=$(find_vp); then
     runtimes=$("$vp" env list --json)
     printf '%s\n' "$runtimes" | jq -e --arg node "$node_version" \
-      'any(.[]; .version == $node)' >/dev/null || {
+      'any(.node[]; .version == $node)' >/dev/null || {
       echo "missing Vite+ Node runtime: $node_version" >&2
       failed=1
     }
 
     printf '%s\n' "$runtimes" | jq -e --arg node "$node_version" \
-      'any(.[]; .version == $node and .default)' >/dev/null || {
+      'any(.node[]; .version == $node and .default)' >/dev/null || {
       echo "wrong Vite+ default Node runtime" >&2
       failed=1
     }

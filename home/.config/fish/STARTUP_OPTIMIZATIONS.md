@@ -10,8 +10,11 @@ caches only generated Fish source that is stable between tool upgrades.
 1. Removed duplicate mise and direnv initialization. Homebrew already installs
    vendor hooks for both; direnv had been initialized three times and mise
    twice.
-2. Replaced `brew shellenv fish | source` with its six static Apple Silicon
-   environment and path operations, avoiding a ~27 ms `brew` process.
+2. Replaced `brew shellenv fish | source` with its static environment and path
+   operations for `/opt/homebrew` (macOS) or `/home/linuxbrew/.linuxbrew`
+   (Linux), avoiding a ~27 ms `brew` process. They live in
+   `conf.d/00-homebrew.fish` so Homebrew tools are on `PATH` before the other
+   `conf.d` files run.
 3. Replaced `fzf --fish | source` with Homebrew's packaged
    `key-bindings.fish`. The generated Shift-Tab completion was redundant with
    the custom `accept-autosuggestion` binding.
@@ -34,7 +37,8 @@ caches only generated Fish source that is stable between tool upgrades.
 file. Fish gives user `conf.d` files precedence, so it replaces rather than
 duplicates the vendor hook.
 
-mise is activated by Homebrew's vendor hook, uncached. Do not cache
+mise is activated by Homebrew's vendor hook, uncached. Only Homebrew's fish
+reads that hook, so use it as the login shell on Linux too. Do not cache
 `mise activate fish`: its output embeds the generating process's PATH, and
 replaying it drops PATH entries added since. Vite+ owns the JavaScript toolchain
 (see `~/.config/mise/config.toml`) and is sourced in `config.fish`.
@@ -54,7 +58,7 @@ Refreshes are written to a temporary file, checked with `fish -n`, and moved
 into place atomically. A failed refresh retains the previous valid cache.
 
 The cache directory is private (`0700`) and rejected if it is a symlink or is
-owned by another user. macOS normally clears `/tmp` during reboot, so the first
+owned by another user. macOS and Ubuntu normally clear `/tmp` during reboot, so the first
 shell after a restart regenerates the files. Dependency checks still preserve
 correctness if `/tmp` survives.
 

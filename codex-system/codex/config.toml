@@ -35,8 +35,5 @@ prevent_idle_sleep = true
 memories = false
 chronicle = false
 
-[mcp_servers.1password]
-command = "/Applications/1Password.app/Contents/MacOS/onepassword-mcp"
-
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"

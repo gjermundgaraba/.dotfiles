@@ -4,15 +4,17 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## Setup
 
-1. Install the Xcode Command Line Tools and [Homebrew](https://brew.sh/).
+1. Install [Homebrew](https://brew.sh/):
+   - macOS: install the Xcode Command Line Tools, then Homebrew.
+   - Linux (Ubuntu on x86_64, everything running as root): Homebrew refuses to run as root, so a `linuxbrew` user must own `/home/linuxbrew/.linuxbrew`, with Homebrew installed as that user. The machine's provisioning script sets this up. Root runs Homebrew through `brew as-brew-user`; `bootstrap.sh` and Fish's `brew` function do that automatically.
 2. Clone this repository to `~/.dotfiles`.
 3. Install the tracked Homebrew, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
 4. Enable the repository's commit checks and the filter that keeps Pi's machine-written settings out of commits: `git -C ~/.dotfiles config core.hooksPath .githooks && git -C ~/.dotfiles config filter.pi-settings.clean "jq 'del(.deviceId, .lastChangelogVersion)'"`.
 5. Run `stow -R --no-folding --ignore='^/\.config/nvim/\.agents/skills(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step.
 6. Run `mkdir -p ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles/home/.config/nvim/.agents -t ~/.config/nvim/.agents/skills skills`, then `mkdir -p ~/.codex/skills ~/.agents/skills ~/.claude/skills && stow -R -d ~/.dotfiles -t ~ skills`.
-7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
-8. Install the macOS LaunchAgent as a regular file because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/local.capslock-f20.plist ~/Library/LaunchAgents/local.capslock-f20.plist`.
-9. Load or reload the LaunchAgent after any previous instance finishes unloading:
+7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`. As root on Linux, run it without `sudo`.
+8. On macOS, install the LaunchAgent as a regular file because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/local.capslock-f20.plist ~/Library/LaunchAgents/local.capslock-f20.plist`.
+9. On macOS, load or reload the LaunchAgent after any previous instance finishes unloading:
    ```sh
    service="gui/$(id -u)/local.capslock-f20"
    if launchctl print "$service" >/dev/null 2>&1; then
