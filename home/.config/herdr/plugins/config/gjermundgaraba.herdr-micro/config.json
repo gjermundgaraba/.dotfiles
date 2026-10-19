@@ -5,17 +5,17 @@
         "byAgent": {
           "codex": {
             "action": "prompt",
-            "prompt": "$deslop $ponytail-review\nReview scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
+            "prompt": "$deslop $ponytail-review Review scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
             "submit": false
           },
           "claude": {
             "action": "prompt",
-            "prompt": "/deslop /ponytail-review\nReview scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
+            "prompt": "/deslop /ponytail-review Review scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
             "submit": false
           },
           "pi": {
             "action": "prompt",
-            "prompt": "$deslop $ponytail-review\nReview scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
+            "prompt": "$deslop $ponytail-review Review scope: uncommitted changes. Review for correctness, slop, over-engineering and best practices. We are looking for simplicity, less code, reuse where it makes sense, using existing libraries, readability and clean and elegant code and solutions. All findings must be validated and verified.",
             "submit": false
           },
           "default": null
@@ -25,10 +25,12 @@
       "3": {
         "byAgent": {
           "codex": {
-            "action": "fast"
+            "action": "prompt",
+            "prompt": "/fast"
           },
           "pi": {
-            "action": "fast"
+            "action": "prompt",
+            "prompt": "/fast"
           },
           "default": null
         }
@@ -45,66 +47,8 @@
       }
     },
     "dial": {
-      "clockwise": {
-        "byAgent": {
-          "codex": {
-            "action": "script",
-            "command": "/bin/sh",
-            "args": [
-              "./integrations/thinking-effort.sh",
-              "alt+."
-            ]
-          },
-          "claude": {
-            "action": "script",
-            "command": "/bin/sh",
-            "args": [
-              "./integrations/thinking-effort.sh",
-              "claude",
-              "raise"
-            ]
-          },
-          "pi": {
-            "action": "script",
-            "command": "/bin/sh",
-            "args": [
-              "./integrations/thinking-effort.sh",
-              "ctrl+shift+right"
-            ]
-          },
-          "default": null
-        }
-      },
-      "counterclockwise": {
-        "byAgent": {
-          "codex": {
-            "action": "script",
-            "command": "/bin/sh",
-            "args": [
-              "./integrations/thinking-effort.sh",
-              "alt+,"
-            ]
-          },
-          "claude": {
-            "action": "script",
-            "command": "/bin/sh",
-            "args": [
-              "./integrations/thinking-effort.sh",
-              "claude",
-              "lower"
-            ]
-          },
-          "pi": {
-            "action": "script",
-            "command": "/bin/sh",
-            "args": [
-              "./integrations/thinking-effort.sh",
-              "ctrl+shift+left"
-            ]
-          },
-          "default": null
-        }
-      },
+      "clockwise": null,
+      "counterclockwise": null,
       "press": {
         "action": "prompt",
         "prompt": "/model",
@@ -116,14 +60,8 @@
       "releaseDistance": 0.4,
       "up": null,
       "down": null,
-      "left": {
-        "action": "focus-pane",
-        "direction": "left"
-      },
-      "right": {
-        "action": "focus-pane",
-        "direction": "right"
-      }
+      "left": null,
+      "right": null
     }
   },
   "lighting": {
