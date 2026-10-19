@@ -10,7 +10,7 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 2. Clone this repository to `~/.dotfiles`.
 3. Install the tracked Homebrew, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
 4. Enable the repository's commit checks and the filter that keeps Pi's machine-written settings out of commits: `git -C ~/.dotfiles config core.hooksPath .githooks && git -C ~/.dotfiles config filter.pi-settings.clean "jq 'del(.deviceId, .lastChangelogVersion)'"`.
-5. Run `stow -R --no-folding --ignore='^/\.config/nvim/\.agents/skills(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step.
+5. Run `stow -R --no-folding --ignore='^\.config/nvim/\.agents/skills(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step.
 6. Run `mkdir -p ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles/home/.config/nvim/.agents -t ~/.config/nvim/.agents/skills skills`, then `mkdir -p ~/.codex/skills ~/.agents/skills ~/.claude/skills && stow -R -d ~/.dotfiles -t ~ skills`.
 7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`. As root on Linux, run it without `sudo`.
 8. On macOS, install the LaunchAgent as a regular file because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/local.capslock-f20.plist ~/Library/LaunchAgents/local.capslock-f20.plist`.
