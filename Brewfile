@@ -28,6 +28,7 @@ brew "neovim"
 brew "ripgrep"
 brew "shfmt"
 brew "stylua"
+brew "tree-sitter-cli"
 
 # Development
 brew "actionlint"
