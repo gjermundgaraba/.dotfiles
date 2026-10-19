@@ -258,14 +258,16 @@ args = [
 ]
 
 [[snippet]]
-title = "drive milestones"
+title = "drive implementation"
 text = """
 {snippet:· herdr} {snippet:· deslop}
 {snippet:· use herdr}
 
-Implement {plan} end-to-end, milestone by milestone. You are the implementer. Continue from milestone to milestone without waiting for me.
+Implement {plan} end-to-end. You are the implementer. Continue without waiting for me.
 
-Before starting, record the current HEAD in the run directory as the base commit. For each milestone:
+Before starting, record the current HEAD in the run directory as the base commit, then decide how to split the work. If the plan is small enough to implement and review well as one change, do it in a single round: implement it, run the repository's required checks, and commit it, without a separate milestone review. Otherwise, implement it as ordered milestones, each a coherent, independently verifiable step. Use the plan's milestones where they are reasonable; otherwise split or re-split the plan. Record the chosen split and its rationale in the run directory.
+
+For each milestone:
 
 1. Implement it and run the repository's required checks.
 2. Commit it as one milestone commit.
@@ -273,7 +275,7 @@ Before starting, record the current HEAD in the run directory as the base commit
 
 A milestone is complete once its single review has been adjudicated, accepted fixes are applied, required checks pass for the resulting state, and the milestone and review-fix commits are recorded.
 
-After the last milestone, run review rounds on the total diff from the base commit, committing fixes as review-fix commits. Each round, review with fresh reviewers: {reviewers}. {snippet:· driver stop rule}
+After the single-round commit or the last milestone, run review rounds on the total diff from the base commit, committing fixes as review-fix commits. Each round, review with fresh reviewers: {reviewers}. {snippet:· driver stop rule}
 
 Follow the repository's commit conventions, sign as configured, and add no AI attribution. Do not push.
 
@@ -408,7 +410,7 @@ Keep implementation within the requested task and review scope, including direct
 
 [[snippet]]
 title = "· driver stop rule"
-text = "Continue for at most 5 rounds of the same scope. Stop clean when a round requires no further changes, no accepted Fix or Partial finding remains unresolved, and any required checks pass for the current state. Dismissed findings do not block completion. At the cap, report unresolved findings and decisions, unverified work, and failing checks; do not describe that result as clean."
+text = "Continue for at most 3 rounds of the same scope. Stop clean when a round requires no further changes, no accepted Fix or Partial finding remains unresolved, and any required checks pass for the current state. Dismissed findings do not block completion. At the cap, report unresolved findings and decisions, unverified work, and failing checks; do not describe that result as clean."
 
 [[snippet]]
 title = "· driver gates"
