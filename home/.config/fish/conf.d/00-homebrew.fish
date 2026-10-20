@@ -17,11 +17,4 @@ if set -q HOMEBREW_PREFIX
     if not contains $HOMEBREW_PREFIX/share/info $INFOPATH
         set -gx INFOPATH $HOMEBREW_PREFIX/share/info $INFOPATH
     end
-
-    # Root may not run Homebrew directly; run it as the prefix owner instead.
-    if fish_is_root_user
-        function brew --wraps brew
-            command brew as-brew-user $argv
-        end
-    end
 end

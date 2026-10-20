@@ -13,16 +13,6 @@ if ! command -v brew >/dev/null 2>&1; then
   done
 fi
 
-# Root may not run Homebrew directly; run it as the prefix owner instead. That
-# user cannot read root's home, so Brewfiles are passed on stdin.
-brew() {
-  if test "$(id -u)" -eq 0; then
-    command brew as-brew-user "$@"
-  else
-    command brew "$@"
-  fi
-}
-
 usage() {
   echo "usage: $0 <list|install|check>" >&2
   exit 2
@@ -64,7 +54,7 @@ list_packages() {
   require_brew
 
   echo "Homebrew formulae"
-  brew bundle list --formula --file=- <"$brewfile"
+  brew bundle list --formula --file "$brewfile"
 
   echo
   echo "Vite+ globals"
@@ -81,7 +71,7 @@ install_packages() {
   esac
   require_brew
 
-  brew bundle install --no-upgrade --file=- <"$brewfile"
+  brew bundle install --no-upgrade --file "$brewfile"
 
   vp=$(find_vp) || {
     echo "missing: Vite+" >&2
@@ -106,7 +96,7 @@ check_packages() {
   failed=0
 
   if command -v brew >/dev/null 2>&1; then
-    brew bundle check --no-upgrade --verbose --file=- <"$brewfile" || failed=1
+    brew bundle check --no-upgrade --verbose --file "$brewfile" || failed=1
   else
     echo "missing: Homebrew" >&2
     failed=1
