@@ -16,4 +16,4 @@
 - See README.md for installation. Stow owns personal skills; skills owned by other repositories, such as `clanker-stuff/skills/` and the personal Herdr fork's `skills/herdr/`, are linked directly from their checkouts. Do not change installed links without authorization.
 - Keep each personal skill on one source in `skills/.agents/skills/`, with a relative Claude host link in `skills/.claude/skills/`; do not duplicate its content.
 - For user-invocation-only skills, configure both `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`.
-- Use `AGENTS.md` for instructions; do not create `CLAUDE.md` aliases.
+- Use `AGENTS.md` for instructions; do not create `CLAUDE.md` aliases. The one exception is `home/.claude/CLAUDE.md`, which only imports `~/.claude/AGENTS.md`: Claude Code reads a global `AGENTS.md` only as a fallback in directories under `~` that have no `CLAUDE.md`.

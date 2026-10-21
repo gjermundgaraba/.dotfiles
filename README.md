@@ -58,7 +58,9 @@ through `~/.agents/skills/`, without duplicate installations in
 ensured by setup step 6.
 
 Use `AGENTS.md` for instructions. Checkout helpers do not generate `CLAUDE.md`
-aliases.
+aliases. The exception is `~/.claude/CLAUDE.md`, which only imports
+`~/.claude/AGENTS.md`: Claude Code has no global `AGENTS.md`, and reads that
+file only as a fallback in directories under `~` that have no `CLAUDE.md`.
 
 ## Local state
 

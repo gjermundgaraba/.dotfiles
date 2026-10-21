@@ -1,5 +1,6 @@
 home/.claude/*
 !home/.claude/AGENTS.md
+!home/.claude/CLAUDE.md
 !home/.claude/keybindings.json
 !home/.claude/statusline-command.sh
 !home/.claude/settings.json
