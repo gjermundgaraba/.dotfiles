@@ -68,12 +68,6 @@
         "-index.ts"
       ]
     },
-    {
-      "source": "npm:@clanker-stuff/user-attention@0.1.0",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
     "npm:@clanker-stuff/turn-recap@0.1.0",
     "npm:@clanker-stuff/claude-bridge@0.1.0",
     "npm:@clanker-stuff/mcp-skills@0.1.0"
