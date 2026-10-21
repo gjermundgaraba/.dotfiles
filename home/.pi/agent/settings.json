@@ -13,13 +13,13 @@
     {
       "source": "npm:@clanker-stuff/footer@0.1.0",
       "extensions": [
-        "-index.ts"
+        "+index.ts"
       ]
     },
     {
       "source": "npm:@clanker-stuff/usage@0.1.0",
       "extensions": [
-        "-index.ts"
+        "+index.ts"
       ]
     },
     {
