@@ -60,6 +60,7 @@ abbr -a cb clankerbox
 alias librarian-checkout "$HOME/.agents/skills/librarian/checkout.sh"
 abbr -a codx-luna "codex -c 'model_reasoning_effort=xhigh' --model gpt-6.1-luna"
 abbr -a codx-ultra "codex -c 'model_reasoning_effort=ultra' --model gpt-6-astra"
+abbr -a codx-daybreak "codex -c 'model_reasoning_effort=xhigh' --model gpt-daybreak-blue-latest"
 
 abbr -a oc "opencode"
 
