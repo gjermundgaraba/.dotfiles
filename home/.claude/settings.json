@@ -4,7 +4,7 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "opus"
   },
   "permissions": {
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "auto"
   },
   "model": "opus",
   "disableClaudeAiConnectors": true,
@@ -96,6 +96,7 @@
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "auto",
+  "editorMode": "normal",
   "switchModelsOnFlag": false,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true
