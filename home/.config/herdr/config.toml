@@ -11,7 +11,7 @@ prefix = "f20"
 settings = "prefix+comma"
 open_notification_target = "" # prefix+o copies agent session id
 
-goto = "prefix+n" # prefix+g is used by clankersnip
+goto = "prefix+n"
 new_workspace = "prefix+shift+c"
 new_worktree = "prefix+shift+b"
 open_worktree = "prefix+b"
@@ -129,12 +129,6 @@ scrollback_limit_bytes = 52428800
 # `herdr update` doesn't get run reflexively and clobber the patched binary.
 [update]
 version_check = false
-
-[[keys.command]]
-key = "prefix+s"
-type = "plugin"
-command = "gjermundgaraba.clankersnip.palette"
-description = "snippets"
 
 [[keys.command]]
 key = "cmd+shift+t"
