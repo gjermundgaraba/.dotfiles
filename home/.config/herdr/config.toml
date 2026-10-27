@@ -39,56 +39,30 @@ split_horizontal = "prefix+shift+d"
 zoom = "prefix+z"
 close_pane = "prefix+shift+x"
 
-# Client-side actions (custom Herdr build): flat agent/workspace lists,
-# pane history, and the unread hold. See docs/frontend-api.md.
-agent_picker = "prefix+a"
-workspace_list = "prefix+w"
-history_back = "prefix+shift+o"
-history_forward = "prefix+shift+i"
-mark_unread = "prefix+u"
-
-[[keys.command]]
-key = "prefix+m"
-type = "plugin"
-command = "gjermundgaraba.herdr-move-pane.move"
-description = "Move pane to tab"
-
-[[keys.command]]
-key = "prefix+shift+g"
-type = "plugin"
-command = "gjermundgaraba.herdr-space-groups.assign"
-description = "Set space group"
-
 # Forward these chords into Vim/Neovim when focused; otherwise move between Herdr panes.
 [[keys.command]]
 key = "ctrl+h"
-type = "plugin"
+type = "plugin_action"
 command = "vim-herdr-navigation.left"
 description = "Navigate left (Vim/Herdr)"
 
 [[keys.command]]
 key = "ctrl+j"
-type = "plugin"
+type = "plugin_action"
 command = "vim-herdr-navigation.down"
 description = "Navigate down (Vim/Herdr)"
 
 [[keys.command]]
 key = "ctrl+k"
-type = "plugin"
+type = "plugin_action"
 command = "vim-herdr-navigation.up"
 description = "Navigate up (Vim/Herdr)"
 
 [[keys.command]]
 key = "ctrl+l"
-type = "plugin"
+type = "plugin_action"
 command = "vim-herdr-navigation.right"
 description = "Navigate right (Vim/Herdr)"
-
-[[keys.command]]
-key = "prefix+f"
-type = "plugin"
-command = "gjermundgaraba.herdr-fork-to-pane.fork"
-description = "fork agent into right pane"
 
 [ui]
 sidebar_width = 32
@@ -101,12 +75,6 @@ show_agent_labels_on_pane_borders = true
 agent_panel_sort = "priority"
 
 status_indicators = "dots"
-[ui.sidebar.spaces]
-rows = [
-  ["state_icon", { token = "$numbered_workspace", bold = true, dim = false }],
-  ["$branch_line", { token = "$git_dirty", fg = "#e5c07b", dim = false, separator_before = " " }, "git_status"],
-]
-
 [ui.toast]
 delivery = "herdr"
 
