@@ -32,6 +32,8 @@ home/.config/herdr/plugins/config/*
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/
 home/.config/herdr/plugins/config/*/*
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/config.json
+home/.config/rex/*
+!home/.config/rex/init.lua
 home/.config/atuin/atuin-receipt.json
 home/.config/ghostty/.claude/settings.local.json
 home/.config/fish/fish_variables
