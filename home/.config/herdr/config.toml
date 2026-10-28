@@ -85,9 +85,6 @@ pane_history = true
 [advanced]
 scrollback_limit_bytes = 52428800
 
-[update]
-version_check = false
-
 [[keys.command]]
 key = "cmd+shift+t"
 type = "popup"
