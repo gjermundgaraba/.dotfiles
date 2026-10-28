@@ -1,6 +1,3 @@
-# Static `brew shellenv fish` for macOS and Linux (see STARTUP_OPTIMIZATIONS.md).
-# The 00- prefix sorts this before every other conf.d file, all of which Fish
-# sources before config.fish.
 if test -d /opt/homebrew
     set -gx HOMEBREW_PREFIX /opt/homebrew
     set -gx HOMEBREW_REPOSITORY /opt/homebrew

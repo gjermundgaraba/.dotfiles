@@ -1,13 +1,6 @@
 local M = {}
 local keymaps = {}
 
----@class MapOpts
----@field desc string Required description
----@field buffer? number Buffer-local keymap
----@field expr? boolean Expression mapping
----@field silent? boolean Silent mapping (default: true)
----@field nowait? boolean No wait for additional keys
-
 local function normalize_key(key)
   local result = key:gsub("<[Ll][Ee][Aa][Dd][Ee][Rr]>", vim.g.mapleader or "\\")
   return result:gsub("<([^>]+)>", function(inner)

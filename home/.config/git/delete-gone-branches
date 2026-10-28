@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Delete local branches only when their tip is contained in the head commit of
-# a merged GitHub pull request for their gone upstream.
-
 set -u
 
 usage() {

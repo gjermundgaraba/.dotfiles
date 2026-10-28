@@ -1,7 +1,6 @@
 onboarding = false
 
 [terminal]
-# Keep macOS login-shell PATH behavior when using Fish.
 default_shell = "fish"
 shell_mode = "auto"
 kitty_graphics = true
@@ -9,7 +8,7 @@ kitty_graphics = true
 [keys]
 prefix = "f20"
 settings = "prefix+comma"
-open_notification_target = "" # prefix+o copies agent session id
+open_notification_target = ""
 
 goto = "prefix+n"
 new_workspace = "prefix+shift+c"
@@ -25,7 +24,7 @@ previous_tab = "prefix+shift+h"
 next_tab = "prefix+shift+l"
 switch_workspace = "prefix+shift+1..9"
 
-copy_mode = "prefix+space" # prefix+[ is awkward on Norwegian keyboards
+copy_mode = "prefix+space"
 focus_pane_left = ["prefix+h", "cmd+alt+h"]
 focus_pane_down = ["prefix+j", "cmd+alt+j"]
 focus_pane_up = ["prefix+k", "cmd+alt+k"]
@@ -39,7 +38,6 @@ split_horizontal = "prefix+shift+d"
 zoom = "prefix+z"
 close_pane = "prefix+shift+x"
 
-# Forward these chords into Vim/Neovim when focused; otherwise move between Herdr panes.
 [[keys.command]]
 key = "ctrl+h"
 type = "plugin_action"
@@ -82,14 +80,11 @@ delivery = "herdr"
 position = "top-right"
 
 [experimental]
-# Pane history persists terminal contents and may include secrets.
 pane_history = true
 
 [advanced]
 scrollback_limit_bytes = 52428800
 
-# Custom fork build (see ~/ws/pers/forks/herdr); silence update nags so
-# `herdr update` doesn't get run reflexively and clobber the patched binary.
 [update]
 version_check = false
 

@@ -33,8 +33,6 @@ home/.config/herdr/plugins/config/*
 home/.config/herdr/plugins/config/*/*
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/config.json
 home/.config/atuin/atuin-receipt.json
-home/.config/clankersnip/*
-!home/.config/clankersnip/snippets.toml
 home/.config/ghostty/.claude/settings.local.json
 home/.config/fish/fish_variables
 home/.config/fish/completions/

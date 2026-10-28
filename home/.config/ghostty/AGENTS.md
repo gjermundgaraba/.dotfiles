@@ -10,10 +10,10 @@ My config is at ./config
 
 ## Code Style
 - Keep entries `key = value` with single spaces around equals.
-- Add new options near related sections, keeping comment hierarchy.
-- Use `#` headers for sections and `##` for subsections to mirror existing style.
+- Add new options near related options.
 - Avoid trailing whitespace; align multi-line blocks for readability.
 - Validate fonts/themes against installed assets before making changes related to those.
-- Prefer explicit numeric values; document non-obvious choices inline via comments.
-- Remove deprecated keys instead of commenting them out unless needed for context.
+- Prefer explicit numeric values.
+- Remove deprecated keys instead of commenting them out.
+- Code carries no comments except legal headers, foreign/platform gotchas we cannot change, public-API docs, issue/RFC links, and lint-required directives; express intent through names and types.
 - Favor descriptive command invocations; ensure shell commands are login-shell safe.

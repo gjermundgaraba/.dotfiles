@@ -32,20 +32,20 @@ if [ -n "$compact_window" ] && [ "$compact_window" -gt 0 ] && [ -n "$remaining" 
   [ "$remaining" -lt 0 ] && remaining=0
 fi
 
-# ANSI helpers — no colors, weight/style only
 reset=$'\033[0m'
 dim=$'\033[2m'
-curly_ul=$'\033[4:3m'        # curly underline for low-context warning
+curly_ul=$'\033[4:3m'
 
-# Separator: hyphenation point (U+2027) surrounded by single spaces, dimmed
 sep="${dim} ‧ ${reset}"
 
 short_cwd=${cwd/#$HOME/\~}
 
-# Strip "(1M context)" or similar parenthetical suffix, then lowercase its first letter
-# e.g. "Opus 4.7 (1M context)" -> "opus 4.7"
-model=${model_raw% \(*\)}
-model="$(printf '%s' "${model:0:1}" | tr '[:upper:]' '[:lower:]')${model:1}"
+short_model_name() {
+  local name=${1% \(*\)}
+  printf '%s%s' "$(printf '%s' "${name:0:1}" | tr '[:upper:]' '[:lower:]')" "${name:1}"
+}
+
+model=$(short_model_name "$model_raw")
 
 segments=()
 
@@ -62,19 +62,19 @@ if [ -n "$model" ]; then
   segments+=("${dim}󰭆 ${reset}${model}")
 fi
 
-# Context remaining (until auto-compact when a window is set) — phrased as "left" so the number is unambiguous at a glance,
-# curly underline as a low-context warning once less than 25% remains
+low_context_pct=25
+mega_rounding_floor=999950
+
 if [ -n "$remaining" ]; then
   rem_int=$(printf "%.0f" "$remaining")
-  if [ "$rem_int" -le 25 ] 2>/dev/null; then
+  if [ "$rem_int" -le "$low_context_pct" ] 2>/dev/null; then
     ctx_val="${curly_ul}${rem_int}%${reset} left"
   else
     ctx_val="${rem_int}% left"
   fi
-  # Current context size, compacted to one decimal (71234 -> 71.2k, 1250000 -> 1.3M)
   if [ -n "$used_tokens" ]; then
-    used_fmt=$(awk -v n="$used_tokens" 'BEGIN{
-      if (n >= 999950) { s = sprintf("%.1f", n/1000000); u = "M" }
+    used_fmt=$(awk -v n="$used_tokens" -v mega_floor="$mega_rounding_floor" 'BEGIN{
+      if (n >= mega_floor) { s = sprintf("%.1f", n/1000000); u = "M" }
       else if (n >= 1000) { s = sprintf("%.1f", n/1000); u = "k" }
       else { s = n; u = "" }
       sub(/\.0$/, "", s); print s u
@@ -90,8 +90,6 @@ elif [ -n "$output_style" ] && [ "$output_style" != "default" ]; then
   segments+=("${dim}⚡ ${reset}${output_style}")
 fi
 
-# Rate limits — labeled "sess"/"week" (rather than "5h"/"7d") and spelled out as
-# "used" so the numbers read as plan-usage, not context or time remaining
 if [ -n "$five_pct" ] || [ -n "$week_pct" ]; then
   rate_seg=""
   if [ -n "$five_pct" ]; then

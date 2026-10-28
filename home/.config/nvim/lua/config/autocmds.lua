@@ -1,4 +1,3 @@
--- Transparent background
 local transparent_groups = {
   "Normal",
   "NormalNC",

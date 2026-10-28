@@ -70,9 +70,11 @@ Most managed files are symlinked individually from this repository so unmanaged 
 - Ghostty's local Claude settings
 - GitHub CLI and Copilot authentication
 - Codex authentication, sessions, generated state, plugin installs, and mutable user config
-- Herdr sessions, pane history, plugin installs, state, logs, and sockets
+- Herdr sessions, pane history (`pane_history = true` writes terminal contents to disk, which may include secrets), plugin installs, state, logs, and sockets
 - Pi model and MCP configuration, credentials, sessions, caches, package installs, and extension state
 - Tool runtime files covered by configuration-specific ignore rules
+
+Ghostty loads machine-local settings from `~/.config/ghostty/local` (`config-file = ?local`), such as `font-codepoint-map` entries for locally built glyph fonts.
 
 Optional Git signing and other machine-specific overrides live in `~/.gitconfig`, outside this repository. Git reads them after the shared `~/.config/git/config`, and `git config --global` writes there.
 

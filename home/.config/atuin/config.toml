@@ -13,6 +13,5 @@ enabled = true
 autostart = true
 
 [search]
-## Tilt daemon-fuzzy ranking toward recency over raw frequency.
 recency_score_multiplier = 3.0
 frequency_score_multiplier = 0.5

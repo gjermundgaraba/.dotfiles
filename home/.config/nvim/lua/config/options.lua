@@ -1,5 +1,3 @@
--- NOTE: We load this before plugins, so this should only contain basic vim options.
-
 require("vim._core.ui2").enable {}
 
 -- Set <space> as the leader key  WARN: Must happen before plugins are loaded
@@ -15,10 +13,7 @@ vim.opt.showcmdloc = "statusline"
 vim.opt.cmdheight = 0
 vim.opt.statusline:append "%{%v:lua.require('utils.diagnostic_status').statusline()%}"
 
--- Defer system clipboard integration because loading it increases startup time.
-vim.schedule(function()
-  vim.opt.clipboard = "unnamedplus"
-end)
+vim.opt.clipboard = "unnamedplus"
 
 vim.opt.autocomplete = true
 vim.opt.completeopt = { "menu", "menuone", "noselect", "popup" }
@@ -28,14 +23,12 @@ vim.opt.pummaxwidth = 80
 vim.opt.breakindent = true
 vim.opt.undofile = true
 
--- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
 
--- Display the which-key popup sooner.
 vim.opt.timeoutlen = 300
 
 vim.opt.splitright = true
@@ -48,13 +41,11 @@ vim.opt.inccommand = "split"
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
--- Tab spaces
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.softtabstop = 4
 
--- Spell checking
 vim.opt.spelllang = "en_us"
 vim.opt.spell = false
 
@@ -86,5 +77,4 @@ vim.o.statuscolumn = "%s%l "
 
 vim.opt.termguicolors = true
 
--- Optimizations
 vim.opt.maxmempattern = 102400

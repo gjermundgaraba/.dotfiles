@@ -13,10 +13,9 @@ const modes = ["dark", "light"] as const;
 const expectedKeys = Object.keys(palettes.dark).sort().join(",");
 const herdrThemeStart = "# BEGIN generated Herdr theme — edit theme/palette.ts";
 const herdrThemeEnd = "# END generated Herdr theme";
+const textContrast = 4.5;
+const nonTextContrast = 3;
 
-// The palette's hues are terminal-strength: right for ANSI colors, cursors and fills, glare
-// as running text or whole rows. Every other use is one of the tiers below, derived in OKLCH
-// so a tier keeps the hue and moves only lightness and chroma.
 type Oklch = [lightness: number, chroma: number, hue: number];
 
 function toOklch(hex: string): Oklch {
@@ -58,12 +57,10 @@ function mix(color: string, other: string, amount: number): string {
   return `#${channels.join("")}`;
 }
 
-// A surface's lightness carrying a fixed chroma of a hue.
 function tint(surface: string, hueSource: string, chroma: number): string {
   return fromOklch([toOklch(surface)[0], chroma, toOklch(hueSource)[2]]);
 }
 
-// Step lightness away from the backgrounds until the color passes on all of them.
 function readable(
   mode: (typeof modes)[number],
   label: string,
@@ -83,21 +80,13 @@ function readable(
 }
 
 const hues = ["Accent", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "Orange"] as const;
-// Soft: a hue as text. On a dark page full chroma glares and bright hues float above the
-// body text, so dark loses chroma and is capped in lightness. On a light page text-dark hues
-// have little chroma to begin with, and taking more away only fades them.
 const softChromaScale = { dark: 0.6, light: 1 } as const;
 const softMaxLightness = { dark: 0.8, light: 1 } as const;
-// Quiet: a hue that recedes, for borders, levels and visited links. A step darker than soft
-// in both modes (toward the page in dark, toward ink in light) with less chroma again.
 const quietLightnessStep = -0.08;
 const quietChromaScale = 0.6;
-// Wash and Tint: a hue as a background, at the lightness halfway between BG and Surface.
-// Wash is for whole rows; Tint is for highlights that have to be found (diffs, search).
 const washChroma = 0.03;
 const tintChroma = { dark: 0.065, light: 0.04 } as const;
 
-// Every derived color, for every hue, computed once and handed to every template.
 function tiers(mode: (typeof modes)[number], palette: Record<string, string>): Record<string, string> {
   const colors: Record<string, string> = { Wash: mix(palette.BG, palette.Surface, 0.5) };
   for (const hue of hues) {
@@ -109,7 +98,6 @@ function tiers(mode: (typeof modes)[number], palette: Record<string, string>): R
     if (ratio < 7) throw new Error(`${mode}.FG/${name} contrast is ${ratio.toFixed(2)}; need 7`);
   }
 
-  // Text sits on the page, on surfaces and on washed rows, so soft has to pass on all of them.
   const washes = Object.keys(colors).filter((name) => name.startsWith("Wash"));
   const textBackgrounds = [palette.BG, palette.Surface, ...washes.map((name) => colors[name])];
   for (const hue of hues) {
@@ -119,7 +107,7 @@ function tiers(mode: (typeof modes)[number], palette: Record<string, string>): R
       `Soft${hue}`,
       fromOklch([Math.min(lightness, softMaxLightness[mode]), chroma * softChromaScale[mode], angle]),
       textBackgrounds,
-      4.5,
+      textContrast,
     );
     const [softLightness, softChroma] = toOklch(soft);
     colors[`Soft${hue}`] = soft;
@@ -128,7 +116,7 @@ function tiers(mode: (typeof modes)[number], palette: Record<string, string>): R
       `Quiet${hue}`,
       fromOklch([softLightness + quietLightnessStep, softChroma * quietChromaScale, angle]),
       [palette.BG],
-      3,
+      nonTextContrast,
     );
   }
   return colors;
@@ -157,18 +145,18 @@ function validate(mode: (typeof modes)[number], palette: Record<string, string>)
   }
 
   const pairs: [string, string, number][] = [
-    ["Accent", "BG", 3],
-    ["FG", "BG", 4.5],
-    ["TerminalFG", "BG", 4.5],
-    ["AnsiWhite", "BG", 3],
-    ["Overlay", "BG", 3],
-    ["FG", "Overlay", 3],
-    ["FGDim", "BG", 4.5],
-    ["FGDim", "Surface", 4.5],
-    ["SelectionFG", "SelectionBG", 4.5],
+    ["Accent", "BG", nonTextContrast],
+    ["FG", "BG", textContrast],
+    ["TerminalFG", "BG", textContrast],
+    ["AnsiWhite", "BG", nonTextContrast],
+    ["Overlay", "BG", nonTextContrast],
+    ["FG", "Overlay", nonTextContrast],
+    ["FGDim", "BG", textContrast],
+    ["FGDim", "Surface", textContrast],
+    ["SelectionFG", "SelectionBG", textContrast],
   ];
   for (const color of ["Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "Orange"]) {
-    pairs.push([color, "BG", 4.5]);
+    pairs.push([color, "BG", textContrast]);
   }
   for (const [foreground, background, minimum] of pairs) {
     const ratio = contrast(palette[foreground], palette[background]);
@@ -241,12 +229,10 @@ for (const mode of modes) {
   }
 }
 
-// Web package: theme/web is published as @gjermundgaraba/gg-theme. The slot names are
-// shadcn/ui's, and with the `.dark` class they are the contract apps import against.
 const webStatus = { destructive: "Red", success: "Green", warning: "Orange", info: "Cyan" } as const;
 const webCharts = ["Blue", "Green", "Orange", "Magenta", "Cyan"] as const;
 const webRadius = "0.5rem";
-const webLegacy = {
+const deprecatedPre020Aliases = {
   "gg-diff-add-bg": "tint-green",
   "gg-diff-delete-bg": "tint-red",
   "gg-diff-change-bg": "tint-blue",
@@ -255,11 +241,12 @@ const webLegacy = {
 } as const;
 function webSlots(mode: (typeof modes)[number], palette: Record<string, string>): Record<string, string> {
   const tier = tiersByMode[mode];
-  // Text on a fill is whichever end of the neutral ramp reads better on it.
-  const on = (slot: string, fill: string): string => {
+  const readableForegroundOn = (slot: string, fill: string): string => {
     const color = contrast(palette.BG, fill) > contrast(palette.FG, fill) ? palette.BG : palette.FG;
     const ratio = contrast(color, fill);
-    if (ratio < 4.5) throw new Error(`${mode}.${slot}-foreground contrast is ${ratio.toFixed(2)}; need 4.5`);
+    if (ratio < textContrast) {
+      throw new Error(`${mode}.${slot}-foreground contrast is ${ratio.toFixed(2)}; need ${textContrast}`);
+    }
     return color;
   };
   const slots: Record<string, string> = { background: palette.BG, foreground: palette.FG };
@@ -268,7 +255,7 @@ function webSlots(mode: (typeof modes)[number], palette: Record<string, string>)
     slots[`${slot}-foreground`] = palette.FG;
   }
   slots.primary = palette.Accent;
-  slots["primary-foreground"] = on("primary", palette.Accent);
+  slots["primary-foreground"] = readableForegroundOn("primary", palette.Accent);
   slots.secondary = palette.Surface;
   slots["secondary-foreground"] = palette.FG;
   slots.muted = palette.Surface;
@@ -277,24 +264,23 @@ function webSlots(mode: (typeof modes)[number], palette: Record<string, string>)
   slots["accent-foreground"] = palette.FG;
   for (const [slot, hue] of Object.entries(webStatus)) {
     slots[slot] = tier[`Soft${hue}`];
-    slots[`${slot}-foreground`] = on(slot, slots[slot]);
+    slots[`${slot}-foreground`] = readableForegroundOn(slot, slots[slot]);
   }
   const alpha = mode === "dark" ? [14, 22] : [12, 18];
   slots.border = `color-mix(in oklab, var(--foreground) ${alpha[0]}%, transparent)`;
   slots.input = `color-mix(in oklab, var(--foreground) ${alpha[1]}%, transparent)`;
   slots.ring = palette.Accent;
-  // Links are short runs whose whole point is the accent, so they take it at full strength,
-  // stepped only as far as reading contrast demands.
-  slots.link = readable(mode, "link", palette.Accent, [palette.BG, palette.Surface], 4.5);
-  // Quiet only has to clear 3 as a border; as visited link text it needs 4.5.
-  slots["link-visited"] = readable(mode, "link-visited", tier.QuietAccent, [palette.BG, palette.Surface], 4.5);
+  slots.link = readable(mode, "link", palette.Accent, [palette.BG, palette.Surface], textContrast);
+  slots["link-visited"] = readable(mode, "link-visited", tier.QuietAccent, [palette.BG, palette.Surface], textContrast);
   slots.selection = palette.SelectionBG;
   slots["selection-foreground"] = palette.SelectionFG;
   webCharts.forEach((hue, index) => (slots[`chart-${index + 1}`] = palette[hue]));
 
   for (const surface of ["BG", "Surface"]) {
     const ratio = contrast(slots.ring, palette[surface]);
-    if (ratio < 3) throw new Error(`${mode}.ring/${surface} contrast is ${ratio.toFixed(2)}; need 3`);
+    if (ratio < nonTextContrast) {
+      throw new Error(`${mode}.ring/${surface} contrast is ${ratio.toFixed(2)}; need ${nonTextContrast}`);
+    }
   }
   return slots;
 }
@@ -303,7 +289,6 @@ function kebab(name: string): string {
   return name.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2").toLowerCase();
 }
 
-// OKLCH so downstream layers can derive variants with color-mix and L/C math.
 function oklchCss(hex: string): string {
   const [lightness, chroma, hue] = toOklch(hex);
   const degrees = ((hue * 180) / Math.PI + 360) % 360;
@@ -374,8 +359,7 @@ const webOutputs: [string, string][] = [
           ),
           ["gg-link", oklchCss(slotsByMode[mode].link)],
           ["gg-link-visited", oklchCss(slotsByMode[mode]["link-visited"])],
-          // Palette entries until 0.2.0, now tiers. Kept so existing consumers do not break.
-          ...Object.entries(webLegacy).map(([name, source]) => [name, `var(--gg-${source})`] as [string, string]),
+          ...Object.entries(deprecatedPre020Aliases).map(([name, source]) => [name, `var(--gg-${source})`] as [string, string]),
         ]),
       ),
     ].join("\n\n"),

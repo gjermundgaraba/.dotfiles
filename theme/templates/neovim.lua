@@ -5,7 +5,6 @@ vim.o.background = '{{Background}}'
 local hi = function(name, val) vim.api.nvim_set_hl(0, name, val) end
 local link = function(from, to) vim.api.nvim_set_hl(0, from, { link = to }) end
 
--- Editor UI
 hi('Normal',         { fg = '{{FG}}', bg = '{{BG}}' })
 hi('NormalFloat',    { fg = '{{FG}}', bg = '{{Surface}}', blend = 10 })
 hi('NormalNC',       { fg = '{{FG}}', bg = '{{BG}}' })
@@ -70,7 +69,6 @@ hi('WildMenu',       { fg = '{{SelectionFG}}', bg = '{{SelectionBG}}' })
 hi('WinBar',         { fg = '{{FG}}', bg = '{{BG}}', bold = true })
 hi('WinBarNC',       { fg = '{{FGDim}}', bg = '{{BG}}' })
 
--- Diff
 hi('DiffAdd',    { bg = '{{TintGreen}}' })
 hi('DiffChange', { bg = '{{TintBlue}}' })
 hi('DiffDelete', { bg = '{{TintRed}}' })
@@ -79,7 +77,6 @@ hi('Added',      { fg = '{{Green}}' })
 hi('Changed',    { fg = '{{Orange}}' })
 hi('Removed',    { fg = '{{Red}}' })
 
--- Syntax
 hi('Comment',        { fg = '{{FGDim}}', italic = true })
 hi('Constant',       { fg = '{{Blue}}' })
 hi('String',         { fg = '{{Yellow}}' })
@@ -116,7 +113,6 @@ hi('Ignore',         {})
 hi('Error',          { fg = '{{Red}}' })
 hi('Todo',           { fg = '{{Cyan}}', bold = true })
 
--- Diagnostics
 hi('DiagnosticError',            { fg = '{{Red}}' })
 hi('DiagnosticWarn',             { fg = '{{Orange}}' })
 hi('DiagnosticInfo',             { fg = '{{Cyan}}' })
@@ -136,7 +132,6 @@ hi('DiagnosticSignWarn',         { fg = '{{Orange}}' })
 hi('DiagnosticSignInfo',         { fg = '{{Cyan}}' })
 hi('DiagnosticSignHint',         { fg = '{{Green}}' })
 
--- LSP
 hi('LspReferenceText',            { bg = '{{Surface}}' })
 hi('LspReferenceRead',            { bg = '{{Surface}}' })
 hi('LspReferenceWrite',           { bg = '{{Surface}}', underline = true })
@@ -145,7 +140,6 @@ hi('LspInlayHint',                { fg = '{{FGDim}}', bg = '{{Surface}}' })
 hi('LspCodeLens',                 { fg = '{{Overlay}}' })
 hi('LspCodeLensSeparator',        { fg = '{{Overlay}}' })
 
--- Treesitter
 link('@variable',              'Identifier')
 link('@variable.builtin',      'Keyword')
 hi('@variable.parameter',      { fg = '{{Orange}}', italic = true })

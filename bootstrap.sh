@@ -6,7 +6,6 @@ brewfile="$root/Brewfile"
 vite_packages="$root/packages/vite-plus.txt"
 node_version=$(tr -d '[:space:]' <"$root/home/.node-version")
 
-# Find Homebrew when the caller's PATH lacks it, as in a provisioning script.
 if ! command -v brew >/dev/null 2>&1; then
   for prefix in /opt/homebrew /home/linuxbrew/.linuxbrew; do
     if test -x "$prefix/bin/brew"; then PATH="$prefix/bin:$PATH"; fi

@@ -1,9 +1,7 @@
-# Foundation
 brew "fish"
 brew "gitleaks"
 brew "stow"
 
-# Shell
 brew "atuin"
 brew "carapace"
 brew "direnv"
@@ -11,7 +9,6 @@ brew "fzf"
 brew "mise"
 brew "zoxide"
 
-# GNU tools Linux already ships
 if OS.mac?
   brew "coreutils"
   brew "findutils"
@@ -21,7 +18,6 @@ if OS.mac?
   brew "make"
 end
 
-# Editor
 brew "bat"
 brew "fd"
 brew "neovim"
@@ -30,7 +26,6 @@ brew "shfmt"
 brew "stylua"
 brew "tree-sitter-cli"
 
-# Development
 brew "actionlint"
 brew "gh"
 brew "git-lfs"

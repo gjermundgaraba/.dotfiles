@@ -1,7 +1,5 @@
-# junk
 .DS_Store
 
-# ai stuff
 .claude/
 .codex
 .pi

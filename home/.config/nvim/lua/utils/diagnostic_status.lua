@@ -13,29 +13,46 @@ local function sort_diagnostics(diagnostics)
   end)
 end
 
-local function cursor_in_diagnostic(diag, row, col)
-  local start_row = diag.lnum
-  local end_row = diag.end_lnum
+local function cursor_in_diagnostic(diag, lnum, col)
+  local start_lnum = diag.lnum
+  local end_lnum = diag.end_lnum
   local start_col = diag.col
   local end_col = diag.end_col
 
-  if row < start_row or row > end_row then
+  if lnum < start_lnum or lnum > end_lnum then
     return false
   end
 
-  if start_row == end_row then
+  if start_lnum == end_lnum then
     return col >= start_col and col <= end_col
   end
 
-  if row == start_row then
+  if lnum == start_lnum then
     return col >= start_col
   end
 
-  if row == end_row then
+  if lnum == end_lnum then
     return col <= end_col
   end
 
   return true
+end
+
+local function diagnostic_under_cursor(diagnostics, lnum, col)
+  for i, diag in ipairs(diagnostics) do
+    if cursor_in_diagnostic(diag, lnum, col) then
+      return i
+    end
+  end
+end
+
+local function next_diagnostic_or_last(diagnostics, lnum, col)
+  for i, diag in ipairs(diagnostics) do
+    if lnum < diag.lnum or (lnum == diag.lnum and col < diag.col) then
+      return i
+    end
+  end
+  return #diagnostics
 end
 
 local function diagnostics_index(bufnr)
@@ -47,26 +64,11 @@ local function diagnostics_index(bufnr)
   sort_diagnostics(diagnostics)
 
   local cursor = vim.api.nvim_win_get_cursor(0)
-  local row = cursor[1] - 1 -- APIs are 0-indexed.
+  local lnum = cursor[1] - 1
   local col = cursor[2]
 
-  -- If cursor is inside a diagnostic, report that one.
-  for i, diag in ipairs(diagnostics) do
-    if cursor_in_diagnostic(diag, row, col) then
-      return i, #diagnostics
-    end
-  end
-
-  -- Otherwise, use the nearest forward diagnostic, or last when after all diagnostics.
-  for i, diag in ipairs(diagnostics) do
-    local start_row = diag.lnum
-    local start_col = diag.col
-    if row < start_row or (row == start_row and col < start_col) then
-      return i, #diagnostics
-    end
-  end
-
-  return #diagnostics, #diagnostics
+  local idx = diagnostic_under_cursor(diagnostics, lnum, col) or next_diagnostic_or_last(diagnostics, lnum, col)
+  return idx, #diagnostics
 end
 
 function M.statusline()

@@ -5,7 +5,6 @@ vim.o.background = 'dark'
 local hi = function(name, val) vim.api.nvim_set_hl(0, name, val) end
 local link = function(from, to) vim.api.nvim_set_hl(0, from, { link = to }) end
 
--- Editor UI
 hi('Normal',         { fg = '#e2e6e0', bg = '#282a27' })
 hi('NormalFloat',    { fg = '#e2e6e0', bg = '#383c36', blend = 10 })
 hi('NormalNC',       { fg = '#e2e6e0', bg = '#282a27' })
@@ -70,7 +69,6 @@ hi('WildMenu',       { fg = '#e2e6e0', bg = '#643c4c' })
 hi('WinBar',         { fg = '#e2e6e0', bg = '#282a27', bold = true })
 hi('WinBarNC',       { fg = '#a0a89c', bg = '#282a27' })
 
--- Diff
 hi('DiffAdd',    { bg = '#1a3a1c' })
 hi('DiffChange', { bg = '#133451' })
 hi('DiffDelete', { bg = '#4d232a' })
@@ -79,7 +77,6 @@ hi('Added',      { fg = '#4cc157' })
 hi('Changed',    { fg = '#ff8200' })
 hi('Removed',    { fg = '#ff7992' })
 
--- Syntax
 hi('Comment',        { fg = '#a0a89c', italic = true })
 hi('Constant',       { fg = '#009aff' })
 hi('String',         { fg = '#f7cd3a' })
@@ -116,7 +113,6 @@ hi('Ignore',         {})
 hi('Error',          { fg = '#ff7992' })
 hi('Todo',           { fg = '#00c9cb', bold = true })
 
--- Diagnostics
 hi('DiagnosticError',            { fg = '#ff7992' })
 hi('DiagnosticWarn',             { fg = '#ff8200' })
 hi('DiagnosticInfo',             { fg = '#00c9cb' })
@@ -136,7 +132,6 @@ hi('DiagnosticSignWarn',         { fg = '#ff8200' })
 hi('DiagnosticSignInfo',         { fg = '#00c9cb' })
 hi('DiagnosticSignHint',         { fg = '#4cc157' })
 
--- LSP
 hi('LspReferenceText',            { bg = '#383c36' })
 hi('LspReferenceRead',            { bg = '#383c36' })
 hi('LspReferenceWrite',           { bg = '#383c36', underline = true })
@@ -145,7 +140,6 @@ hi('LspInlayHint',                { fg = '#a0a89c', bg = '#383c36' })
 hi('LspCodeLens',                 { fg = '#767d72' })
 hi('LspCodeLensSeparator',        { fg = '#767d72' })
 
--- Treesitter
 link('@variable',              'Identifier')
 link('@variable.builtin',      'Keyword')
 hi('@variable.parameter',      { fg = '#ff8200', italic = true })
