@@ -1,0 +1,24 @@
+#!/bin/sh
+# Shows a QR code for this machine and each Rex host, to scan with "Pair via QR Code" in Rex on another device.
+# Runs as the only program of the floating layer the host_qr action in init.lua opens.
+
+# The layer starts this without a login shell
+PATH="${REX_BIN_DIR:+$REX_BIN_DIR:}/opt/homebrew/bin:/home/linuxbrew/.linuxbrew/bin:$PATH"
+
+show() {
+  printf '\033[H\033[2J\033[1m%s\033[0m\n\n' "$1"
+  if [ -n "$2" ]; then
+    qrencode -t ANSIUTF8 -m 2 "$2"
+    printf '\n%s\n\nIn Rex on the other device, tap "Pair via QR Code". It must be on the same tailnet.\n' "$2"
+  else
+    echo "Couldn't reach this host."
+  fi
+  printf '\n\033[2mReturn for the next code, Ctrl-C to close\033[0m'
+  read -r _
+}
+
+show "This machine" "$(rex server tailscale pair --json | jq -r '.url // empty')"
+# The phone's scanner needs a full address, and rex reports the one a host name resolved to
+rex hosts list --json | jq -r '.hosts[].host.label' | while read -r label; do
+  show "$label" "$(rex -S "$label" --timeout 3s whoami --json | jq -r '.endpoint // empty')" </dev/tty
+done

@@ -64,6 +64,7 @@ rex.action{
 rex.bind("f20>shift+d", "split_down_balanced")
 
 rex.bind("f20>s", "session.switch")
+rex.bind("f20>h", "client.host.switch")
 rex.bind("f20>a", "client.sidebar.activity.toggle")
 rex.bind("f20>m", "pane.move_to_new_tab")
 rex.bind("f20>t", "client.tab.new")
@@ -206,29 +207,29 @@ rex.action{
 }
 rex.bind("cmd+shift+t", "popup_shell")
 
--- Agents on every host, the ones waiting on you first. Pressed again, closes the picker
+-- A QR code for each host, to add it in Rex on another device. Pressed again, closes them
 rex.action{
-  name     = "agent_picker",
-  title    = "Agent Picker",
-  keywords = "agents claude codex pi blocked waiting done jump hosts",
+  name     = "host_qr",
+  title    = "Show Host QR Codes",
+  keywords = "hosts qr code pair phone iphone ipad ios add remote",
   run      = function(ctx)
-    if close_popup(ctx.session_id, "agent-picker") then return end
+    if close_popup(ctx.session_id, "host-qr") then return end
     local _, err = rex.session.new_layer{
-      bounds = { 0.1, 0.1, 0.8, 0.8 },
+      bounds = { 0.25, 0.1, 0.5, 0.8 },
       focus  = true,
       layout = rex.layout.block{
         flavor  = "com.superlogical.terminal.shell",
-        label   = "agent-picker",
+        label   = "host-qr",
         options = {
           shell   = "none",
-          command = { os.getenv("HOME") .. "/.config/rex/agent-picker", ctx.client_id },
+          command = { os.getenv("HOME") .. "/.config/rex/host-qr" },
         },
       },
     }
     if err then error(err, 0) end
   end,
 }
-rex.bind("f20>g", "agent_picker")
+rex.bind("f20>q", "host_qr")
 
 rex.action{
   name  = "copy_block_path",
