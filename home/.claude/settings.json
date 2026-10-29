@@ -96,7 +96,8 @@
       "autoCompactWindow": 400000
     },
     "claude-opus-5-5": {
-      "effortLevel": "high"
+      "effortLevel": "high",
+      "autoCompactWindow": 400000
     }
   },
   "autoCompactWindow": 500000,
