@@ -88,6 +88,12 @@ check("another app", handlers.agent({ bundle_id = "com.apple.Notes", pid = 1 }),
 follower.line({ servers = { { server = "local", connected = true, sessions = { session("only", codex) } } } })
 check("no title, the only session", agent(nil), "codex")
 
+local stale = session("only", codex)
+stale.stale = true
+follower.line({ servers = { { server = "local", connected = true, sessions = { stale } } } })
+check("a session whose read failed", agent("x - only"), nil)
+check("no title, a session whose read failed", agent(nil), nil)
+
 -- A message of control characters only falls back to the pane's title
 follower.line({ servers = { { server = "local", connected = true, sessions = {
   session("only", codex, { record("working", "codex", "2026-10-29T17:30:00Z", { msg = "\27" }) }, "Real title"),

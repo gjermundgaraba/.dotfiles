@@ -292,8 +292,10 @@ local function classify(foreground)
   end
 end
 
--- The agent in the focused pane of a session's active window
+-- The agent in the focused pane of a session's active window: false for none,
+-- nil when unknown, as the session's last read failed and its focus may be old
 local function front(session)
+  if session.stale then return nil end
   for _, window in ipairs(session.windows or {}) do
     if window.id == session.active_window then
       for _, block in ipairs(session.blocks or {}) do
@@ -319,7 +321,7 @@ flare.on("agent", function(app)
   for _, session in ipairs(sessions) do
     if title:sub(-(#session.label + 3)) == " - " .. session.label then
       local this = front(session)
-      if agent ~= nil and agent ~= this then return nil end
+      if this == nil or (agent ~= nil and agent ~= this) then return nil end
       agent = this
     end
   end
