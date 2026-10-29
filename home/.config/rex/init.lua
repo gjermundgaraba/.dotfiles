@@ -231,6 +231,20 @@ rex.action{
 }
 rex.bind("f20>q", "host_qr")
 
+-- Agents on every host, the ones waiting on you first, in Flare's Agents mode
+-- (home/.config/flare/extensions/agents.lua). Pressed again, closes it
+rex.action{
+  name     = "agents",
+  title    = "Show Agents",
+  keywords = "agents claude codex pi blocked waiting done jump hosts flare",
+  run      = function()
+    local opened, err = rex.exec({ "/usr/bin/open", "-g", "flare://mode/agents" })
+    if not opened then error(err, 0) end
+    if not opened.ok then error("Flare isn't installed or can't open its Agents mode", 0) end
+  end,
+}
+rex.bind("f20>g", "agents")
+
 rex.action{
   name  = "copy_block_path",
   title = "Copy Pane Path",
