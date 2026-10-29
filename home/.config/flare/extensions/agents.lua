@@ -20,8 +20,8 @@ local ICONS = {
   working = { symbol = "hourglass", color = 0xFF9500 },
   done = { symbol = "checkmark", color = 0x34C759 },
 }
--- How long the list keeps refreshing (ages, previews) after the mode opens
-local LIVE_FOR, LIVE_EVERY = 120, 2
+-- How often the list refreshes (ages, the selected pane's screen) while it shows
+local LIVE_EVERY = 2
 local PREVIEW_LINES = 30
 
 flare.mode{
@@ -35,8 +35,9 @@ flare.mode{
 
 local snapshot -- rex-state's last snapshot
 local problem = "Waiting for rex-state…"
+local jump_failed -- why the last jump failed, shown the next time the mode opens
 local rows = {} -- by item id
-local ticker -- refreshes the list while the mode is likely open
+local ticker -- refreshes the list while the mode shows
 
 local rank = {}
 for i, state in ipairs(ORDER) do rank[state] = i end
@@ -66,10 +67,16 @@ local function age(seconds)
   return seconds .. "s"
 end
 
--- The end of a host's first DNS label tells similar hosts apart, as in mac-dev-1-1
+-- A host by the first label of its name
 local function short(server)
   if server == "local" then return nil end
-  return ((server:match("^[^.]+") or server):sub(-12):gsub("^[-_.]+", ""))
+  return server:match("^[^.]+") or server
+end
+
+-- Text for a row: nil when empty, control characters as spaces
+local function clean(text)
+  if type(text) ~= "string" or text:match("^%s*$") then return nil end
+  return (text:gsub("%c", " "))
 end
 
 -- A block's most pressing agent record: its state, the record, and when it changed
@@ -96,14 +103,15 @@ local function render()
   local down = {}
   rows = {}
   for _, server in ipairs(snapshot and snapshot.servers or {}) do
-    if not server.connected then table.insert(down, short(server.server) or "this Mac") end
+    -- A host still connecting has no error yet
+    if not server.connected and server.error then table.insert(down, short(server.server) or "this Mac") end
     for _, session in ipairs(server.sessions or {}) do
       for _, block in ipairs(session.blocks or {}) do
         local best = status(block)
         if best then
           local host = short(server.server)
           local place = host and (host .. "/" .. session.label) or session.label
-          local id = table.concat({ server.server, session.id, block.window, block.id }, "\t")
+          local id = server.server .. "\t" .. block.id
           local label = best.state .. (best.record.kind and (": " .. best.record.kind) or "")
           rows[id] = {
             server = server.server, session = session.id, window = block.window, block = block.id,
@@ -115,7 +123,7 @@ local function render()
             updated = best.updated,
             item = {
               id = id,
-              title = best.record.msg or block.title or best.record.effective_app,
+              title = clean(best.record.msg) or clean(block.title) or best.record.effective_app,
               subtitle = best.record.effective_app .. " · " .. place,
               accessory = label .. " · " .. age(now - best.updated),
               icon = ICONS[best.state],
@@ -134,7 +142,7 @@ local function render()
   for i, row in ipairs(found) do items[i] = row.item end
   flare.items(items)
   -- An unreachable host's agents can't be jumped to, so its rows are gone
-  flare.notice(problem or (#down > 0 and ("Can't reach " .. table.concat(down, ", ")) or nil))
+  flare.notice(problem or jump_failed or (#down > 0 and ("Can't reach " .. table.concat(down, ", ")) or nil))
 end
 
 local function follow()
@@ -178,15 +186,17 @@ local function call(argv)
   return out.stdout
 end
 
--- Rex.app's client on this Mac's server, which shows sessions on every host
+-- Rex.app's client on this Mac's server, which shows sessions on every host:
+-- the one connected last
 local function app_client()
   local clients = flare.json.decode(call(rex("local", "client", "ls", "--json"))).clients or {}
-  local newest
+  local newest, newest_at
   for _, client in ipairs(clients) do
     local info = client.info or {}
-    if info.kind == "app" and info.platform == "macos"
-      and (not newest or client.connected_at > newest.connected_at) then
-      newest = client
+    local at = epoch(client.connected_at) or 0
+    if info.kind == "app" and info.platform == "macos" and client.connection_state == "connected"
+      and (not newest or at > newest_at) then
+      newest, newest_at = client, at
     end
   end
   return newest and newest.client_id
@@ -195,12 +205,14 @@ end
 flare.on("open", function()
   render()
   if ticker then ticker:cancel() end
-  local ticks = 0
-  ticker = flare.every(LIVE_EVERY, function()
-    ticks = ticks + 1
-    if ticks * LIVE_EVERY >= LIVE_FOR then ticker:cancel() end
-    render()
-  end)
+  ticker = flare.every(LIVE_EVERY, render)
+end)
+
+flare.on("close", function()
+  if ticker then ticker:cancel() end
+  ticker = nil
+  -- Shown once; a jump after this closing sets it again
+  jump_failed = nil
 end)
 
 flare.on("preview", function(id)
@@ -212,23 +224,28 @@ flare.on("preview", function(id)
   local lines = {}
   for line in screen:gmatch("[^\n]*") do table.insert(lines, line) end
   local text = table.concat(lines, "\n", math.max(#lines - PREVIEW_LINES + 1, 1))
-  return {
-    text = text,
-    mono = true,
-    info = { { "Status", row.state }, { "Agent", row.app }, { "Session", row.place }, { "Directory", row.cwd or "" } },
-  }
+  -- The row shows the rest
+  return { text = text, monospace = true, info = row.cwd and { { "Directory", row.cwd } } or nil }
 end)
 
-flare.on("run", function(id)
-  local row = rows[id]
-  if not row then return end
+local function jump(row)
+  if not row then error("That agent is gone", 0) end
   local client = app_client()
   if not client then error("Rex isn't running", 0) end
   call(rex("local", "--client", client, "do", "session.select",
     "session_id=" .. row.session, "window_id=" .. row.window))
-  call(rex(row.server, "api", "call", "session.focus_block",
+  -- Rex comes forward on its session even if the pane can't be focused
+  local focused, err = pcall(call, rex(row.server, "api", "call", "session.focus_block",
     flare.json.encode{ session_id = row.session, block_id = row.block }))
   flare.exec{ "/usr/bin/open", "-b", REX_APP }
+  if not focused then error(err, 0) end
+end
+
+flare.on("run", function(id)
+  local ok, err = pcall(jump, rows[id])
+  jump_failed = not ok and ("Couldn't jump: " .. tostring(err)) or nil
+  render()
+  if not ok then error(err, 0) end
 end)
 
 -- The agent a terminal's foreground process is, by its argv0, executable, or script

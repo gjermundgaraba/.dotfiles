@@ -232,7 +232,8 @@ rex.action{
 rex.bind("f20>q", "host_qr")
 
 -- Agents on every host, the ones waiting on you first, in Flare's Agents mode
--- (home/.config/flare/extensions/agents.lua). Pressed again, closes it
+-- (home/.config/flare/extensions/agents.lua). Runs on the server of the focused
+-- session, so only in this Mac's sessions; Flare's own shortcut works anywhere
 rex.action{
   name     = "agents",
   title    = "Show Agents",
@@ -240,7 +241,7 @@ rex.action{
   run      = function()
     local opened, err = rex.exec({ "/usr/bin/open", "-g", "flare://mode/agents" })
     if not opened then error(err, 0) end
-    if not opened.ok then error("Flare isn't installed or can't open its Agents mode", 0) end
+    if not opened.ok then error((opened.stderr:gsub("%s+$", "")), 0) end
   end,
 }
 rex.bind("f20>g", "agents")
