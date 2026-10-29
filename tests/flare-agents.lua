@@ -107,6 +107,20 @@ flare.exec = function(argv)
 end
 check("preview", handlers.preview(items[1].id).text, "line one\nline two")
 
+-- A jump that can't bring Rex forward says so
+flare.exec = function(argv)
+  if argv[1] == "/usr/bin/open" then return nil, "no open" end
+  if argv[#argv] == "--json" then
+    return { ok = true, stdout = { clients = { { client_id = "c1", connected_at = "2026-10-29T17:00:00Z",
+      connection_state = "connected", info = { kind = "app", platform = "macos" } } } } }
+  end
+  return { ok = true, stdout = {} }
+end
+handlers.run(items[1].id)
+check("jump notice", notice, "Couldn't jump: Couldn't bring Rex forward: no open")
+-- Shown once
+handlers.close()
+
 -- A snapshot rex-state stopped rewriting says so and answers nothing
 follower.line({ written_at = "2020-01-01T00:00:00Z", servers = { { server = "local", connected = true,
   sessions = { session("only", codex) } } } })

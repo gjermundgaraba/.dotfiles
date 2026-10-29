@@ -271,8 +271,10 @@ local function jump(row)
   -- Rex comes forward on its session even if the pane can't be focused
   local focused, err = pcall(call, rex(row.server, "api", "call", "session.focus_block",
     flare.json.encode{ session_id = row.session, block_id = row.block }))
-  flare.exec{ "/usr/bin/open", "-b", REX_APP }
+  local opened, open_err = flare.exec{ "/usr/bin/open", "-b", REX_APP }
   if not focused then error(err, 0) end
+  if not opened then error("Couldn't bring Rex forward: " .. open_err, 0) end
+  if not opened.ok then error("Couldn't bring Rex forward: " .. opened.stderr:gsub("%s+$", ""), 0) end
 end
 
 flare.on("run", function(id)
