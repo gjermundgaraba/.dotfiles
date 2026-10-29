@@ -11,18 +11,22 @@ local REX = HOME .. "/Library/Application Support/com.superlogical.rex/RexServer
 local REX_APP = "com.superlogical.rex"
 
 local AGENTS = { ["claude-code"] = true, codex = true, pi = true, opencode = true }
--- Seen done agents and idle ones are both just waiting, so both are done
-local ORDER = { "blocked", "error", "unread", "working", "done" }
-local ICONS = {
-  blocked = { symbol = "hand.raised.fill", color = 0xFF3B30 },
-  error = { symbol = "exclamationmark.triangle.fill", color = 0xAF52DE },
-  unread = { symbol = "bell.badge.fill", color = 0x30B0C7 },
-  working = { symbol = "hourglass", color = 0xFF9500 },
-  done = { symbol = "checkmark", color = 0x34C759 },
+-- The states rows show, the most pressing first. Seen done agents and idle
+-- ones are both just waiting, so both are done.
+local STATES = {
+  blocked = { rank = 1, icon = { symbol = "hand.raised.fill", color = 0xFF3B30 } },
+  error = { rank = 2, icon = { symbol = "exclamationmark.triangle.fill", color = 0xAF52DE } },
+  unread = { rank = 3, icon = { symbol = "bell.badge.fill", color = 0x30B0C7 } },
+  working = { rank = 4, icon = { symbol = "hourglass", color = 0xFF9500 } },
+  done = { rank = 5, icon = { symbol = "checkmark", color = 0x34C759 } },
 }
 -- How often the list refreshes (ages, the selected pane's screen) while it shows
 local LIVE_EVERY = 2
 local PREVIEW_LINES = 30
+-- The end of a pane's output read for its preview, rather than all its scrollback
+local PREVIEW_BYTES = 32768
+-- rex-state rewrites its snapshot every 30 s, so an older one means it stopped
+local STALE_AFTER = 120
 
 flare.mode{
   name = "Agents",
@@ -38,9 +42,6 @@ local problem = "Waiting for rex-state…"
 local jump_failed -- why the last jump failed, shown the next time the mode opens
 local rows = {} -- by item id
 local ticker -- refreshes the list while the mode shows
-
-local rank = {}
-for i, state in ipairs(ORDER) do rank[state] = i end
 
 -- Seconds since the epoch of an RFC 3339 time, such as 2026-10-29T19:04:00.99+01:00
 local function epoch(stamp)
@@ -73,10 +74,19 @@ local function short(server)
   return server:match("^[^.]+") or server
 end
 
--- Text for a row: nil when empty, control characters as spaces
+-- Text for a row: control characters as spaces, nil when blank
 local function clean(text)
-  if type(text) ~= "string" or text:match("^%s*$") then return nil end
-  return (text:gsub("%c", " "))
+  if type(text) ~= "string" then return nil end
+  text = text:gsub("%c", " ")
+  if text:match("^%s*$") then return nil end
+  return text
+end
+
+-- Seconds since rex-state last wrote, if it stopped writing
+local function stopped_for()
+  local written = snapshot and epoch(snapshot.written_at)
+  local since = written and os.time() - written
+  if since and since > STALE_AFTER then return since end
 end
 
 -- A block's most pressing agent record: its state, the record, and when it changed
@@ -87,10 +97,10 @@ local function status(block)
     local state = record.state
     if state == "done" and record.unread then state = "unread" end
     if state == "idle" then state = "done" end
-    if AGENTS[record.effective_app] and updated and rank[state] then
-      if not best or rank[state] < rank[best.state]
-        or (rank[state] == rank[best.state] and updated > best.updated) then
-        best = { state = state, record = record, updated = updated }
+    local rank = STATES[state] and STATES[state].rank
+    if AGENTS[record.effective_app] and updated and rank then
+      if not best or rank < best.rank or (rank == best.rank and updated > best.updated) then
+        best = { state = state, rank = rank, record = record, updated = updated }
       end
     end
   end
@@ -115,18 +125,17 @@ local function render()
           local label = best.state .. (best.record.kind and (": " .. best.record.kind) or "")
           rows[id] = {
             server = server.server, session = session.id, window = block.window, block = block.id,
-            app = best.record.effective_app, place = place, state = label,
             cwd = block.foreground and block.foreground.cwd,
           }
           table.insert(found, {
-            rank = rank[best.state],
+            rank = best.rank,
             updated = best.updated,
             item = {
               id = id,
               title = clean(best.record.msg) or clean(block.title) or best.record.effective_app,
               subtitle = best.record.effective_app .. " · " .. place,
               accessory = label .. " · " .. age(now - best.updated),
-              icon = ICONS[best.state],
+              icon = STATES[best.state].icon,
               match = label .. " " .. (server.server or ""),
             },
           })
@@ -141,8 +150,11 @@ local function render()
   local items = {}
   for i, row in ipairs(found) do items[i] = row.item end
   flare.items(items)
+  local stopped = stopped_for()
   -- An unreachable host's agents can't be jumped to, so its rows are gone
-  flare.notice(problem or jump_failed or (#down > 0 and ("Can't reach " .. table.concat(down, ", ")) or nil))
+  flare.notice(problem or jump_failed
+    or (stopped and ("rex-state stopped writing " .. age(stopped) .. " ago; these rows may be old"))
+    or (#down > 0 and ("Can't reach " .. table.concat(down, ", ")) or nil))
 end
 
 local function follow()
@@ -215,12 +227,34 @@ flare.on("close", function()
   jump_failed = nil
 end)
 
+-- A terminal method of a row's pane
+local function terminal(row, method, args)
+  return flare.json.decode(call(rex(row.server, "api", "call", "com.superlogical.terminal." .. method,
+    flare.json.encode{ session_id = row.session, block_id = row.block, args = args })))
+end
+
+-- The end of a pane's output: a byte of it says how long it is, and the
+-- rest is read from near its end, without its first, partial line
+local function tail(row)
+  local first = terminal(row, "format", { format = "text", trim = true, max_bytes = 1 })
+  if not first.id then return first.content end
+  local start = math.max(first.total - PREVIEW_BYTES, 0)
+  local offset, parts = start, {}
+  repeat
+    -- Escaping may make a part shorter than asked for
+    local part = terminal(row, "blob_read", { id = first.id, offset = offset, max_bytes = 2 * PREVIEW_BYTES })
+    table.insert(parts, part.data)
+    offset = offset + #part.data
+  until part.eof or part.data == ""
+  local text = table.concat(parts)
+  return start > 0 and text:gsub("^[^\n]*\n", "") or text
+end
+
 flare.on("preview", function(id)
   local row = rows[id]
   if not row then return nil end
-  local out, err = flare.exec(rex(row.server, "capture", "--session", row.session, "--block", row.block, "--trim"),
-    { timeout = 3 })
-  local screen = (out and (out.ok and out.stdout or out.stderr) or err):gsub("%s+$", "")
+  -- A failure shows in its place
+  local screen = tostring(select(2, pcall(tail, row))):gsub("%s+$", "")
   local lines = {}
   for line in screen:gmatch("[^\n]*") do table.insert(lines, line) end
   local text = table.concat(lines, "\n", math.max(#lines - PREVIEW_LINES + 1, 1))
@@ -245,7 +279,6 @@ flare.on("run", function(id)
   local ok, err = pcall(jump, rows[id])
   jump_failed = not ok and ("Couldn't jump: " .. tostring(err)) or nil
   render()
-  if not ok then error(err, 0) end
 end)
 
 -- The agent a terminal's foreground process is, by its argv0, executable, or script
@@ -272,7 +305,8 @@ end
 -- Rex's window title ends in " - " and the session's label, with no sign of the
 -- host, so sessions of that label on several hosts answer only when they agree
 flare.on("agent", function(app)
-  if app.bundle_id ~= REX_APP or not snapshot then return nil end
+  -- An old snapshot may name another pane than the one focused now
+  if app.bundle_id ~= REX_APP or not snapshot or stopped_for() then return nil end
   local title = flare.window_title(app.pid)
   local sessions = {}
   for _, server in ipairs(snapshot.servers or {}) do

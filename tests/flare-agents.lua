@@ -16,7 +16,7 @@ flare = {
   exec = function() return nil, "not here" end,
   window_title = function() return title end,
   -- Snapshots are handed over as tables
-  json = { decode = function(value) return value end, encode = function() return "" end },
+  json = { decode = function(value) return value end, encode = function(value) return value end },
 }
 dofile(root .. "/home/.config/flare/extensions/agents.lua")
 
@@ -87,6 +87,31 @@ check("another app", handlers.agent({ bundle_id = "com.apple.Notes", pid = 1 }),
 
 follower.line({ servers = { { server = "local", connected = true, sessions = { session("only", codex) } } } })
 check("no title, the only session", agent(nil), "codex")
+
+-- A message of control characters only falls back to the pane's title
+follower.line({ servers = { { server = "local", connected = true, sessions = {
+  session("only", codex, { record("working", "codex", "2026-10-29T17:30:00Z", { msg = "\27" }) }, "Real title"),
+} } } })
+check("control-only message", items[1].title, "Real title")
+
+-- The preview reads only the end of the pane's output, in parts
+local output = string.rep("x", 40000) .. "\nline one\nline two\n\n"
+flare.exec = function(argv)
+  local method, request = argv[#argv - 1], argv[#argv]
+  if method:match("format$") then
+    return { ok = true, stdout = { content = "x", id = 7, total = #output } }
+  end
+  local offset = request.args.offset
+  local data = output:sub(offset + 1, offset + 5000)
+  return { ok = true, stdout = { id = 7, data = data, eof = offset + #data >= #output } }
+end
+check("preview", handlers.preview(items[1].id).text, "line one\nline two")
+
+-- A snapshot rex-state stopped rewriting says so and answers nothing
+follower.line({ written_at = "2020-01-01T00:00:00Z", servers = { { server = "local", connected = true,
+  sessions = { session("only", codex) } } } })
+check("stopped daemon's agent", agent("x - only"), nil)
+check("stopped daemon's notice", notice and notice:match("^rex%-state stopped") ~= nil, true)
 
 if failures > 0 then os.exit(1) end
 print("ok")
