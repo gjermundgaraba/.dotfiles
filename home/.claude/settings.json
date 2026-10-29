@@ -3,6 +3,10 @@
   "env": {
     "CLAUDE_CODE_SUBAGENT_MODEL": "opus"
   },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "defaultMode": "auto"
   },
