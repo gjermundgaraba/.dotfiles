@@ -206,6 +206,30 @@ rex.action{
 }
 rex.bind("cmd+shift+t", "popup_shell")
 
+-- Agents on every host, the ones waiting on you first. Pressed again, closes the picker
+rex.action{
+  name     = "agent_picker",
+  title    = "Agent Picker",
+  keywords = "agents claude codex pi blocked waiting done jump hosts",
+  run      = function(ctx)
+    if close_popup(ctx.session_id, "agent-picker") then return end
+    local _, err = rex.session.new_layer{
+      bounds = { 0.1, 0.1, 0.8, 0.8 },
+      focus  = true,
+      layout = rex.layout.block{
+        flavor  = "com.superlogical.terminal.shell",
+        label   = "agent-picker",
+        options = {
+          shell   = "none",
+          command = { os.getenv("HOME") .. "/.config/rex/agent-picker", ctx.client_id },
+        },
+      },
+    }
+    if err then error(err, 0) end
+  end,
+}
+rex.bind("f20>g", "agent_picker")
+
 rex.action{
   name  = "copy_block_path",
   title = "Copy Pane Path",

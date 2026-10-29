@@ -1,0 +1,192 @@
+#!/opt/homebrew/bin/python3
+"""Picks an agent on any Rex host, the ones most in need of you first, and jumps to it.
+
+Runs as the only program of the floating layer the agent_picker action in init.lua opens.
+The picker opens on each host's last list and updates each host as it answers.
+
+Usage: agent-picker [CLIENT] | agent-picker show | agent-picker refresh
+       agent-picker preview SERVER SESSION BLOCK
+"""
+
+import datetime
+import json
+import math
+import os
+import plistlib
+import re
+import shlex
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+
+SELF = Path(__file__).resolve()
+COLLECT = SELF.with_name("agent-picker.lua")
+CACHE = Path.home() / "Library/Caches/rex-agent-picker"
+HOST_TIMEOUT = "5s"
+AGENTS = {"claude-code", "codex", "pi", "opencode"}
+# Seen done agents and idle ones are both just waiting, so both are done
+ORDER = ["blocked", "error", "unread", "working", "done"]
+COLORS = {"blocked": 31, "error": 35, "unread": 36, "working": 33, "done": 32}
+
+# The layer starts this without a login shell
+os.environ["PATH"] = ":".join(filter(None, [os.environ.get("REX_BIN_DIR"), "/opt/homebrew/bin", os.environ["PATH"]]))
+LOCAL = os.environ["REX_SERVER"]
+
+
+def rex(*args, **kwargs):
+    return subprocess.run(["rex", *args], stdin=subprocess.DEVNULL, capture_output=True, text=True, **kwargs)
+
+
+def cache_file(server):
+    return CACHE / (re.sub(r"[^A-Za-z0-9._-]", "_", server) + ".json")
+
+
+def refresh():
+    hosts = json.loads(rex("hosts", "--json").stdout or "{}").get("hosts", [])
+    servers = [LOCAL] + [host["host"]["label"] for host in hosts]
+    keep = {cache_file(server) for server in servers}
+    for file in CACHE.glob("*.json"):
+        if file not in keep:
+            file.unlink()
+    threads = [threading.Thread(target=refresh_host, args=(server,)) for server in servers]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+
+def refresh_host(server):
+    file = cache_file(server)
+    collected = rex("-S", server, "--timeout", HOST_TIMEOUT, "do", str(COLLECT))
+    if collected.returncode == 0:
+        panes = [json.loads(line) for line in collected.stdout.splitlines()]
+        tmp = file.with_suffix(".tmp")
+        tmp.write_text(json.dumps({"server": server, "panes": panes}))
+        tmp.replace(file)
+    else:
+        # An unreachable host's agents can't be jumped to, so its rows go
+        file.unlink(missing_ok=True)
+    if "FZF_SOCK" in os.environ:
+        subprocess.run(["curl", "-s", "--unix-socket", os.environ["FZF_SOCK"], "-X", "POST", "http://fzf",
+                        "-d", f"reload({shlex.quote(str(SELF))} show)"], capture_output=True)
+
+
+def read_seen():
+    """When Rex.app last showed you each pane. It keeps this in its preferences, not the server."""
+    try:
+        prefs = plistlib.loads(rex_prefs())
+        receipts = prefs["Workspace.programActivitySeen"]["receipts"]
+        seen = {}
+        for receipt in receipts:
+            when = receipt["date"].replace(tzinfo=datetime.timezone.utc).timestamp()
+            seen[receipt["block"]] = max(seen.get(receipt["block"], 0), when)
+        return seen
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return None
+
+
+def rex_prefs():
+    return subprocess.run(["defaults", "export", "com.superlogical.rex", "-"], capture_output=True).stdout
+
+
+def status(record, seen_at):
+    """How the record sorts and what it shows, or None for records the picker leaves out."""
+    if record.get("effective_app") not in AGENTS:
+        return None
+    try:
+        updated = datetime.datetime.fromisoformat(record["updated_at"]).timestamp()
+    except (KeyError, ValueError):
+        return None
+    state = record.get("state")
+    if state == "done":
+        # Receipts keep whole seconds
+        state = "unread" if seen_at < math.floor(updated) else "done"
+    elif state == "idle":
+        state = "done"
+    if state not in ORDER:
+        return None
+    return ORDER.index(state), -updated, state, updated
+
+
+def age(seconds):
+    for unit, size in (("d", 86400), ("h", 3600), ("m", 60)):
+        if seconds >= size:
+            return f"{seconds // size}{unit}"
+    return f"{seconds}s"
+
+
+def clean(text):
+    return re.sub(r"[\x00-\x1f\x7f]", " ", text or "")
+
+
+def render(seen):
+    rows = []
+    for file in CACHE.glob("*.json"):
+        try:
+            host = json.loads(file.read_text())
+        except (OSError, ValueError):
+            continue
+        server = host["server"]
+        # The end of a host's first DNS label tells similar hosts apart, as in mac-dev-1-1
+        short = None if server == LOCAL else server.split(".")[0][-12:].lstrip("-_.")
+        for pane in host["panes"]:
+            # Without receipts nothing counts as unread, rather than everything
+            seen_at = math.inf if seen is None else seen.get(pane["block"], 0)
+            ranked = [(key, record) for record in pane["records"] if (key := status(record, seen_at))]
+            if not ranked:
+                continue
+            (rank, newest_first, state, updated), record = min(ranked, key=lambda item: item[0][:2])
+            label = f"\033[{COLORS[state]}m{state}\033[0m" + (f":{record['kind']}" if record.get("kind") else "")
+            place = clean(pane["label"]) if short is None else f"{short}/{clean(pane['label'])}"
+            text = clean(record.get("msg") or pane.get("title"))
+            # 27 fits the longest status, blocked:permission, plus 9 bytes of color codes
+            display = (f"{label:<27} {age(max(int(time.time() - updated), 0)):>3}  "
+                       f"{record['effective_app']:<11} {place[:26]:<26} {text}")
+            rows.append(((rank, newest_first), [server, pane["session"], pane["window"], pane["block"], display]))
+    return "".join("\t".join(fields) + "\n" for _, fields in sorted(rows))
+
+
+def preview(server, session, block):
+    screen = rex("-S", server, "capture", "-s", session, "-b", block, "--trim")
+    lines = (screen.stdout or screen.stderr).splitlines()
+    print("\n".join(lines[-int(os.environ.get("FZF_PREVIEW_LINES", 40)):]))
+
+
+def pick(client):
+    CACHE.mkdir(parents=True, exist_ok=True)
+    sock = CACHE / f"fzf-{os.getpid()}.sock"
+    dark = subprocess.run(["defaults", "read", "-g", "AppleInterfaceStyle"], capture_output=True, text=True).stdout.strip() == "Dark"
+    colors = "bg:#282a27,bg+:#383c36,preview-bg:#282a27" if dark else "bg:#faf8f4,bg+:#eeebe3,preview-bg:#faf8f4"
+    seen = read_seen()
+    me = shlex.quote(str(SELF))
+    try:
+        picked = subprocess.run(
+            ["fzf", "--ansi", "--layout=reverse", "--height=100%", "--no-sort",
+             "--delimiter=\t", "--with-nth=5", f"--listen={sock}", "--with-shell=/bin/sh -c",
+             f"--bind=start:execute-silent({me} refresh >/dev/null 2>&1 &)",
+             "--border=rounded", "--border-label= Agents ", "--info=inline-right", f"--color={colors}",
+             "--header=enter: jump" + ("" if seen is not None else "  (unread unavailable)"),
+             f"--preview={me} preview {{1}} {{2}} {{4}}", "--preview-window=down,40%,border-top,follow"],
+            input=render(seen), stdout=subprocess.PIPE, text=True,
+        )
+    finally:
+        sock.unlink(missing_ok=True)
+    if picked.returncode != 0:
+        return
+    server, session, window, block, _ = picked.stdout.rstrip("\n").split("\t", 4)
+    rex(*(["-C", client] if client else []), "do", "session.select", f"session_id={session}", f"window_id={window}")
+    rex("-S", server, "api", "call", "session.focus_block", json.dumps({"session_id": session, "block_id": block}))
+
+
+if __name__ == "__main__":
+    command, *args = sys.argv[1:] or [os.environ.get("REX_CLIENT", "")]
+    if command == "show":
+        print(render(read_seen()), end="")
+    elif command == "refresh":
+        refresh()
+    elif command == "preview":
+        preview(*args)
+    else:
+        pick(command)
