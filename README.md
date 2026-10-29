@@ -13,10 +13,11 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 5. Run `stow -R --no-folding --ignore='^\.config/nvim/\.agents/skills(/.*)?$' --ignore='(^|/)__pycache__(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step, and Python's bytecode caches stay in the repository.
 6. Run `mkdir -p ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles/home/.config/nvim/.agents -t ~/.config/nvim/.agents/skills skills`, then `mkdir -p ~/.codex/skills ~/.agents/skills ~/.claude/skills && stow -R -d ~/.dotfiles -t ~ skills`.
 7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
-8. On macOS, install the LaunchAgents as regular files because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && for agent in local.capslock-f20 local.rex-state; do install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/$agent.plist ~/Library/LaunchAgents/$agent.plist; done`. `local.rex-state` runs `~/.cargo/bin/rex-state`, which keeps the state of every Rex server for Flare's Agents extension; install rex-state with `cargo install --path` from its checkout first, or leave that agent out.
+8. On macOS, install the LaunchAgents as regular files because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && for agent in local.capslock-f20 local.rex-state; do install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/$agent.plist ~/Library/LaunchAgents/$agent.plist; done`. `local.rex-state` runs `~/.cargo/bin/rex-state`, which keeps the state of every Rex server for Flare's Agents extension. Until rex-state is installed with `cargo install --path` from its checkout, the agent exits at once and launchd leaves it stopped; repeat step 9 after installing it. An agent left out here is skipped in step 9.
 9. On macOS, load or reload each LaunchAgent after any previous instance finishes unloading:
    ```sh
    for agent in local.capslock-f20 local.rex-state; do
+     [ -f ~/Library/LaunchAgents/$agent.plist ] || continue
      service="gui/$(id -u)/$agent"
      if launchctl print "$service" >/dev/null 2>&1; then
        launchctl bootout "$service"

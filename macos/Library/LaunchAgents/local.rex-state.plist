@@ -8,11 +8,14 @@
     <array>
         <string>/bin/sh</string>
         <string>-c</string>
-        <string>exec "$HOME/.cargo/bin/rex-state" run 2&gt;&gt;"$HOME/Library/Logs/rex-state.log"</string>
+        <string>bin="$HOME/.cargo/bin/rex-state"; [ -x "$bin" ] || exit 0; exec "$bin" run 2&gt;&gt;"$HOME/Library/Logs/rex-state.log"</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
-    <true/>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
 </dict>
 </plist>
