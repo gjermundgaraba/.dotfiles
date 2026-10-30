@@ -49,6 +49,15 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '\"$HOME/.config/rex/agent-session\" record claude-code 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "SubagentStart": [

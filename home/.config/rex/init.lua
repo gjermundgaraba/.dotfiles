@@ -100,69 +100,9 @@ rex.action{
 }
 rex.bind("f20>y", "copy_block_id")
 
-local function claude_pid(block_id)
-  local status = rex.block.call(terminal, "program_status", { block_id = block_id }) or {}
-  for _, record in ipairs(status.records or {}) do
-    if record.app == "claude-code" and record.owner then return record.owner.pid end
-  end
-end
-
--- The session file is read by the new pane's shell, so this also works when the pane is on a remote host
-local session_id_from = [[sed -n 's/.*"sessionId": *"\([^"]*\)".*/\1/p' ~/.claude/sessions/]]
-
-rex.action{
-  name  = "fork_agent",
-  title = "Fork Agent Session",
-  run   = function(ctx)
-    local pid = claude_pid(ctx.block_id)
-    if not pid then error("No Claude Code session in this pane", 0) end
-    local proc = rex.block.call(terminal, "process", { block_id = ctx.block_id }) or {}
-    local parent = (proc.ancestors or {})[1] or {}
-    local _, err = rex.session.new_split{
-      anchor_id = ctx.block_id,
-      direction = "horizontal",
-      side      = "after",
-      focus     = true,
-      layout    = rex.layout.block{
-        flavor  = "com.superlogical.terminal.shell",
-        options = {
-          shell         = parent.invoked_path or parent.path,
-          cwd           = proc.foreground and proc.foreground.cwd,
-          initial_input = 'claude --resume "$(' .. session_id_from .. pid .. '.json)" --fork-session\n',
-        },
-      },
-    }
-    if err then error(err, 0) end
-    rex.client.queue("pane.balance")
-  end,
-}
+-- Fork Agent Session and Copy Agent Session ID, for Claude Code, Codex and pi
+require("agent_fork").setup{ copy = copy }
 rex.bind("f20>f", "fork_agent")
-
--- Reads the session file in a hidden pane on the pane's own host, so this also works for remote panes
-rex.action{
-  name  = "copy_agent_session_id",
-  title = "Copy Agent Session ID",
-  run   = function(ctx)
-    local pid = claude_pid(ctx.block_id)
-    if not pid then error("No Claude Code session in this pane", 0) end
-    local reader, err = rex.call("session.new_block", {
-      session_id = ctx.session_id,
-      flavor     = "com.superlogical.terminal.shell",
-      options    = { shell = "none", command = { "/bin/sh", "-c", session_id_from .. pid .. ".json; sleep 10" } },
-    })
-    if err then error(err, 0) end
-    local id
-    for _ = 1, 40 do
-      local out = rex.block.call(terminal, "format", { block_id = reader.block_id, format = "text" }) or {}
-      id = (out.content or ""):match("%x+%-%x+%-%x+%-%x+%-%x+")
-      if id then break end
-      rex.exec({ "sleep", "0.05" })
-    end
-    rex.call("block.close", { session_id = ctx.session_id, block_id = reader.block_id })
-    if not id then error("Couldn't read the session ID for Claude Code pid " .. pid, 0) end
-    return copy(id, "Copied agent session ID")
-  end,
-}
 rex.bind("f20>i", "copy_agent_session_id")
 
 -- Closes the floating layer with this block label in the active tab, if there is one
