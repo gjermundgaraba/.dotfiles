@@ -4,7 +4,7 @@
 
 local root = arg[0]:match("^(.*)/tests/") or "."
 local handlers, items, notice, title, follower = {}, nil, nil, nil, nil
-local tick, pushed = nil, {} -- the ticker's callback, and the previews it pushed
+local tick -- the ticker's callback
 
 flare = {
   mode = function() end,
@@ -13,7 +13,6 @@ flare = {
   on = function(event, handler) handlers[event] = handler end,
   spawn = function(_, options) follower = options; return {} end,
   every = function(_, callback) tick = callback; return { cancel = function() end } end,
-  preview = function(id, preview) pushed[id] = preview end,
   after = function() end,
   exec = function() return nil, "not here" end,
   window_title = function() return title end,
@@ -46,8 +45,8 @@ local function session(label, foreground, status, block_title)
   }
 end
 
-local claude = { argv0 = "claude", path = "/x/claude/versions/2.1" }
-local codex = { argv0 = "node", script = "/l/@openai/codex/bin/codex.js" }
+local claude = { argv0 = "claude", path = "/x/claude/versions/2.1", cwd = os.getenv("HOME") .. "/ws/pers/flare" }
+local codex = { argv0 = "node", script = "/l/@openai/codex/bin/codex.js", cwd = "/Users/admin/workspace/repos/ibc" }
 local fish = { argv0 = "-fish", path = "/opt/homebrew/bin/fish" }
 
 follower.line({ servers = {
@@ -66,13 +65,19 @@ follower.line({ servers = {
   { server = "gone.example.ts.net", connected = false, error = "refused" },
 } })
 
--- Rows: the most pressing first, titled by message, else by the pane's title
+-- Rows: the most pressing first, titled by the pane's title, else by the agent,
+-- with its message under it, then where it runs, its directory, and its state
 check("rows", #items, 2)
-check("first row", items[1].title, "Allow rm?")
-check("first subtitle", items[1].subtitle, "codex · box/review")
-check("first accessory", items[1].accessory:match("^[^·]+"), "blocked: permission ")
+check("first row", items[1].title, "codex")
+check("first subtitle", items[1].subtitle, "Allow rm?")
+check("first place", items[1].columns[1], "box/review")
+-- Each folder but the last two by its first letter, home as ~ on this Mac only
+check("first directory", items[1].columns[2], "/U/a/w/repos/ibc")
+check("first state", items[1].columns[3].text:match("^[^·]+"), "blocked: permission ")
 check("second row", items[2].title, "Fix the bug")
-check("second accessory", items[2].accessory:match("^[^·]+"), "unread ")
+check("second subtitle", items[2].subtitle, nil)
+check("second directory", items[2].columns[2], "~/w/pers/flare")
+check("second state", items[2].columns[3].text:match("^[^·]+"), "unread ")
 check("notice", notice, "Can't reach gone")
 
 -- Which agent Rex shows, by the session its window title names
@@ -96,30 +101,18 @@ follower.line({ servers = { { server = "local", connected = true, sessions = { s
 check("a session whose read failed", agent("x - only"), nil)
 check("no title, a session whose read failed", agent(nil), nil)
 
--- A message of control characters only falls back to the pane's title
+-- A message of control characters only shows no subtitle
 follower.line({ servers = { { server = "local", connected = true, sessions = {
   session("only", codex, { record("working", "codex", "2026-10-29T17:30:00Z", { msg = "\27" }) }, "Real title"),
 } } } })
-check("control-only message", items[1].title, "Real title")
+check("control-only message", items[1].subtitle, nil)
+check("control-only message's title", items[1].title, "Real title")
 
--- The preview reads only the end of the pane's output, in parts
-local output = string.rep("x", 40000) .. "\nline one\nline two\n\n"
-flare.exec = function(argv)
-  local method, request = argv[#argv - 1], argv[#argv]
-  if method:match("format$") then
-    return { ok = true, stdout = { content = "x", id = 7, total = #output } }
-  end
-  local offset = request.args.offset
-  local data = output:sub(offset + 1, offset + 5000)
-  return { ok = true, stdout = { id = 7, data = data, eof = offset + #data >= #output } }
-end
-check("preview", handlers.preview(items[1].id).text, "line one\nline two")
-
--- While the mode shows, the ticker pushes the selected pane's screen
+-- While the mode shows, the ticker refreshes the rows
 handlers.open()
-output = "line three\n"
+items = nil
 tick()
-check("pushed preview", pushed[items[1].id] and pushed[items[1].id].text, "line three")
+check("ticker's rows", items and #items, 1)
 handlers.close()
 
 -- A jump that can't bring Rex forward says so

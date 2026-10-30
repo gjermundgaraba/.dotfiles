@@ -20,11 +20,12 @@ local STATES = {
   working = { rank = 4, icon = { symbol = "hourglass", color = 0xFF9500 } },
   done = { rank = 5, icon = { symbol = "checkmark", color = 0x34C759 } },
 }
--- How often the list refreshes (ages, the selected pane's screen) while it shows
+-- How often the list refreshes its ages while it shows
 local LIVE_EVERY = 2
-local PREVIEW_LINES = 30
--- The end of a pane's output read for its preview, rather than all its scrollback
-local PREVIEW_BYTES = 32768
+-- Each agent's icon, by its app (claude-code.png and so on), and the one for
+-- an agent without
+local ICONS = HOME .. "/.config/flare/extensions/agents/"
+local NO_ICON = { symbol = "terminal.fill" }
 -- rex-state rewrites its snapshot every 30 s, so an older one means it stopped
 local STALE_AFTER = 120
 
@@ -32,8 +33,9 @@ flare.mode{
   name = "Agents",
   icon = { symbol = "sparkles", color = 0x5E5CE6 },
   placeholder = "Search agents…",
-  previews = true,
   actions = { primary = "Jump" },
+  -- Where it runs, its directory, and its state
+  columns = { { width = 150 }, { width = 150, truncate = "start" }, { width = 180 } },
 }
 
 local snapshot -- rex-state's last snapshot
@@ -41,7 +43,6 @@ local problem = "Waiting for rex-state…"
 local jump_failed -- why the last jump failed, shown the next time the mode opens
 local rows = {} -- by item id
 local ticker -- refreshes the list while the mode shows
-local selected -- the item whose preview shows
 
 -- Seconds since the epoch of an RFC 3339 time, such as 2026-10-29T19:04:00.99+01:00
 local function epoch(stamp)
@@ -80,6 +81,30 @@ local function clean(text)
   text = text:gsub("%c", " ")
   if text:match("^%s*$") then return nil end
   return text
+end
+
+-- An agent's icon: its image, if there is one
+local function agent_icon(app)
+  local path = ICONS .. app .. ".png"
+  local file = io.open(path)
+  if not file then return NO_ICON end
+  file:close()
+  return { image = path }
+end
+
+-- A directory on this Mac with its home as ~
+local function home(cwd)
+  if cwd == HOME or cwd:sub(1, #HOME + 1) == HOME .. "/" then return "~" .. cwd:sub(#HOME + 1) end
+  return cwd
+end
+
+-- A directory as fish's prompt shows it: each folder but the last two by its
+-- first letter, with a hidden one's dot
+local function fish(cwd)
+  local names = {}
+  for name in cwd:gmatch("[^/]+") do table.insert(names, name) end
+  for i = 1, #names - 2 do names[i] = names[i]:match("^%.?" .. utf8.charpattern) or names[i] end
+  return (cwd:sub(1, 1) == "/" and "/" or "") .. table.concat(names, "/")
 end
 
 -- Seconds since rex-state last wrote, if it stopped writing
@@ -123,20 +148,26 @@ local function render()
           local place = host and (host .. "/" .. session.label) or session.label
           local id = server.server .. "\t" .. block.id
           local label = best.state .. (best.record.kind and (": " .. best.record.kind) or "")
-          rows[id] = {
-            server = server.server, session = session.id, window = block.window, block = block.id,
-            cwd = block.foreground and block.foreground.cwd,
-          }
+          local app = best.record.effective_app
+          local cwd = clean((block.foreground or {}).cwd)
+          if cwd and server.server == "local" then cwd = home(cwd) end
+          cwd = cwd and fish(cwd)
+          rows[id] = { server = server.server, session = session.id, window = block.window, block = block.id }
           table.insert(found, {
             rank = best.rank,
             updated = best.updated,
             item = {
               id = id,
-              title = clean(best.record.msg) or clean(block.title) or best.record.effective_app,
-              subtitle = best.record.effective_app .. " · " .. place,
-              accessory = label .. " · " .. age(now - best.updated),
-              icon = STATES[best.state].icon,
-              match = label .. " " .. (server.server or ""),
+              title = clean(block.title) or app,
+              -- What the agent is doing, while it says
+              subtitle = clean(best.record.msg),
+              icon = agent_icon(app),
+              columns = {
+                place,
+                cwd,
+                { text = label .. " · " .. age(now - best.updated), icon = STATES[best.state].icon },
+              },
+              match = app .. " " .. server.server,
             },
           })
         end
@@ -215,61 +246,16 @@ local function app_client()
 end
 
 
--- A terminal method of a row's pane
-local function terminal(row, method, args)
-  return flare.json.decode(call(rex(row.server, "api", "call", "com.superlogical.terminal." .. method,
-    flare.json.encode{ session_id = row.session, block_id = row.block, args = args })))
-end
-
--- The end of a pane's output: a byte of it says how long it is, and the
--- rest is read from near its end, without its first, partial line
-local function tail(row)
-  local first = terminal(row, "format", { format = "text", trim = true, max_bytes = 1 })
-  if not first.id then return first.content end
-  local start = math.max(first.total - PREVIEW_BYTES, 0)
-  local offset, parts = start, {}
-  repeat
-    -- Escaping may make a part shorter than asked for
-    local part = terminal(row, "blob_read", { id = first.id, offset = offset, max_bytes = 2 * PREVIEW_BYTES })
-    table.insert(parts, part.data)
-    offset = offset + #part.data
-  until part.eof or part.data == ""
-  local text = table.concat(parts)
-  return start > 0 and text:gsub("^[^\n]*\n", "") or text
-end
-
--- An item's preview: the end of its pane's screen
-local function preview(id)
-  local row = rows[id]
-  if not row then return nil end
-  -- A failure shows in its place
-  local screen = tostring(select(2, pcall(tail, row))):gsub("%s+$", "")
-  local lines = {}
-  for line in screen:gmatch("[^\n]*") do table.insert(lines, line) end
-  local text = table.concat(lines, "\n", math.max(#lines - PREVIEW_LINES + 1, 1))
-  -- The row shows the rest
-  return { text = text, monospace = true, info = row.cwd and { { "Directory", row.cwd } } or nil }
-end
-
-flare.on("preview", function(id)
-  selected = id
-  return preview(id)
-end)
-
 flare.on("open", function()
   render()
   if ticker then ticker:cancel() end
-  -- Ages, and the selected pane's screen
-  ticker = flare.every(LIVE_EVERY, function()
-    render()
-    local id = selected
-    if id and rows[id] then flare.preview(id, preview(id)) end
-  end)
+  -- The rows' ages
+  ticker = flare.every(LIVE_EVERY, render)
 end)
 
 flare.on("close", function()
   if ticker then ticker:cancel() end
-  ticker, selected = nil, nil
+  ticker = nil
   -- Shown once; a jump after this closing sets it again
   jump_failed = nil
 end)
