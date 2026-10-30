@@ -97,3 +97,42 @@ The same build writes the web tokens in `theme/web/`, published to npm as
 `theme/web/package.json`, rebuild, and run `npm publish` from `theme/web`.
 After Stowing, select `gg-dark` or `gg-light` via Pi's `/settings`, or run
 `pi --use-theme gg-light/gg-dark` to follow terminal appearance.
+
+### Rex
+
+Rex can't read a theme file yet, so it keeps its own copy of the colors in its
+preferences, and that copy does not change when the palette does. The build
+writes the colors Rex needs to `theme/rex/gg-{dark,light}.json`, in Rex's own
+format and mapped like the Ghostty theme. Rex has no slot for the accent or the
+derived tiers, so it only gets the terminal colors. To copy them in after a build:
+
+1. On a new machine, first import `gg-dark` and `gg-light` once from
+   `~/.config/ghostty/themes` in Rex Settings, and choose them as the dark and
+   light themes. The steps below replace the colors of those two themes.
+2. Quit the Rex app (⌘Q), so it does not write its old copy back.
+3. Back up Rex's preferences and copy the colors in:
+
+   ```sh
+   defaults export com.superlogical.rex ~/rex-prefs-backup.plist
+   defaults export com.superlogical.rex /tmp/rex-prefs.plist
+   python3 -I - /tmp/rex-prefs.plist ~/.dotfiles/theme/rex <<'EOF'
+   import json, plistlib, sys
+   path, folder = sys.argv[1:]
+   with open(path, "rb") as file:
+       prefs = plistlib.load(file)
+   themes = json.loads(prefs["Workspace.customThemes"])
+   for name in ("gg-dark", "gg-light"):
+       matches = [theme for theme in themes if theme["name"] == name]
+       if len(matches) != 1:
+           sys.exit(f"Expected one Rex theme named {name}, found {len(matches)}")
+       with open(f"{folder}/{name}.json") as file:
+           matches[0]["palette"] = json.load(file)["palette"]
+   prefs["Workspace.customThemes"] = json.dumps(themes).encode()
+   with open(path, "wb") as file:
+       plistlib.dump(prefs, file, fmt=plistlib.FMT_BINARY)
+   EOF
+   defaults import com.superlogical.rex /tmp/rex-prefs.plist
+   ```
+
+4. Open Rex. If the colors look wrong, quit Rex and restore the backup with
+   `defaults import com.superlogical.rex ~/rex-prefs-backup.plist`.

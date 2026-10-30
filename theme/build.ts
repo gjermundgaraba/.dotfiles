@@ -80,9 +80,10 @@ function readable(
 }
 
 const hues = ["Accent", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "Orange"] as const;
+const syntaxColors = ["Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "Orange", "FGDim"] as const;
 const softChromaScale = { dark: 0.6, light: 1 } as const;
 const softMaxLightness = { dark: 0.8, light: 1 } as const;
-const quietLightnessStep = -0.08;
+const quietLightnessStep = { dark: -0.08, light: 0.08 } as const;
 const quietChromaScale = 0.6;
 const washChroma = 0.03;
 const tintChroma = { dark: 0.065, light: 0.04 } as const;
@@ -96,6 +97,13 @@ function tiers(mode: (typeof modes)[number], palette: Record<string, string>): R
   for (const [name, background] of Object.entries(colors)) {
     const ratio = contrast(palette.FG, background);
     if (ratio < 7) throw new Error(`${mode}.FG/${name} contrast is ${ratio.toFixed(2)}; need 7`);
+    if (!name.startsWith("Tint")) continue;
+    for (const color of syntaxColors) {
+      const syntaxRatio = contrast(palette[color], background);
+      if (syntaxRatio < textContrast) {
+        throw new Error(`${mode}.${color}/${name} contrast is ${syntaxRatio.toFixed(2)}; need ${textContrast}`);
+      }
+    }
   }
 
   const washes = Object.keys(colors).filter((name) => name.startsWith("Wash"));
@@ -114,7 +122,7 @@ function tiers(mode: (typeof modes)[number], palette: Record<string, string>): R
     colors[`Quiet${hue}`] = readable(
       mode,
       `Quiet${hue}`,
-      fromOklch([softLightness + quietLightnessStep, softChroma * quietChromaScale, angle]),
+      fromOklch([softLightness + quietLightnessStep[mode], softChroma * quietChromaScale, angle]),
       [palette.BG],
       nonTextContrast,
     );
@@ -155,8 +163,8 @@ function validate(mode: (typeof modes)[number], palette: Record<string, string>)
     ["FGDim", "Surface", textContrast],
     ["SelectionFG", "SelectionBG", textContrast],
   ];
-  for (const color of ["Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "Orange"]) {
-    pairs.push([color, "BG", textContrast]);
+  for (const color of syntaxColors) {
+    for (const background of ["BG", "Surface", "SelectionBG"]) pairs.push([color, background, textContrast]);
   }
   for (const [foreground, background, minimum] of pairs) {
     const ratio = contrast(palette[foreground], palette[background]);
@@ -202,6 +210,55 @@ function render(template: string, values: Record<string, string>): string {
   return output;
 }
 
+const xtermLevels = [0, 95, 135, 175, 215, 255];
+
+function rexColor(hex: string) {
+  const [red, green, blue] = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  return { red, green, blue, alpha: 1, colorSpace: "srgb" };
+}
+
+function xtermColor(index: number): string {
+  const channels =
+    index < 232
+      ? [Math.floor((index - 16) / 36), Math.floor((index - 16) / 6) % 6, (index - 16) % 6].map((level) => xtermLevels[level])
+      : Array(3).fill(8 + 10 * (index - 232));
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function rexTheme(name: string, mode: (typeof modes)[number], ghostty: string): string {
+  const settings = new Map<string, string>();
+  const ansi: string[] = [];
+  for (const line of ghostty.trim().split("\n")) {
+    const [key, value] = line.split(" = ");
+    if (key === "palette") {
+      const [index, color] = value.split("=");
+      ansi[Number(index)] = color;
+    } else {
+      settings.set(key, value);
+    }
+  }
+  if (ansi.filter(Boolean).length !== 16) throw new Error(`${name} does not set all 16 ANSI colors`);
+  const color = (key: string) => {
+    const value = settings.get(key);
+    if (!value) throw new Error(`${name} does not set ${key}`);
+    return rexColor(value);
+  };
+  const palette = {
+    background: color("background"),
+    foreground: color("foreground"),
+    cursor: color("cursor-color"),
+    cursorText: color("cursor-text"),
+    selectionBackground: color("selection-background"),
+    selectionForeground: color("selection-foreground"),
+    ansi: ansi.map(rexColor),
+    paletteBase: Object.fromEntries(Array.from({ length: 240 }, (_, offset) => [16 + offset, rexColor(xtermColor(16 + offset))])),
+    paletteOverrides: {},
+    paletteGenerate: false,
+    paletteHarmonious: false,
+  };
+  return `${JSON.stringify({ name, appearance: mode, palette }, null, 2)}\n`;
+}
+
 for (const mode of modes) {
   const palette: Record<string, string> = palettes[mode];
   const values = {
@@ -216,11 +273,13 @@ for (const mode of modes) {
   const fishValues = Object.fromEntries(
     Object.entries(values).map(([name, value]) => [name, value.replace(/^#/, "")]),
   );
+  const ghostty = render(ghosttyTemplate, values);
   const outputs = [
     [join(root, "home", ".pi", "agent", "themes", `gg-${mode}.json`), render(piTemplate, values)],
     [join(root, "home", ".config", "nvim", "colors", `gg-${mode}.lua`), render(neovimTemplate, values)],
-    [join(root, "home", ".config", "ghostty", "themes", `gg-${mode}`), render(ghosttyTemplate, values)],
+    [join(root, "home", ".config", "ghostty", "themes", `gg-${mode}`), ghostty],
     [join(root, "home", ".config", "fish", "themes", `gg-${mode}.theme`), render(fishTemplate, fishValues)],
+    [join(root, "theme", "rex", `gg-${mode}.json`), rexTheme(`gg-${mode}`, mode, ghostty)],
   ];
 
   for (const [destination, output] of outputs) {
