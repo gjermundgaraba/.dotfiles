@@ -172,8 +172,8 @@ rex.action{
 rex.bind("f20>q", "host_qr")
 
 -- Agents on every host, the ones waiting on you first, in Flare's Agents mode
--- (home/.config/flare/extensions/agents.lua). Runs on the server of the focused
--- session, so only in this Mac's sessions; Flare's own shortcut works anywhere
+-- (home/.config/flare/extensions/agents.lua). The Mac app runs this file's actions
+-- on the Mac's server, also in a remote host's session, so open runs on the Mac
 rex.action{
   name     = "agents",
   title    = "Show Agents",

@@ -12,6 +12,7 @@
 --     daemon so the hook sees the pane. The hook fires at the first prompt, so a new session can
 --     be forked once it has one; after /new, until then, Fork still picks the previous session
 --   pi: the extension ~/.pi/agent/extensions/rex-agent-session.ts
+-- A remote host's server answers for its own panes, so it needs this file and those records too.
 
 local M = {}
 
@@ -25,22 +26,50 @@ local agents = {
   pi              = { name = "pi",          fork = function(id) return "pi --fork " .. id end },
 }
 
-local function session_id(ctx)
+-- The pane's agent and recorded session, from agent-session on this server's host
+local function lookup(ctx)
   local status = rex.block.call(terminal, "program_status", { block_id = ctx.block_id }) or {}
   for _, record in ipairs(status.records or {}) do
     local agent = agents[record.app]
     if agent then
       local found, err = rex.exec({ script, "id", record.app, ctx.block_id })
-      if not found then error(err, 0) end
-      if not found.ok then error(agent.name .. ": " .. (found.stderr:gsub("%s+$", "")), 0) end
-      return (found.stdout:gsub("%s+$", "")), agent
+      if not found then return { error = tostring(err) } end
+      if not found.ok then return { error = agent.name .. ": " .. (found.stderr:gsub("%s+$", "")) } end
+      return { app = record.app, id = (found.stdout:gsub("%s+$", "")) }
     end
   end
-  error("No Claude Code, Codex or pi session in this pane", 0)
+  return { error = "No Claude Code, Codex or pi session in this pane" }
+end
+
+-- For a remote host's session, the Mac app runs these actions on the Mac's server with ctx.server
+-- set: rex.call then goes to the pane's server, but rex.exec would still run on the Mac, which has
+-- no record of the pane, so ask the pane's server through its agent_session action
+local function session_id(ctx)
+  local found
+  if ctx.server then
+    local answer, err = rex.call("client.action", {
+      action     = "agent_session",
+      session_id = ctx.session_id,
+      block_id   = ctx.block_id,
+    })
+    if not answer then error(err, 0) end
+    found = answer.result or {}
+  else
+    found = lookup(ctx)
+  end
+  if found.error then error(found.error, 0) end
+  return found.id, agents[found.app]
 end
 
 function M.setup(opts)
   opts = opts or {}
+
+  rex.action{
+    name     = "agent_session",
+    title    = "Show Agent Session",
+    keywords = "agent session id claude codex pi",
+    run      = lookup,
+  }
 
   rex.action{
     name  = "fork_agent",
