@@ -4,6 +4,7 @@
 
 local root = arg[0]:match("^(.*)/tests/") or "."
 local handlers, items, notice, title, follower = {}, nil, nil, nil, nil
+local tick, pushed = nil, {} -- the ticker's callback, and the previews it pushed
 
 flare = {
   mode = function() end,
@@ -11,7 +12,8 @@ flare = {
   notice = function(text) notice = text end,
   on = function(event, handler) handlers[event] = handler end,
   spawn = function(_, options) follower = options; return {} end,
-  every = function() return { cancel = function() end } end,
+  every = function(_, callback) tick = callback; return { cancel = function() end } end,
+  preview = function(id, preview) pushed[id] = preview end,
   after = function() end,
   exec = function() return nil, "not here" end,
   window_title = function() return title end,
@@ -112,6 +114,13 @@ flare.exec = function(argv)
   return { ok = true, stdout = { id = 7, data = data, eof = offset + #data >= #output } }
 end
 check("preview", handlers.preview(items[1].id).text, "line one\nline two")
+
+-- While the mode shows, the ticker pushes the selected pane's screen
+handlers.open()
+output = "line three\n"
+tick()
+check("pushed preview", pushed[items[1].id] and pushed[items[1].id].text, "line three")
+handlers.close()
 
 -- A jump that can't bring Rex forward says so
 flare.exec = function(argv)

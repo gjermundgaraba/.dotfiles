@@ -32,7 +32,6 @@ flare.mode{
   name = "Agents",
   icon = { symbol = "sparkles", color = 0x5E5CE6 },
   placeholder = "Search agents…",
-  hotkey = "ctrl+cmd+a",
   previews = true,
   actions = { primary = "Jump" },
 }
@@ -42,6 +41,7 @@ local problem = "Waiting for rex-state…"
 local jump_failed -- why the last jump failed, shown the next time the mode opens
 local rows = {} -- by item id
 local ticker -- refreshes the list while the mode shows
+local selected -- the item whose preview shows
 
 -- Seconds since the epoch of an RFC 3339 time, such as 2026-10-29T19:04:00.99+01:00
 local function epoch(stamp)
@@ -214,18 +214,6 @@ local function app_client()
   return newest and newest.client_id
 end
 
-flare.on("open", function()
-  render()
-  if ticker then ticker:cancel() end
-  ticker = flare.every(LIVE_EVERY, render)
-end)
-
-flare.on("close", function()
-  if ticker then ticker:cancel() end
-  ticker = nil
-  -- Shown once; a jump after this closing sets it again
-  jump_failed = nil
-end)
 
 -- A terminal method of a row's pane
 local function terminal(row, method, args)
@@ -250,7 +238,8 @@ local function tail(row)
   return start > 0 and text:gsub("^[^\n]*\n", "") or text
 end
 
-flare.on("preview", function(id)
+-- An item's preview: the end of its pane's screen
+local function preview(id)
   local row = rows[id]
   if not row then return nil end
   -- A failure shows in its place
@@ -260,6 +249,29 @@ flare.on("preview", function(id)
   local text = table.concat(lines, "\n", math.max(#lines - PREVIEW_LINES + 1, 1))
   -- The row shows the rest
   return { text = text, monospace = true, info = row.cwd and { { "Directory", row.cwd } } or nil }
+end
+
+flare.on("preview", function(id)
+  selected = id
+  return preview(id)
+end)
+
+flare.on("open", function()
+  render()
+  if ticker then ticker:cancel() end
+  -- Ages, and the selected pane's screen
+  ticker = flare.every(LIVE_EVERY, function()
+    render()
+    local id = selected
+    if id and rows[id] then flare.preview(id, preview(id)) end
+  end)
+end)
+
+flare.on("close", function()
+  if ticker then ticker:cancel() end
+  ticker, selected = nil, nil
+  -- Shown once; a jump after this closing sets it again
+  jump_failed = nil
 end)
 
 local function jump(row)
