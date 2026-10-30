@@ -4,7 +4,6 @@
 
 local root = arg[0]:match("^(.*)/tests/") or "."
 local handlers, items, notice, title, follower = {}, nil, nil, nil, nil
-local tick -- the ticker's callback
 
 flare = {
   mode = function() end,
@@ -12,7 +11,6 @@ flare = {
   notice = function(text) notice = text end,
   on = function(event, handler) handlers[event] = handler end,
   spawn = function(_, options) follower = options; return {} end,
-  every = function(_, callback) tick = callback; return { cancel = function() end } end,
   after = function() end,
   exec = function() return nil, "not here" end,
   window_title = function() return title end,
@@ -66,18 +64,22 @@ follower.line({ servers = {
 } })
 
 -- Rows: the most pressing first, titled by the pane's title, else by the agent,
--- with its message under it, then where it runs, its directory, and its state
+-- with its message under it, its icon in its state, then where it runs and
+-- its directory
 check("rows", #items, 2)
 check("first row", items[1].title, "codex")
 check("first subtitle", items[1].subtitle, "Allow rm?")
 check("first place", items[1].columns[1], "box/review")
 -- Each folder but the last two by its first letter, home as ~ on this Mac only
 check("first directory", items[1].columns[2], "/U/a/w/repos/ibc")
-check("first state", items[1].columns[3].text:match("^[^·]+"), "blocked: permission ")
+check("first columns", #items[1].columns, 2)
+check("first icon", items[1].icon.image:match("[^/]+$"), "codex-blocked.webp")
+-- Its state is found, though no column shows it
+check("first match", items[1].match:find("blocked", 1, true) ~= nil, true)
 check("second row", items[2].title, "Fix the bug")
 check("second subtitle", items[2].subtitle, nil)
 check("second directory", items[2].columns[2], "~/w/pers/flare")
-check("second state", items[2].columns[3].text:match("^[^·]+"), "unread ")
+check("second icon", items[2].icon.image:match("[^/]+$"), "claude-code-unread.webp")
 check("notice", notice, "Can't reach gone")
 
 -- Which agent Rex shows, by the session its window title names
@@ -107,13 +109,14 @@ follower.line({ servers = { { server = "local", connected = true, sessions = {
 } } } })
 check("control-only message", items[1].subtitle, nil)
 check("control-only message's title", items[1].title, "Real title")
+-- A working agent's icon moves
+check("working icon", items[1].icon.image:match("[^/]+$"), "codex-working.webp")
 
--- While the mode shows, the ticker refreshes the rows
-handlers.open()
-items = nil
-tick()
-check("ticker's rows", items and #items, 1)
-handlers.close()
+-- An idle agent is done, with its plain icon
+follower.line({ servers = { { server = "local", connected = true, sessions = {
+  session("a", codex, { record("idle", "codex", "2026-10-29T17:30:00Z") }),
+} } } })
+check("idle is done", items[1].icon.image:match("[^/]+$"), "codex.png")
 
 -- A jump that can't bring Rex forward says so
 flare.exec = function(argv)

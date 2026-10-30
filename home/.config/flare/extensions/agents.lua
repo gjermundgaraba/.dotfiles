@@ -11,21 +11,20 @@ local REX = HOME .. "/Library/Application Support/com.superlogical.rex/RexServer
 local REX_APP = "com.superlogical.rex"
 
 local AGENTS = { ["claude-code"] = true, codex = true, pi = true, opencode = true }
--- The states rows show, the most pressing first. Seen done agents and idle
--- ones are both just waiting, so both are done.
+-- The states rows show, the most pressing first, with the color of their border
+-- (make-icons.swift draws the same). Seen done agents and idle ones are both
+-- just waiting, so both are done, which has no border.
 local STATES = {
-  blocked = { rank = 1, icon = { symbol = "hand.raised.fill", color = 0xFF3B30 } },
-  error = { rank = 2, icon = { symbol = "exclamationmark.triangle.fill", color = 0xAF52DE } },
-  unread = { rank = 3, icon = { symbol = "bell.badge.fill", color = 0x30B0C7 } },
-  working = { rank = 4, icon = { symbol = "hourglass", color = 0xFF9500 } },
-  done = { rank = 5, icon = { symbol = "checkmark", color = 0x34C759 } },
+  blocked = { rank = 1, color = 0xFF3B30 },
+  error = { rank = 2, color = 0xAF52DE },
+  unread = { rank = 3, color = 0x30B0C7 },
+  working = { rank = 4, color = 0xFF9500 },
+  done = { rank = 5 },
 }
--- How often the list refreshes its ages while it shows
-local LIVE_EVERY = 2
--- Each agent's icon, by its app (claude-code.png and so on), and the one for
--- an agent without
-local ICONS = HOME .. "/.config/flare/extensions/agents/"
-local NO_ICON = { symbol = "terminal.fill" }
+-- Each agent's icons, by its app and state, in agents/ beside this file:
+-- claude-code.png when done, the animated claude-code-blocked.webp and so on
+-- otherwise (a .png serves a state without one)
+local ICONS = debug.getinfo(1, "S").source:match("^@(.*/)") .. "agents/"
 -- rex-state rewrites its snapshot every 30 s, so an older one means it stopped
 local STALE_AFTER = 120
 
@@ -34,15 +33,14 @@ flare.mode{
   icon = { symbol = "sparkles", color = 0x5E5CE6 },
   placeholder = "Search agents…",
   actions = { primary = "Jump" },
-  -- Where it runs, its directory, and its state
-  columns = { { width = 150 }, { width = 150, truncate = "start" }, { width = 180 } },
+  -- Where it runs and its directory
+  columns = { { width = 160 }, { width = 220, truncate = "start" } },
 }
 
 local snapshot -- rex-state's last snapshot
 local problem = "Waiting for rex-state…"
 local jump_failed -- why the last jump failed, shown the next time the mode opens
 local rows = {} -- by item id
-local ticker -- refreshes the list while the mode shows
 
 -- Seconds since the epoch of an RFC 3339 time, such as 2026-10-29T19:04:00.99+01:00
 local function epoch(stamp)
@@ -83,13 +81,18 @@ local function clean(text)
   return text
 end
 
--- An agent's icon: its image, if there is one
-local function agent_icon(app)
-  local path = ICONS .. app .. ".png"
-  local file = io.open(path)
-  if not file then return NO_ICON end
-  file:close()
-  return { image = path }
+-- An agent's icon in a state: its image, if there is one, else a terminal in
+-- the state's color
+local function agent_icon(app, state)
+  local name = ICONS .. app .. (state == "done" and "" or ("-" .. state))
+  for _, path in ipairs{ name .. ".webp", name .. ".png" } do
+    local file = io.open(path)
+    if file then
+      file:close()
+      return { image = path }
+    end
+  end
+  return { symbol = "terminal.fill", color = STATES[state].color }
 end
 
 -- A directory on this Mac with its home as ~
@@ -133,7 +136,6 @@ local function status(block)
 end
 
 local function render()
-  local now = os.time()
   local found = {}
   local down = {}
   rows = {}
@@ -147,7 +149,6 @@ local function render()
           local host = short(server.server)
           local place = host and (host .. "/" .. session.label) or session.label
           local id = server.server .. "\t" .. block.id
-          local label = best.state .. (best.record.kind and (": " .. best.record.kind) or "")
           local app = best.record.effective_app
           local cwd = clean((block.foreground or {}).cwd)
           if cwd and server.server == "local" then cwd = home(cwd) end
@@ -161,13 +162,9 @@ local function render()
               title = clean(block.title) or app,
               -- What the agent is doing, while it says
               subtitle = clean(best.record.msg),
-              icon = agent_icon(app),
-              columns = {
-                place,
-                cwd,
-                { text = label .. " · " .. age(now - best.updated), icon = STATES[best.state].icon },
-              },
-              match = app .. " " .. server.server,
+              icon = agent_icon(app, best.state),
+              columns = { place, cwd },
+              match = app .. " " .. best.state .. " " .. server.server,
             },
           })
         end
@@ -245,17 +242,9 @@ local function app_client()
   return newest and newest.client_id
 end
 
-
-flare.on("open", function()
-  render()
-  if ticker then ticker:cancel() end
-  -- The rows' ages
-  ticker = flare.every(LIVE_EVERY, render)
-end)
+flare.on("open", render)
 
 flare.on("close", function()
-  if ticker then ticker:cancel() end
-  ticker = nil
   -- Shown once; a jump after this closing sets it again
   jump_failed = nil
 end)
