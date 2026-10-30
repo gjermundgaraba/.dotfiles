@@ -15,6 +15,7 @@ home/.cursor/rules/*
 !home/.cursor/rules/git-commits.mdc
 home/.codex/*
 !home/.codex/AGENTS.md
+!home/.codex/hooks.json
 !home/.codex/keybindings.json
 home/.agents/*
 !home/.agents/plugins/

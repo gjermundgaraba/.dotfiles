@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "/bin/sh -c 'f=\"$HOME/.codex/herdr-agent-state.sh\"; [ ! -f \"$f\" ] || bash \"$f\" session'",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'rex __internal session-start --agent codex --feature-session-naming=false 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c '\"$HOME/.config/rex/agent-session\" record codex 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "tldraw-offline",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/gg/skills/tldraw-offline/inject-server-context.mjs' SubagentStart"
+          }
+        ]
+      }
+    ]
+  }
+}
