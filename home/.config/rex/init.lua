@@ -204,6 +204,7 @@ rex.action{
     if cwd then return copy(cwd, "Copied pane path") end
   end,
 }
+rex.bind("f20>c", "copy_block_path")
 
 -- Splits
 local dirs = { h = "left", j = "down", k = "up", l = "right" }
