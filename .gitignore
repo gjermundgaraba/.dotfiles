@@ -37,6 +37,7 @@ home/.config/rex/*
 !home/.config/rex/init.lua
 !home/.config/rex/host-qr
 !home/.config/rex/agent_fork.lua
+!home/.config/rex/agent_unread.lua
 !home/.config/rex/agent-session
 home/.config/atuin/atuin-receipt.json
 home/.config/ghostty/.claude/settings.local.json

@@ -242,7 +242,28 @@ local function app_client()
   return newest and newest.client_id
 end
 
-flare.on("open", render)
+-- The pane Rex's Mark Agent Unread (home/.config/rex/agent_unread.lua) waits to mark
+-- once a jump leaves it: when it was saved, its session and its block, a line each
+local PENDING = HOME .. "/.local/state/rex/mark-unread"
+-- Rex saves it just before it opens this mode, so an older one is from a mode
+-- closed without a jump
+local PENDING_FRESH = 5
+
+local function read_pending()
+  local file = io.open(PENDING)
+  if not file then return nil end
+  local at, session, block = file:read("l", "l", "l")
+  file:close()
+  return { at = tonumber(at), session = session, block = block }
+end
+
+flare.on("open", function()
+  local pending = read_pending()
+  if pending and not (pending.at and os.time() - pending.at <= PENDING_FRESH) then
+    os.remove(PENDING)
+  end
+  render()
+end)
 
 flare.on("close", function()
   -- Shown once; a jump after this closing sets it again
@@ -264,9 +285,34 @@ local function jump(row)
   if not opened.ok then error("Couldn't bring Rex forward: " .. opened.stderr:gsub("%s+$", ""), 0) end
 end
 
+-- Marks the pending pane unread, on its own server, unless the jump went to it
+local function mark_pending(target)
+  local pending = read_pending()
+  os.remove(PENDING)
+  if not pending or not pending.block or pending.block == target.block then return end
+  for _, row in pairs(rows) do
+    if row.block == pending.block then
+      call(rex(row.server, "api", "call", "client.action", flare.json.encode{
+        action = "mark_agent_unread",
+        session_id = pending.session,
+        block_id = pending.block,
+        args = { now = true },
+      }))
+      return
+    end
+  end
+  error("its pane is gone", 0)
+end
+
 flare.on("run", function(id)
   local ok, err = pcall(jump, rows[id])
   jump_failed = not ok and ("Couldn't jump: " .. tostring(err)) or nil
+  if ok then
+    local marked, mark_err = pcall(mark_pending, rows[id])
+    if not marked then jump_failed = "Couldn't mark unread: " .. tostring(mark_err) end
+  else
+    os.remove(PENDING)
+  end
   render()
 end)
 

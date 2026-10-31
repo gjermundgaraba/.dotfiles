@@ -174,17 +174,24 @@ rex.bind("f20>q", "host_qr")
 -- Agents on every host, the ones waiting on you first, in Flare's Agents mode
 -- (home/.config/flare/extensions/agents.lua). The Mac app runs this file's actions
 -- on the Mac's server, also in a remote host's session, so open runs on the Mac
+local function show_agents()
+  local opened, err = rex.exec({ "/usr/bin/open", "-g", "flare://mode/agents" })
+  if not opened then error(err, 0) end
+  if not opened.ok then error((opened.stderr:gsub("%s+$", "")), 0) end
+end
+
 rex.action{
   name     = "agents",
   title    = "Show Agents",
   keywords = "agents claude codex pi blocked waiting done jump hosts flare",
-  run      = function()
-    local opened, err = rex.exec({ "/usr/bin/open", "-g", "flare://mode/agents" })
-    if not opened then error(err, 0) end
-    if not opened.ok then error((opened.stderr:gsub("%s+$", "")), 0) end
-  end,
+  run      = show_agents,
 }
 rex.bind("f20>g", "agents")
+
+-- Mark Agent Unread: Show Agents to pick where to go, and the unread dot back on this pane's
+-- idle or finished agent once Flare has jumped there
+require("agent_unread").setup{ pick = show_agents }
+rex.bind("f20>u", "mark_agent_unread")
 
 rex.action{
   name  = "copy_block_path",
