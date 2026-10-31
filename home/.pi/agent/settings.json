@@ -69,20 +69,31 @@
       ]
     },
     "npm:@clanker-stuff/turn-recap@0.1.0",
-    "npm:@clanker-stuff/claude-bridge@0.1.0",
+    {
+      "source": "npm:@clanker-stuff/claude-bridge@0.1.0",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
     "npm:@clanker-stuff/mcp-skills@0.1.0",
     "npm:@clanker-stuff/codemode-diffs@0.1.0",
-    "npm:@aliou/pi-ts-aperture"
+    {
+      "source": "npm:@aliou/pi-ts-aperture",
+      "extensions": [
+        "-extensions/aperture/index.ts",
+        "-extensions/mcp/index.ts"
+      ]
+    }
   ],
   "defaultProvider": "openai",
-  "defaultModel": "gpt-6-astra",
+  "defaultModel": "gpt-6.1-terra",
   "defaultTools": [
     "+codemode"
   ],
   "codemode": {
     "mode": "only"
   },
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "max",
   "modelThinkingLevels": {
     "xai/grok-4.6": "xhigh",
     "radius/deepseek-v4.1-flash": "high"
