@@ -73,6 +73,8 @@ for i = 1, 9 do
 end
 rex.bind("f20>shift+h", "client.tab.previous")
 rex.bind("f20>shift+l", "client.tab.next")
+rex.bind("f20>p", "client.tab.previous")
+rex.bind("f20>n", "client.tab.next")
 rex.bind("f20>shift+c", "session.new")
 rex.bind("f20>shift+p", "session.previous")
 rex.bind("f20>shift+n", "session.next")
@@ -202,7 +204,6 @@ rex.action{
     if cwd then return copy(cwd, "Copied pane path") end
   end,
 }
-rex.bind("f20>p", "copy_block_path")
 
 -- Splits
 local dirs = { h = "left", j = "down", k = "up", l = "right" }
