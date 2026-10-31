@@ -2,9 +2,6 @@ filter_mode_shell_up_key_binding = "directory"
 enter_accept = false
 search_mode = "daemon-fuzzy"
 
-[dotfiles]
-enabled = true
-
 [ai]
 enabled = true
 
