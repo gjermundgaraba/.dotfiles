@@ -18,7 +18,7 @@ export VP_HOME="$HOME/.vite-plus"
 export PATH="$VP_HOME/bin:$PATH"
 
 usage() {
-  echo "usage: $0 <list|install|check>" >&2
+  echo "usage: $0 <list|install|link|check>" >&2
   exit 2
 }
 
@@ -60,7 +60,7 @@ install_packages() {
   brew bundle install --no-upgrade --file "$brewfile"
 
   test -x "$VP_HOME/bin/vp" ||
-    curl -fsSL https://viteplus.dev/install.sh | VP_NODE_MANAGER=yes VP_PM_MANAGER=yes bash
+    curl -fsSL --retry 5 https://viteplus.dev/install.sh | VP_NODE_MANAGER=yes VP_PM_MANAGER=yes bash
   vp env setup
   vp env on
   vp env install "$node_version"
@@ -75,6 +75,21 @@ install_packages() {
 "
   done <"$vite_packages"
   test -z "$missing" || printf '%s' "$missing" | xargs vp install -g --node "$node_version"
+}
+
+link_dotfiles() {
+  git -C "$root" config core.hooksPath .githooks
+  git -C "$root" config filter.pi-settings.clean "jq 'del(.deviceId, .lastChangelogVersion)'"
+  # Neovim skills are linked below as whole folders, which Codex needs to
+  # discover them; Python's bytecode caches stay in the repository.
+  stow -R --no-folding \
+    --ignore='^\.config/nvim/\.agents/skills(/.*)?$' \
+    --ignore='(^|/)__pycache__(/.*)?$' \
+    -d "$root" -t "$HOME" home
+  # Real parent directories, so other checkouts can link skills beside these.
+  mkdir -p "$HOME/.config/nvim/.agents/skills" "$HOME/.codex/skills" "$HOME/.agents/skills" "$HOME/.claude/skills"
+  stow -R -d "$root/home/.config/nvim/.agents" -t "$HOME/.config/nvim/.agents/skills" skills
+  stow -R -d "$root" -t "$HOME" skills
 }
 
 check_packages() {
@@ -114,6 +129,7 @@ check_packages() {
 case "${1:-}" in
   list) list_packages ;;
   install) install_packages ;;
+  link) link_dotfiles ;;
   check) check_packages ;;
   *) usage ;;
 esac

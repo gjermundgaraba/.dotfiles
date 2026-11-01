@@ -9,12 +9,10 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
    - Linux (Ubuntu on x86_64): as the login user, with sudo, install Homebrew at its default prefix, `/home/linuxbrew/.linuxbrew`, owned by that user. The machine's provisioning script sets this up.
 2. Clone this repository to `~/.dotfiles`.
 3. Install the tracked Homebrew packages, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
-4. Enable the repository's commit checks and the filter that keeps Pi's machine-written settings out of commits: `git -C ~/.dotfiles config core.hooksPath .githooks && git -C ~/.dotfiles config filter.pi-settings.clean "jq 'del(.deviceId, .lastChangelogVersion)'"`.
-5. Run `stow -R --no-folding --ignore='^\.config/nvim/\.agents/skills(/.*)?$' --ignore='(^|/)__pycache__(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step, and Python's bytecode caches stay in the repository.
-6. Run `mkdir -p ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles/home/.config/nvim/.agents -t ~/.config/nvim/.agents/skills skills`, then `mkdir -p ~/.codex/skills ~/.agents/skills ~/.claude/skills && stow -R -d ~/.dotfiles -t ~ skills`.
-7. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
-8. On macOS, install the LaunchAgents as regular files because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && for agent in local.capslock-f20 local.rex-state; do install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/$agent.plist ~/Library/LaunchAgents/$agent.plist; done`. `local.rex-state` runs `~/.cargo/bin/rex-state`, which keeps the state of every Rex server for Flare's Agents extension. Until rex-state is installed with `cargo install --path` from its checkout, the agent exits at once and launchd leaves it stopped; repeat step 9 after installing it. An agent left out here is skipped in step 9.
-9. On macOS, load or reload each LaunchAgent after any previous instance finishes unloading:
+4. Enable the repository's commit checks and the filter that keeps Pi's machine-written settings out of commits, and Stow the `home` and `skills` packages, with skills linked as whole folders: `~/.dotfiles/bootstrap.sh link`.
+5. Run `sudo stow -R --no-folding -d ~/.dotfiles -t /etc codex-system`.
+6. On macOS, install the LaunchAgents as regular files because launchd may ignore symlinks: `mkdir -p ~/Library/LaunchAgents && for agent in local.capslock-f20 local.rex-state; do install -m 600 ~/.dotfiles/macos/Library/LaunchAgents/$agent.plist ~/Library/LaunchAgents/$agent.plist; done`. `local.rex-state` runs `~/.cargo/bin/rex-state`, which keeps the state of every Rex server for Flare's Agents extension. Until rex-state is installed with `cargo install --path` from its checkout, the agent exits at once and launchd leaves it stopped; repeat step 7 after installing it. An agent left out here is skipped in step 7.
+7. On macOS, load or reload each LaunchAgent after any previous instance finishes unloading:
    ```sh
    for agent in local.capslock-f20 local.rex-state; do
      [ -f ~/Library/LaunchAgents/$agent.plist ] || continue
@@ -26,10 +24,10 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
      launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/$agent.plist
    done
    ```
-10. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
-11. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
+8. Create the machine-local Git config: `touch ~/.gitconfig && chmod 600 ~/.gitconfig`.
+9. Install or launch tools such as OrbStack and Grok after Stowing so they can create their local Fish integrations.
 
-Run the same Stow commands after moving, adding, or deleting managed files. `-R` removes obsolete links before recreating the current layout. Repeat steps 8–9 after changing a LaunchAgent.
+Run `bootstrap.sh link` again after moving, adding, or deleting managed files; Stow's `-R` removes obsolete links before recreating the current layout. Repeat steps 6–7 after changing a LaunchAgent.
 
 ## Packages
 
@@ -48,7 +46,7 @@ Personal skills live in `skills/.agents/skills/`; each has a relative link of
 the same name in `skills/.claude/skills/`. Reusable skills,
 including `orchestrate`, belong in the `clanker-stuff` repository's `skills/`
 catalog. The Neovim-specific `update-neovim-plugins` skill lives beside its
-configuration in `home/.config/nvim/.agents/skills/`; setup step 6 links each
+configuration in `home/.config/nvim/.agents/skills/`; setup step 4 links each
 complete skill folder rather than individual files.
 
 Stow owns the personal skill links in `~/.agents/skills/` and `~/.claude/skills/`.
@@ -58,7 +56,7 @@ from `clanker-stuff/skills/`, and the Herdr skill from the personal Herdr
 fork's `skills/herdr/`. Codex discovers those skills
 through `~/.agents/skills/`, without duplicate installations in
 `~/.codex/skills/`. Parent skill directories must remain real directories, as
-ensured by setup step 6.
+ensured by setup step 4.
 
 Use `AGENTS.md` for instructions. Checkout helpers do not generate `CLAUDE.md`
 aliases. The exception is `~/.claude/CLAUDE.md`, which only imports
