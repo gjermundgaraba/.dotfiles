@@ -106,7 +106,7 @@
       "version": "'main'"
     },
     "rustaceanvim": {
-      "rev": "a968f5133b8b24f481de12f08cd79420d1ace559",
+      "rev": "9c5c1aa055b33aa17d4f113724b1e5c4f1f77a1e",
       "src": "https://github.com/mrcjkb/rustaceanvim",
       "version": "'main'"
     },
