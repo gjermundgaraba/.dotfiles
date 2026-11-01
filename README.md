@@ -8,7 +8,7 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
    - macOS: install the Xcode Command Line Tools, then Homebrew.
    - Linux (Ubuntu on x86_64): as the login user, with sudo, install Homebrew at its default prefix, `/home/linuxbrew/.linuxbrew`, owned by that user. The machine's provisioning script sets this up.
 2. Clone this repository to `~/.dotfiles`.
-3. Install the tracked Homebrew, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
+3. Install the tracked Homebrew packages, Vite+, Node, and global JavaScript packages: `~/.dotfiles/bootstrap.sh install`.
 4. Enable the repository's commit checks and the filter that keeps Pi's machine-written settings out of commits: `git -C ~/.dotfiles config core.hooksPath .githooks && git -C ~/.dotfiles config filter.pi-settings.clean "jq 'del(.deviceId, .lastChangelogVersion)'"`.
 5. Run `stow -R --no-folding --ignore='^\.config/nvim/\.agents/skills(/.*)?$' --ignore='(^|/)__pycache__(/.*)?$' -d ~/.dotfiles -t ~ home`. Neovim skills are installed as whole folders in the next step, and Python's bytecode caches stay in the repository.
 6. Run `mkdir -p ~/.config/nvim/.agents/skills && stow -R -d ~/.dotfiles/home/.config/nvim/.agents -t ~/.config/nvim/.agents/skills skills`, then `mkdir -p ~/.codex/skills ~/.agents/skills ~/.claude/skills && stow -R -d ~/.dotfiles -t ~ skills`.
@@ -33,7 +33,7 @@ Run the same Stow commands after moving, adding, or deleting managed files. `-R`
 
 ## Packages
 
-`Brewfile` and `packages/vite-plus.txt` are the reviewed package baseline, not a snapshot of everything installed on this machine. List or verify them without installing anything:
+`Brewfile` and `packages/vite-plus.txt` are the reviewed package baseline, not a snapshot of everything installed on this machine. Bootstrap installs Vite+ with its [official installer](https://viteplus.dev/guide) into `~/.vite-plus`; Vite+ owns Node (`home/.node-version`), the package managers, and the globals in `packages/vite-plus.txt`. List or verify them without installing anything:
 
 ```sh
 ./bootstrap.sh list

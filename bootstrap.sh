@@ -12,6 +12,11 @@ if ! command -v brew >/dev/null 2>&1; then
   done
 fi
 
+# Vite+'s env scripts and config.fish assume this layout; without VP_HOME,
+# the installer picks split directories on a fresh machine.
+export VP_HOME="$HOME/.vite-plus"
+export PATH="$VP_HOME/bin:$PATH"
+
 usage() {
   echo "usage: $0 <list|install|check>" >&2
   exit 2
@@ -22,17 +27,6 @@ require_brew() {
     echo "install Homebrew from https://brew.sh, then rerun this command" >&2
     exit 1
   }
-}
-
-find_vp() {
-  if command -v vp >/dev/null 2>&1; then
-    command -v vp
-  elif command -v brew >/dev/null 2>&1; then
-    candidate="$(brew --prefix)/bin/vp"
-    test -x "$candidate" && printf '%s\n' "$candidate"
-  else
-    return 1
-  fi
 }
 
 vite_package_installed() {
@@ -61,34 +55,26 @@ list_packages() {
 }
 
 install_packages() {
-  case "$(uname -s)/$(uname -m)" in
-    Darwin/arm64 | Linux/x86_64) ;;
-    *)
-      echo "bootstrap supports macOS on Apple Silicon and Linux on x86_64 only" >&2
-      exit 1
-      ;;
-  esac
   require_brew
 
   brew bundle install --no-upgrade --file "$brewfile"
 
-  vp=$(find_vp) || {
-    echo "missing: Vite+" >&2
-    exit 1
-  }
-  "$vp" env setup
-  "$vp" env on
-  "$vp" env install "$node_version"
-  "$vp" env default "$node_version"
+  test -x "$VP_HOME/bin/vp" ||
+    curl -fsSL https://viteplus.dev/install.sh | VP_NODE_MANAGER=yes VP_PM_MANAGER=yes bash
+  vp env setup
+  vp env on
+  vp env install "$node_version"
+  vp env default "$node_version"
+  for pm in npm pnpm yarn bun; do vp env default "$pm@latest"; done
 
-  installed=$("$vp" list -g --json)
+  installed=$(vp list -g --json)
   missing=
   while IFS= read -r package; do
     test -n "$package" || continue
     vite_package_installed "$package" || missing="${missing}${package}
 "
   done <"$vite_packages"
-  test -z "$missing" || printf '%s' "$missing" | xargs "$vp" install -g --node "$node_version"
+  test -z "$missing" || printf '%s' "$missing" | xargs vp install -g --node "$node_version"
 }
 
 check_packages() {
@@ -101,21 +87,14 @@ check_packages() {
     failed=1
   fi
 
-  if vp=$(find_vp); then
-    runtimes=$("$vp" env list --json)
-    printf '%s\n' "$runtimes" | jq -e --arg node "$node_version" \
-      'any(.node[]; .version == $node)' >/dev/null || {
-      echo "missing Vite+ Node runtime: $node_version" >&2
-      failed=1
-    }
-
-    printf '%s\n' "$runtimes" | jq -e --arg node "$node_version" \
+  if command -v vp >/dev/null 2>&1; then
+    vp env list --json | jq -e --arg node "$node_version" \
       'any(.node[]; .version == $node and .default)' >/dev/null || {
-      echo "wrong Vite+ default Node runtime" >&2
+      echo "Vite+ default Node runtime is not $node_version" >&2
       failed=1
     }
 
-    installed=$("$vp" list -g --json)
+    installed=$(vp list -g --json)
     while IFS= read -r package; do
       test -n "$package" || continue
       vite_package_installed "$package" || {
