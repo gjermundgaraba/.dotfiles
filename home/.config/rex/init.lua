@@ -64,7 +64,6 @@ rex.action{
 rex.bind("f20>shift+d", "split_down_balanced")
 
 rex.bind("f20>s", "session.switch")
-rex.bind("f20>h", "client.host.switch")
 rex.bind("f20>a", "client.sidebar.activity.toggle")
 rex.bind("f20>m", "pane.move_to_new_tab")
 rex.bind("f20>t", "client.tab.new")
@@ -205,6 +204,33 @@ rex.action{
   end,
 }
 rex.bind("f20>c", "copy_block_path")
+
+-- The DNS name of the pane's host, without scheme or port. A remote host's session runs this on
+-- the Mac's server with ctx.server set, so ask rex the address that host's label resolves to;
+-- this machine's is its built-in Tailscale name
+local function host_name(ctx)
+  if ctx.server then
+    local found, err = rex.exec({ "rex", "-S", ctx.server, "--timeout", "3s", "whoami", "--json" })
+    if not found then error(err, 0) end
+    if not found.ok then error((found.stderr:gsub("%s+$", "")), 0) end
+    local endpoint = (rex.json.decode(found.stdout) or {}).endpoint or ""
+    return (endpoint:gsub("^%a[%w+.-]*://", ""):gsub("[:/].*$", ""))
+  end
+  local status, err = rex.call("server.status")
+  if not status then error(err, 0) end
+  return status.tailscale and status.tailscale.dns_name
+end
+
+rex.action{
+  name  = "copy_host_name",
+  title = "Copy Host Name",
+  run   = function(ctx)
+    local name = host_name(ctx)
+    if not name or name == "" then error("No DNS name for this host", 0) end
+    return copy(name, "Copied host name")
+  end,
+}
+rex.bind("f20>h", "copy_host_name")
 
 -- Splits
 local dirs = { h = "left", j = "down", k = "up", l = "right" }
