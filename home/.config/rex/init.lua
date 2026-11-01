@@ -207,10 +207,14 @@ rex.bind("f20>c", "copy_block_path")
 
 -- The DNS name of the pane's host, without scheme or port. A remote host's session runs this on
 -- the Mac's server with ctx.server set, so ask rex the address that host's label resolves to;
--- this machine's is its built-in Tailscale name
+-- this machine's is its built-in Tailscale name. The server runs commands with only the system
+-- PATH, so run the rex binary the server itself runs from, the command's parent
 local function host_name(ctx)
   if ctx.server then
-    local found, err = rex.exec({ "rex", "-S", ctx.server, "--timeout", "3s", "whoami", "--json" })
+    local found, err = rex.exec({
+      "/bin/sh", "-c", 'exec "$(ps -o comm= -p $PPID)" -S "$1" --timeout 3s whoami --json',
+      "sh", ctx.server,
+    })
     if not found then error(err, 0) end
     if not found.ok then error((found.stderr:gsub("%s+$", "")), 0) end
     local endpoint = (rex.json.decode(found.stdout) or {}).endpoint or ""
