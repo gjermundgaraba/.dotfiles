@@ -24,7 +24,7 @@ local STATES = {
 -- Each agent's icons, by its app and state, in agents/ beside this file:
 -- claude-code.png when done, the animated claude-code-blocked.webp and so on
 -- otherwise (a .png serves a state without one)
-local ICONS = debug.getinfo(1, "S").source:match("^@(.*/)") .. "agents/"
+local ICONS = flare.dir .. "agents/"
 -- rex-state rewrites its snapshot every 30 s, so an older one means it stopped
 local STALE_AFTER = 120
 

@@ -6,6 +6,7 @@ local root = arg[0]:match("^(.*)/tests/") or "."
 local handlers, items, notice, title, follower = {}, nil, nil, nil, nil
 
 flare = {
+  dir = root .. "/home/.config/flare/extensions/",
   mode = function() end,
   items = function(list) items = list end,
   notice = function(text) notice = text end,
@@ -17,6 +18,8 @@ flare = {
   -- Snapshots are handed over as tables
   json = { decode = function(value) return value end, encode = function(value) return value end },
 }
+-- Flare's safe Lua runtime does not expose the debug library.
+debug = nil
 dofile(root .. "/home/.config/flare/extensions/agents.lua")
 
 local failures = 0
