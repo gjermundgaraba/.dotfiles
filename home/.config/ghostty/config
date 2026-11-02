@@ -1,6 +1,6 @@
 command = /opt/homebrew/bin/fish
 macos-option-as-alt = true
-shell-integration-features = ssh-terminfo
+shell-integration-features = ssh-terminfo,ssh-env
 
 keybind = alt+7=text:|
 keybind = alt+8=text:[
@@ -11,8 +11,6 @@ keybind = alt+@=text:'
 keybind = alt+shift+8=text:{
 keybind = alt+shift+9=text:}
 keybind = alt+shift+7=text:\\
-
-env=XDG_CONFIG_HOME=/Users/gg/.config
 
 macos-icon = custom-style
 macos-icon-frame = plastic
