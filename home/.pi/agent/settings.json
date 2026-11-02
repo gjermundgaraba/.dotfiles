@@ -56,12 +56,6 @@
       ]
     },
     "npm:@clanker-stuff/context@0.1.0",
-    {
-      "source": "npm:@clanker-stuff/vim@0.1.0",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
     "npm:@clanker-stuff/turn-recap@0.1.0",
     {
       "source": "npm:@clanker-stuff/claude-bridge@0.1.0",
@@ -117,7 +111,7 @@
   "terminal": {
     "showTerminalProgress": true
   },
-  "theme": "system/system",
+  "theme": "gg-light/gg-dark",
   "outputPad": 0,
   "showCacheMissNotices": true,
   "defaultProjectTrust": "always",
@@ -127,5 +121,6 @@
   "hideThinkingBlock": false,
   "extensions": [
     "+extensions/herdr-micro-effort.ts"
-  ]
+  ],
+  "cacheWarming": "idle"
 }
