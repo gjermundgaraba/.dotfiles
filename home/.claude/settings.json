@@ -111,6 +111,9 @@
     "claude-opus-5-5": {
       "effortLevel": "high",
       "autoCompactWindow": 400000
+    },
+    "claude-mythos-5-1": {
+      "effortLevel": "high"
     }
   },
   "autoCompactWindow": 500000,
