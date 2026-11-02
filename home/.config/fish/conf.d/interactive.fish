@@ -55,6 +55,7 @@ abbr -a cc "claude"
 abbr -a cc-opus "claude --model opus"
 abbr -a cc-sonnet "claude --model sonnet"
 abbr -a cc-fable "claude --model fable"
+abbr -a cc-mythos "claude --model claude-mythos-5-1"
 abbr -a cc-workflows 'claude --settings \'{"disableWorkflows": false}\''
 abbr -a cc-artifacts 'claude --settings \'{"enableArtifact": true}\''
 
