@@ -1,9 +1,9 @@
 {
   "packages": [
     {
-      "source": "npm:@clanker-stuff/ask-question@0.1.1",
+      "source": "npm:@clanker-stuff/ask-question@0.2.0",
       "extensions": [
-        "-index.ts"
+        "+index.ts"
       ]
     },
     "npm:@clanker-stuff/dollah-skills@0.1.0",
