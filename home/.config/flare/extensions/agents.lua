@@ -33,6 +33,8 @@ flare.mode{
   icon = { symbol = "sparkles", color = 0x5E5CE6 },
   placeholder = "Search agents…",
   actions = { primary = "Jump" },
+  -- j/k move through the agents; / searches them
+  navigation = "list",
   -- Where it runs and its directory
   columns = { { width = 160 }, { width = 220, truncate = "start" } },
 }
