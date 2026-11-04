@@ -2,7 +2,7 @@
 --
 --   require("agent_fork").setup{ copy = function(text, title) ... end }  -- copy is optional
 --   rex.bind("f20>f", "fork_agent")
---   rex.bind("f20>i", "copy_agent_session_id")
+--   rex.bind("f20>y>i", "copy_agent_session_id")
 --
 -- Each agent records its session for the Rex pane it runs in with ~/.config/rex/agent-session:
 --   Claude Code: a SessionStart hook in ~/.claude/settings.json running

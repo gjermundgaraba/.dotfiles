@@ -99,12 +99,12 @@ rex.action{
   title = "Copy Pane ID",
   run   = function(ctx) return copy(ctx.block_id, "Copied pane ID") end,
 }
-rex.bind("f20>y", "copy_block_id")
+rex.bind("f20>y>y", "copy_block_id")
 
 -- Fork Agent Session and Copy Agent Session ID, for Claude Code, Codex and pi
 require("agent_fork").setup{ copy = copy }
 rex.bind("f20>f", "fork_agent")
-rex.bind("f20>i", "copy_agent_session_id")
+rex.bind("f20>y>i", "copy_agent_session_id")
 
 -- Closes the floating layer with this block label in the active tab, if there is one
 local function close_popup(session_id, label)
@@ -203,7 +203,7 @@ rex.action{
     if cwd then return copy(cwd, "Copied pane path") end
   end,
 }
-rex.bind("f20>c", "copy_block_path")
+rex.bind("f20>y>p", "copy_block_path")
 
 -- The DNS name of the pane's host, without scheme or port. A remote host's session runs this on
 -- the Mac's server with ctx.server set, so ask rex the address that host's label resolves to;
