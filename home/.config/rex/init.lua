@@ -7,6 +7,15 @@ local function type_text(ctx, data)
   return true
 end
 
+-- Runs a command and returns its output, or raises what it printed to stderr. Rex shows the error
+-- with its own "Error: " prefix, so drop the one CLIs such as rex and rex-state print
+local function run(argv)
+  local r, err = rex.exec(argv)
+  if not r then error(err, 0) end
+  if not r.ok then error((r.stderr:gsub("^Error: ", ""):gsub("%s+$", "")), 0) end
+  return r.stdout
+end
+
 -- Norwegian keyboard: restore Option+key special characters
 -- (only matters if Option as Alt is turned on in Rex's settings)
 local alt_text = {
@@ -65,8 +74,10 @@ rex.bind("f20>shift+d", "split_down_balanced")
 
 rex.bind("f20>s", "session.switch")
 rex.bind("f20>a", "client.sidebar.activity.toggle")
-rex.bind("f20>m", "pane.move_to_new_tab")
-rex.bind("f20>t", "client.tab.new")
+rex.bind("f20>m", "pane.move_to_tab")
+rex.bind("f20>shift+m", "pane.move_to_new_tab")
+rex.bind("f20>i>t", "client.tab.new")
+rex.bind("f20>tab", "client.tab.new")
 for i = 1, 9 do
   rex.bind("f20>" .. i, "client.tab.goto", { index = i })
 end
@@ -74,9 +85,36 @@ rex.bind("f20>shift+h", "client.tab.previous")
 rex.bind("f20>shift+l", "client.tab.next")
 rex.bind("f20>p", "client.tab.previous")
 rex.bind("f20>n", "client.tab.next")
-rex.bind("f20>shift+c", "session.new")
+rex.bind("f20>i>s", "session.switch") -- type a new name to create it
+rex.bind("f20>i>h", "client.host.add")
+rex.bind("f20>r>t", "client.tab.rename")
+rex.bind("f20>r>s", "session.rename")
 rex.bind("f20>shift+p", "session.previous")
 rex.bind("f20>shift+n", "session.next")
+
+-- Back and forward through the panes Rex showed, on every host, as Vim's jump list does with
+-- ctrl+o and ctrl+i. rex-state's daemon records them
+-- (macos/Library/LaunchAgents/local.rex-state.plist). rex-state focuses the pane on its server
+-- and has this Rex show it. Not with rex.client.queue: a queued session.select from a key press
+-- looks only on the Mac's server, so a pane on another host isn't found
+local function focus_history(ctx, direction)
+  run({ os.getenv("HOME") .. "/.cargo/bin/rex-state", direction, ctx.client_id })
+end
+
+rex.action{
+  name     = "focus_back",
+  title    = "Back to Previous Pane",
+  keywords = "history jump back previous last pane tab session",
+  run      = function(ctx) focus_history(ctx, "back") end,
+}
+rex.action{
+  name     = "focus_forward",
+  title    = "Forward to Next Pane",
+  keywords = "history jump forward next pane tab session",
+  run      = function(ctx) focus_history(ctx, "forward") end,
+}
+rex.bind("f20>shift+o", "focus_back")
+rex.bind("f20>shift+i", "focus_forward")
 rex.bind("f20>z", "pane.zoom")
 rex.bind("f20>,", "client.settings")
 
@@ -176,9 +214,7 @@ rex.bind("f20>q", "host_qr")
 -- (home/.config/flare/extensions/agents.lua). The Mac app runs this file's actions
 -- on the Mac's server, also in a remote host's session, so open runs on the Mac
 local function show_agents()
-  local opened, err = rex.exec({ "/usr/bin/open", "-g", "flare://mode/agents" })
-  if not opened then error(err, 0) end
-  if not opened.ok then error((opened.stderr:gsub("%s+$", "")), 0) end
+  run({ "/usr/bin/open", "-g", "flare://mode/agents" })
 end
 
 rex.action{
@@ -211,13 +247,11 @@ rex.bind("f20>y>p", "copy_block_path")
 -- PATH, so run the rex binary the server itself runs from, the command's parent
 local function host_name(ctx)
   if ctx.server then
-    local found, err = rex.exec({
+    local found = run({
       "/bin/sh", "-c", 'exec "$(ps -o comm= -p $PPID)" -S "$1" --timeout 3s whoami --json',
       "sh", ctx.server,
     })
-    if not found then error(err, 0) end
-    if not found.ok then error((found.stderr:gsub("%s+$", "")), 0) end
-    local endpoint = (rex.json.decode(found.stdout) or {}).endpoint or ""
+    local endpoint = (rex.json.decode(found) or {}).endpoint or ""
     return (endpoint:gsub("^%a[%w+.-]*://", ""):gsub("[:/].*$", ""))
   end
   local status, err = rex.call("server.status")
@@ -234,7 +268,20 @@ rex.action{
     return copy(name, "Copied host name")
   end,
 }
-rex.bind("f20>h", "copy_host_name")
+rex.bind("f20>y>u", "copy_host_name")
+
+-- The host's label as `rex hosts` lists it, which a remote host's session gets as ctx.server.
+-- This machine's own server has no label, so use the Mac's name, as the app does
+rex.action{
+  name  = "copy_host_label",
+  title = "Copy Host Label",
+  run   = function(ctx)
+    if ctx.server then return copy(ctx.server, "Copied host label") end
+    local name = run({ "/usr/sbin/scutil", "--get", "ComputerName" })
+    return copy((name:gsub("%s+$", "")), "Copied host label")
+  end,
+}
+rex.bind("f20>y>l", "copy_host_label")
 
 -- Splits
 local dirs = { h = "left", j = "down", k = "up", l = "right" }
