@@ -1,4 +1,4 @@
-status is-interactive; or exit
+status is-interactive; or return
 
 set -g __prompt_last_pipestatus 0
 
