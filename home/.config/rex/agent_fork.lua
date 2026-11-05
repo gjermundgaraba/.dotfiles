@@ -1,6 +1,6 @@
 -- Fork Agent Session and Copy Agent Session ID, for Claude Code, Codex and pi.
 --
---   require("agent_fork").setup{ copy = function(text, title) ... end }  -- copy is optional
+--   require("agent_fork").setup{ copy = function(text, title) ... end }
 --   rex.bind("f20>f", "fork_agent")
 --   rex.bind("f20>y>i", "copy_agent_session_id")
 --
@@ -62,8 +62,6 @@ local function session_id(ctx)
 end
 
 function M.setup(opts)
-  opts = opts or {}
-
   rex.action{
     name     = "agent_session",
     title    = "Show Agent Session",
@@ -100,12 +98,7 @@ function M.setup(opts)
   rex.action{
     name  = "copy_agent_session_id",
     title = "Copy Agent Session ID",
-    run   = function(ctx)
-      local id = session_id(ctx)
-      if opts.copy then return opts.copy(id, "Copied agent session ID") end
-      rex.exec({ "pbcopy" }, { stdin = id })
-      return id
-    end,
+    run   = function(ctx) return opts.copy(session_id(ctx), "Copied agent session ID") end,
   }
 end
 
