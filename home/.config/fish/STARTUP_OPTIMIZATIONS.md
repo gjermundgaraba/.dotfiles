@@ -78,10 +78,10 @@ keeping required initialization synchronous.
 
 ## Maintenance
 
-Run the cache self-check:
+Run the cache check from the repository root:
 
 ```fish
-fish functions/__cached_source.fish --self-test
+fish tests/cached-source.fish
 ```
 
 Clear and regenerate all cached initializers:
