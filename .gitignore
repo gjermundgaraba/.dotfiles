@@ -7,6 +7,9 @@ home/.claude/*
 !home/.claude/hooks/
 home/.claude/hooks/*
 !home/.claude/hooks/explore-sonnet.sh
+!home/.claude/rules/
+home/.claude/rules/*
+!home/.claude/rules/pstack-models.md
 home/.config/mise/*
 !home/.config/mise/config.toml
 home/.cursor/*
