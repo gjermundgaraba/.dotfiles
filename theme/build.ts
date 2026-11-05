@@ -18,10 +18,16 @@ const nonTextContrast = 3;
 
 type Oklch = [lightness: number, chroma: number, hue: number];
 
+function channels(hex: string): number[] {
+  return [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+}
+
+function linear(value: number): number {
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
+
 function toOklch(hex: string): Oklch {
-  const [r, g, b] = [1, 3, 5]
-    .map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255)
-    .map((value) => (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
+  const [r, g, b] = channels(hex).map(linear);
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
@@ -48,13 +54,11 @@ function fromOklch([lightness, chroma, hue]: Oklch): string {
 }
 
 function mix(color: string, other: string, amount: number): string {
-  const channels = [1, 3, 5].map((offset) =>
-    Math.round(
-      parseInt(color.slice(offset, offset + 2), 16) * (1 - amount) +
-      parseInt(other.slice(offset, offset + 2), 16) * amount,
-    ).toString(16).padStart(2, "0"),
+  const [from, to] = [channels(color), channels(other)];
+  const mixed = from.map((value, index) =>
+    Math.round((value * (1 - amount) + to[index] * amount) * 255).toString(16).padStart(2, "0"),
   );
-  return `#${channels.join("")}`;
+  return `#${mixed.join("")}`;
 }
 
 function tint(surface: string, hueSource: string, chroma: number): string {
@@ -131,10 +135,7 @@ function tiers(mode: (typeof modes)[number], palette: Record<string, string>): R
 }
 
 function luminance(hex: string): number {
-  const channels = hex.match(/[0-9a-f]{2}/gi)!.map((value) => parseInt(value, 16) / 255);
-  const [red, green, blue] = channels.map((value) =>
-    value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4,
-  );
+  const [red, green, blue] = channels(hex).map(linear);
   return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
 }
 
@@ -213,7 +214,7 @@ function render(template: string, values: Record<string, string>): string {
 const xtermLevels = [0, 95, 135, 175, 215, 255];
 
 function rexColor(hex: string) {
-  const [red, green, blue] = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  const [red, green, blue] = channels(hex);
   return { red, green, blue, alpha: 1, colorSpace: "srgb" };
 }
 
