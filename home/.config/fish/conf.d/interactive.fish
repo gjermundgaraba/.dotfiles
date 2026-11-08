@@ -63,3 +63,6 @@ abbr -a pi-grok "pi --model xai/grok-4.6 --thinking xhigh"
 abbr -a pi-glm "pi --model zai/glm-5.3 --thinking max"
 abbr -a pi-flash "pi --model radius/deepseek-v4.1-flash --thinking high"
 abbr -a pi-astra "pi --model openai/gpt-6-astra --thinking high"
+
+# Battle.net strips the execute bit from WoW data folders; see Claude Code session 726d7f08-e458-4ef0-9d07-049f8df97188
+abbr -a fix-wow 'find "/Applications/World of Warcraft" -type d -exec chmod a+x {} +'
