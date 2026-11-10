@@ -55,11 +55,11 @@ abbr -a cc "claude"
 abbr -a cc-opus "claude --model opus"
 abbr -a cc-sonnet "claude --model sonnet"
 abbr -a cc-fable "claude --model fable"
-abbr -a cc-mythos "claude --model claude-mythos-5-1"
+abbr -a cc-mythos "claude --model claude-mythos-5-2"
 abbr -a cc-workflows 'claude --settings \'{"disableWorkflows": false}\''
 abbr -a cc-artifacts 'claude --settings \'{"enableArtifact": true}\''
 
-abbr -a pi-grok "pi --model xai/grok-4.6 --thinking xhigh"
+abbr -a pi-grok "pi --model xai/grok-4.7 --thinking xhigh"
 abbr -a pi-glm "pi --model zai/glm-5.3 --thinking max"
 abbr -a pi-flash "pi --model radius/deepseek-v4.1-flash --thinking high"
 abbr -a pi-astra "pi --model openai/gpt-6-astra --thinking high"
