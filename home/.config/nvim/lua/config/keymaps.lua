@@ -107,6 +107,14 @@ map.imap("<C-Space>", function()
   vim.lsp.completion.get()
 end, { desc = "Trigger completion" })
 
+map.leader("cdn", function()
+  vim.diagnostic.jump { count = 1 }
+end, { desc = "Next diagnostic" })
+
+map.leader("cdp", function()
+  vim.diagnostic.jump { count = -1 }
+end, { desc = "Previous diagnostic" })
+
 map.leader("cdq", function()
   vim.diagnostic.setqflist { open = true, title = "Diagnostics (all buffers)" }
 end, { desc = "Diagnostics to Quickfix" })

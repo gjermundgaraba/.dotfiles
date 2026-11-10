@@ -78,12 +78,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
       map("n", "K", vim.lsp.buf.hover, "LSP Hover")
     end
     map("n", "gd", fzf "lsp_definitions", "Go to definition")
-    vim.keymap.set("n", "<leader>cdn", function()
-      vim.diagnostic.jump { count = 1 }
-    end, { buffer = bufnr, desc = "Next diagnostic", nowait = true })
-    vim.keymap.set("n", "<leader>cdp", function()
-      vim.diagnostic.jump { count = -1 }
-    end, { buffer = bufnr, desc = "Previous diagnostic", nowait = true })
     map("n", "gD", fzf "lsp_declarations", "Go to declaration")
     map("n", "gi", fzf "lsp_implementations", "Go to implementation")
     map("n", "gr", fzf "lsp_references", "References")

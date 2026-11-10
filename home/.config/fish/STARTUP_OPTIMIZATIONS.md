@@ -24,7 +24,7 @@ caches only generated Fish source that is stable between tool upgrades.
 ### Cached generated initializers
 
 `functions/__cached_source.fish` stores generated Fish source in
-`/tmp/fish-init-cache-$USER` and sources it on later shell starts.
+`${XDG_CACHE_HOME:-~/.cache}/fish-init` and sources it on later shell starts.
 
 | Tool | Cached output | Work that remains dynamic |
 |---|---|---|
@@ -57,10 +57,7 @@ The cache refreshes when:
 Refreshes are written to a temporary file, checked with `fish -n`, and moved
 into place atomically. A failed refresh retains the previous valid cache.
 
-The cache directory is private (`0700`) and rejected if it is a symlink or is
-owned by another user. macOS and Ubuntu normally clear `/tmp` during reboot, so the first
-shell after a restart regenerates the files. Dependency checks still preserve
-correctness if `/tmp` survives.
+The cache is per-user and survives reboots; the checks above keep it correct.
 
 ## Why these are not asynchronous
 
@@ -78,16 +75,16 @@ keeping required initialization synchronous.
 
 ## Maintenance
 
-Run the cache self-check:
+Run the cache check:
 
 ```fish
-fish functions/__cached_source.fish --self-test
+fish tests/cached-source.fish
 ```
 
 Clear and regenerate all cached initializers:
 
 ```fish
-rm -rf /tmp/fish-init-cache-$USER
+rm -rf ${XDG_CACHE_HOME:-~/.cache}/fish-init
 exec fish
 ```
 
