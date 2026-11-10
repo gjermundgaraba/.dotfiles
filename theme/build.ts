@@ -19,10 +19,11 @@ const nonTextContrast = 3;
 type Oklch = [lightness: number, chroma: number, hue: number];
 
 function channels(hex: string): number[] {
-  return [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+  return [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
 }
 
-function linear(value: number): number {
+function linear(byte: number): number {
+  const value = byte / 255;
   return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
 
@@ -56,7 +57,7 @@ function fromOklch([lightness, chroma, hue]: Oklch): string {
 function mix(color: string, other: string, amount: number): string {
   const [from, to] = [channels(color), channels(other)];
   const mixed = from.map((value, index) =>
-    Math.round((value * (1 - amount) + to[index] * amount) * 255).toString(16).padStart(2, "0"),
+    Math.round(value * (1 - amount) + to[index] * amount).toString(16).padStart(2, "0"),
   );
   return `#${mixed.join("")}`;
 }
@@ -214,7 +215,7 @@ function render(template: string, values: Record<string, string>): string {
 const xtermLevels = [0, 95, 135, 175, 215, 255];
 
 function rexColor(hex: string) {
-  const [red, green, blue] = channels(hex);
+  const [red, green, blue] = channels(hex).map((byte) => byte / 255);
   return { red, green, blue, alpha: 1, colorSpace: "srgb" };
 }
 
