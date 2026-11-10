@@ -220,7 +220,7 @@ local function rex(server, ...)
   return argv
 end
 
--- Runs a rex command, raising its error
+-- Runs a command, raising its error
 local function call(argv)
   local out, err = flare.exec(argv, { timeout = 5 })
   if not out then error(err, 0) end
