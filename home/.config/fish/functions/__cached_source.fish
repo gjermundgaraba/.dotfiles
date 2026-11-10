@@ -25,21 +25,9 @@ function __cached_source
     end
     set binary (path resolve "$binary")
 
-    set -l cache_user (string replace -ra '[^A-Za-z0-9_.-]' _ -- "$USER")
-    set -l cache_dir "/tmp/fish-init-cache-$cache_user"
-    if not test -e "$cache_dir"
-        command mkdir -m 700 -- "$cache_dir" 2>/dev/null
-    end
-
-    if test -L "$cache_dir"; or not test -d "$cache_dir"; or not test -O "$cache_dir"
-        echo "__cached_source: unsafe cache directory: $cache_dir; running uncached" >&2
-        $argv | source
-        set -l statuses $pipestatus
-        for code in $statuses
-            test "$code" -eq 0; or return "$code"
-        end
-        return 0
-    end
+    set -l cache_dir "$HOME/.cache/fish-init"
+    test -n "$XDG_CACHE_HOME"; and set cache_dir "$XDG_CACHE_HOME/fish-init"
+    command mkdir -p -- "$cache_dir"; or return
 
     set -l key_parts 1 "$binary" $argv
     for dependency in $dependencies

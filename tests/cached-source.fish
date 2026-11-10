@@ -1,12 +1,11 @@
 set -l root (path resolve (path dirname (status filename))/..)
 source $root/home/.config/fish/functions/__cached_source.fish
 
-set -lx USER "__cached_source_test_$fish_pid"
-set -l work "/tmp/$USER"
+set -l work (mktemp -d)
+set -lx XDG_CACHE_HOME "$work"
 set -l generator "$work/generator.fish"
 set -l counter "$work/count"
 set -l dependency "$work/dependency"
-command mkdir -m 700 -- "$work"
 command touch "$dependency"
 printf '%s\n' \
     "#!"(status fish-path) \
@@ -37,6 +36,6 @@ read -l generated_count <"$counter"
 test "$generated_count" = 3; or set failed 1
 test "$__cached_source_test_loaded" = 2; or set failed 1
 
-command rm -rf -- "$work" "/tmp/fish-init-cache-$USER"
+command rm -rf -- "$work"
 test "$failed" -eq 0; or exit 1
 echo "cached source checks passed"
