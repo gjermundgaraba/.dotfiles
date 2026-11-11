@@ -1,6 +1,6 @@
 {
   "name": "@gjermundgaraba/gg-theme",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Coordinated light and dark CSS variables for web apps. Tailwind v4 and shadcn/ui compatible.",
   "type": "module",
   "main": "./index.css",
