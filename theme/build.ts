@@ -1,6 +1,8 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { stripTypeScriptTypes } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { channels, checkPalette, contrast, deriveTiers, readable, toOklch, type TierInputs } from "./derive.ts";
 import { palettes } from "./palette.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -16,164 +18,28 @@ const herdrThemeEnd = "# END generated Herdr theme";
 const textContrast = 4.5;
 const nonTextContrast = 3;
 
-type Oklch = [lightness: number, chroma: number, hue: number];
-
-function channels(hex: string): number[] {
-  return [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
+function kebabPalette(palette: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(palette).map(([name, color]) => [kebab(name), color]));
 }
 
-function linear(byte: number): number {
-  const value = byte / 255;
-  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-}
-
-function toOklch(hex: string): Oklch {
-  const [r, g, b] = channels(hex).map(linear);
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
-  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
-  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
-  const bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
-  return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, Math.hypot(a, bb), Math.atan2(bb, a)];
-}
-
-function fromOklch([lightness, chroma, hue]: Oklch): string {
-  const a = chroma * Math.cos(hue);
-  const b = chroma * Math.sin(hue);
-  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  const channels = [
-    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
-  ].map((value) => {
-    const encoded = value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055;
-    return Math.round(Math.min(1, Math.max(0, encoded)) * 255).toString(16).padStart(2, "0");
-  });
-  return `#${channels.join("")}`;
-}
-
-function mix(color: string, other: string, amount: number): string {
-  const [from, to] = [channels(color), channels(other)];
-  const mixed = from.map((value, index) =>
-    Math.round(value * (1 - amount) + to[index] * amount).toString(16).padStart(2, "0"),
-  );
-  return `#${mixed.join("")}`;
-}
-
-function tint(surface: string, hueSource: string, chroma: number): string {
-  return fromOklch([toOklch(surface)[0], chroma, toOklch(hueSource)[2]]);
-}
-
-function readable(
-  mode: (typeof modes)[number],
-  label: string,
-  source: string,
-  backgrounds: string[],
-  minimum: number,
-): string {
-  const step = mode === "dark" ? 0.005 : -0.005;
-  let [lightness, chroma, hue] = toOklch(source);
-  let color = fromOklch([lightness, chroma, hue]);
-  while (backgrounds.some((background) => contrast(color, background) < minimum)) {
-    lightness += step;
-    if (lightness <= 0 || lightness >= 1) throw new Error(`${mode}.${label} cannot reach ${minimum} contrast`);
-    color = fromOklch([lightness, chroma, hue]);
-  }
-  return color;
-}
-
-const hues = ["Accent", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "Orange"] as const;
-const syntaxColors = ["Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "Orange", "FGDim"] as const;
-const softChromaScale = { dark: 0.6, light: 1 } as const;
-const softMaxLightness = { dark: 0.8, light: 1 } as const;
-const quietLightnessStep = { dark: -0.08, light: 0.08 } as const;
-const quietChromaScale = 0.6;
-const washChroma = 0.03;
-const tintChroma = { dark: 0.065, light: 0.04 } as const;
-
-function tiers(mode: (typeof modes)[number], palette: Record<string, string>): Record<string, string> {
-  const colors: Record<string, string> = { Wash: mix(palette.BG, palette.Surface, 0.5) };
-  for (const hue of hues) {
-    colors[`Wash${hue}`] = tint(colors.Wash, palette[hue], washChroma);
-    colors[`Tint${hue}`] = tint(colors.Wash, palette[hue], tintChroma[mode]);
-  }
-  for (const [name, background] of Object.entries(colors)) {
-    const ratio = contrast(palette.FG, background);
-    if (ratio < 7) throw new Error(`${mode}.FG/${name} contrast is ${ratio.toFixed(2)}; need 7`);
-    if (!name.startsWith("Tint")) continue;
-    for (const color of syntaxColors) {
-      const syntaxRatio = contrast(palette[color], background);
-      if (syntaxRatio < textContrast) {
-        throw new Error(`${mode}.${color}/${name} contrast is ${syntaxRatio.toFixed(2)}; need ${textContrast}`);
-      }
-    }
-  }
-
-  const washes = Object.keys(colors).filter((name) => name.startsWith("Wash"));
-  const textBackgrounds = [palette.BG, palette.Surface, ...washes.map((name) => colors[name])];
-  for (const hue of hues) {
-    const [lightness, chroma, angle] = toOklch(palette[hue]);
-    const soft = readable(
-      mode,
-      `Soft${hue}`,
-      fromOklch([Math.min(lightness, softMaxLightness[mode]), chroma * softChromaScale[mode], angle]),
-      textBackgrounds,
-      textContrast,
-    );
-    const [softLightness, softChroma] = toOklch(soft);
-    colors[`Soft${hue}`] = soft;
-    colors[`Quiet${hue}`] = readable(
-      mode,
-      `Quiet${hue}`,
-      fromOklch([softLightness + quietLightnessStep[mode], softChroma * quietChromaScale, angle]),
-      [palette.BG],
-      nonTextContrast,
-    );
-  }
-  return colors;
-}
-
-function luminance(hex: string): number {
-  const [red, green, blue] = channels(hex).map(linear);
-  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
-}
-
-function contrast(a: string, b: string): number {
-  const [lighter, darker] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (lighter + 0.05) / (darker + 0.05);
+function pascal(name: string): string {
+  return name
+    .split("-")
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join("");
 }
 
 function validate(mode: (typeof modes)[number], palette: Record<string, string>): void {
   if (Object.keys(palette).sort().join(",") !== expectedKeys) {
     throw new Error(`${mode} palette does not have the same tokens as dark`);
   }
+  const problems = checkPalette(mode, kebabPalette(palette));
+  if (problems.length > 0) throw new Error(problems.join("\n"));
+}
 
-  for (const [name, color] of Object.entries(palette)) {
-    if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error(`${mode}.${name} is not a hex color`);
-  }
-
-  const pairs: [string, string, number][] = [
-    ["Accent", "BG", nonTextContrast],
-    ["FG", "BG", textContrast],
-    ["TerminalFG", "BG", textContrast],
-    ["AnsiWhite", "BG", nonTextContrast],
-    ["Overlay", "BG", nonTextContrast],
-    ["FG", "Overlay", nonTextContrast],
-    ["FGDim", "BG", textContrast],
-    ["FGDim", "Surface", textContrast],
-    ["SelectionFG", "SelectionBG", textContrast],
-  ];
-  for (const color of syntaxColors) {
-    for (const background of ["BG", "Surface", "SelectionBG"]) pairs.push([color, background, textContrast]);
-  }
-  for (const [foreground, background, minimum] of pairs) {
-    const ratio = contrast(palette[foreground], palette[background]);
-    if (ratio < minimum) {
-      throw new Error(`${mode}.${foreground}/${background} contrast is ${ratio.toFixed(2)}; need ${minimum}`);
-    }
-  }
+function tiers(mode: (typeof modes)[number], palette: Record<string, string>): Record<string, string> {
+  const derived = deriveTiers(mode, kebabPalette(palette) as TierInputs);
+  return Object.fromEntries(Object.entries(derived).map(([name, color]) => [pascal(name), color]));
 }
 
 for (const mode of modes) validate(mode, palettes[mode]);
@@ -456,6 +322,12 @@ const webOutputs: [string, string][] = [
     ),
   ],
 ];
+
+const deriveSource = await readFile(new URL("./derive.ts", import.meta.url), "utf8");
+webOutputs.push([
+  "derive.js",
+  `// gg-theme derive — generated from theme/derive.ts. Do not edit.\n${stripTypeScriptTypes(deriveSource).replace(/[ \t]+$/gm, "").trimEnd()}`,
+]);
 
 for (const [file, output] of webOutputs) {
   await writeAtomic(join(webRoot, file), `${output}\n`);

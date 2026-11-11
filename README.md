@@ -90,6 +90,8 @@ Edit `theme/palette.ts`, then run `node theme/build.ts`.
 Pi themes are generated from `theme/templates/pi.json` into
 `home/.pi/agent/themes/gg-{dark,light}.json`, alongside the Neovim, Ghostty,
 Fish, and Herdr themes. Do not edit generated themes directly.
+The tier derivation and contrast checks live in `theme/derive.ts`, which the
+build both uses and publishes, type-stripped, as `theme/web/derive.js`.
 The same build writes the web tokens in `theme/web/`, published to npm as
 `@gjermundgaraba/gg-theme`. To release, bump `version` in
 `theme/web/package.json`, rebuild, and push to `main`. The

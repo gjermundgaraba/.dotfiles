@@ -65,6 +65,19 @@ shadcn components reference tokens by their bare names (`--background`, `--prima
 | `@gjermundgaraba/gg-theme/tailwind` | `tailwind.css`, Tailwind v4 `@theme inline` mapping. |
 | `@gjermundgaraba/gg-theme/primitives` | `primitives.css`, the un-roled palette as `--gg-*` OKLCH custom properties for downstream layers, followed by the tiers derived from each hue: `--gg-soft-*` (text), `--gg-quiet-*` (borders, receding text), `--gg-wash-*` (row backgrounds) and `--gg-tint-*` (highlight backgrounds), plus `--gg-link` and `--gg-link-visited`. |
 | `@gjermundgaraba/gg-theme/tokens` | `tokens.json`, slot and palette values as hex for tooling and JS. |
+| `@gjermundgaraba/gg-theme/derive` | `derive.js` (with `derive.d.ts`), the code that derives the tiers from a palette and checks its contrast, for tools that let people bring their own palette. |
+
+## Deriving tiers from your own palette
+
+`deriveTiers(mode, palette)` takes a palette in `tokens.json`'s shape (`bg`, `surface`, `fg`, `fg-dim` and the hues `accent`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `orange`, as `#rrggbb`) and returns its tiers exactly as `tokens.json` lists them. It throws only when a soft or quiet tier cannot be made readable. `checkPalette(mode, palette)` returns every contrast rule the palette breaks, checking the rules whose colours are present.
+
+```js
+import { checkPalette, deriveTiers } from "@gjermundgaraba/gg-theme/derive";
+import tokens from "@gjermundgaraba/gg-theme/tokens" with { type: "json" };
+
+deriveTiers("dark", tokens.palette.dark); // deep-equals tokens.tiers.dark
+checkPalette("dark", { ...tokens.palette.dark, bg: "#ffffff" }); // ["dark.accent/bg contrast is 2.70; need 3", …]
+```
 
 ## Notes
 
@@ -72,4 +85,4 @@ Every foreground is pre-paired with its surface and checked at build time: text 
 
 ## Development
 
-The CSS and JSON files are generated. Edit `theme/palette.ts` in the [source repository](https://github.com/gjermundgaraba/.dotfiles), run `node theme/build.ts`, bump `version` here, and push to `main`. CI publishes any version that is not yet on npm.
+The CSS, JSON and `derive.js` files are generated; `derive.d.ts` is written by hand and must match `theme/derive.ts`'s exports. Edit `theme/palette.ts` in the [source repository](https://github.com/gjermundgaraba/.dotfiles), run `node theme/build.ts`, bump `version` here, and push to `main`. CI publishes any version that is not yet on npm.
