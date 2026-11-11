@@ -92,7 +92,9 @@ Pi themes are generated from `theme/templates/pi.json` into
 Fish, and Herdr themes. Do not edit generated themes directly.
 The same build writes the web tokens in `theme/web/`, published to npm as
 `@gjermundgaraba/gg-theme`. To release, bump `version` in
-`theme/web/package.json`, rebuild, and run `npm publish` from `theme/web`.
+`theme/web/package.json`, rebuild, and push to `main`. The
+`publish-theme` workflow checks that the generated files are current and
+publishes any version not yet on npm, using npm trusted publishing.
 After Stowing, select `gg-dark` or `gg-light` via Pi's `/settings`, or run
 `pi --use-theme gg-light/gg-dark` to follow terminal appearance.
 

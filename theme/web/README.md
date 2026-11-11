@@ -72,4 +72,4 @@ Every foreground is pre-paired with its surface and checked at build time: text 
 
 ## Development
 
-The CSS and JSON files are generated. Edit `theme/palette.ts` in the [source repository](https://github.com/gjermundgaraba/.dotfiles), run `node theme/build.ts`, bump `version` here, and `npm publish` from this directory.
+The CSS and JSON files are generated. Edit `theme/palette.ts` in the [source repository](https://github.com/gjermundgaraba/.dotfiles), run `node theme/build.ts`, bump `version` here, and push to `main`. CI publishes any version that is not yet on npm.
