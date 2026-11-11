@@ -38,7 +38,6 @@ home/.config/herdr/plugins/config/*/*
 !home/.config/herdr/plugins/config/gjermundgaraba.herdr-micro/config.json
 home/.config/rex/*
 !home/.config/rex/init.lua
-!home/.config/rex/host-qr
 !home/.config/rex/agent_fork.lua
 !home/.config/rex/agent_unread.lua
 !home/.config/rex/agent-session

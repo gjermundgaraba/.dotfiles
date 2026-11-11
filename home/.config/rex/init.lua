@@ -186,30 +186,6 @@ rex.action{
 }
 rex.bind("cmd+shift+t", "popup_shell")
 
--- A QR code for each host, to add it in Rex on another device. Pressed again, closes them
-rex.action{
-  name     = "host_qr",
-  title    = "Show Host QR Codes",
-  keywords = "hosts qr code pair phone iphone ipad ios add remote",
-  run      = function(ctx)
-    if close_popup(ctx.session_id, "host-qr") then return end
-    local _, err = rex.session.new_layer{
-      bounds = { 0.25, 0.1, 0.5, 0.8 },
-      focus  = true,
-      layout = rex.layout.block{
-        flavor  = "com.superlogical.terminal.shell",
-        label   = "host-qr",
-        options = {
-          shell   = "none",
-          command = { os.getenv("HOME") .. "/.config/rex/host-qr" },
-        },
-      },
-    }
-    if err then error(err, 0) end
-  end,
-}
-rex.bind("f20>q", "host_qr")
-
 -- Agents on every host, the ones waiting on you first, in Flare's Agents mode
 -- (home/.config/flare/extensions/agents.lua). The Mac app runs this file's actions
 -- on the Mac's server, also in a remote host's session, so open runs on the Mac
