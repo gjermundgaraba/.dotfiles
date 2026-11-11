@@ -14,6 +14,12 @@ export const hueNames = ["accent", "red", "green", "yellow", "blue", "magenta", 
 /** The palette colours the tiers are derived from. */
 
 
+/** The tiers' names: wash, and per hue wash-*, tint-*, soft-* and quiet-*. */
+
+
+/** Derived tiers as #rrggbb strings. */
+
+
 
 
 const textContrast = 4.5;
@@ -111,7 +117,7 @@ export function readable(mode      , label        , source        , backgrounds 
   let color = fromOklch([lightness, chroma, hue]);
   while (backgrounds.some((background) => contrast(color, background) < minimum)) {
     lightness += step;
-    if (lightness <= 0 || lightness >= 1) throw new Error(`${mode}.${label} cannot reach ${minimum} contrast`);
+    if (lightness <= 0 || lightness >= 1) throw new Error(`${label} cannot reach ${minimum} contrast`);
     color = fromOklch([lightness, chroma, hue]);
   }
   return color;
@@ -123,15 +129,16 @@ export function readable(mode      , label        , source        , backgrounds 
  * (receding). Soft and quiet step their lightness until readable; throws when
  * one cannot be. Use checkPalette for the remaining contrast rules.
  */
-export function deriveTiers(mode      , palette            )                         {
-  const colors                         = { wash: mix(palette.bg, palette.surface, 0.5) };
-  for (const hue of hueNames) {
-    colors[`wash-${hue}`] = tint(colors.wash, palette[hue], washChroma);
-    colors[`tint-${hue}`] = tint(colors.wash, palette[hue], tintChroma[mode]);
-  }
+export function deriveTiers(mode      , palette            )        {
+  const wash = mix(palette.bg, palette.surface, 0.5);
+  const hueWashes = hueNames.map((hue) => tint(wash, palette[hue], washChroma));
+  const colors                         = { wash };
+  hueNames.forEach((hue, index) => {
+    colors[`wash-${hue}`] = hueWashes[index];
+    colors[`tint-${hue}`] = tint(wash, palette[hue], tintChroma[mode]);
+  });
 
-  const washes = Object.keys(colors).filter((name) => name.startsWith("wash"));
-  const textBackgrounds = [palette.bg, palette.surface, ...washes.map((name) => colors[name])];
+  const textBackgrounds = [palette.bg, palette.surface, wash, ...hueWashes];
   for (const hue of hueNames) {
     const [lightness, chroma, angle] = toOklch(palette[hue]);
     const soft = readable(
@@ -151,7 +158,7 @@ export function deriveTiers(mode      , palette            )                    
       nonTextContrast,
     );
   }
-  return colors;
+  return colors         ;
 }
 
 const tierInputNames = ["bg", "surface", "fg", "fg-dim", ...hueNames]         ;
@@ -161,7 +168,8 @@ function hasTierInputs(palette                                  )               
 }
 
 /**
- * Every contrast rule the palette breaks, as messages; empty when it passes.
+ * Every contrast rule the palette breaks, as messages without the mode; empty
+ * when it passes.
  * Checks each rule whose colours are present, so a palette without the
  * terminal colours is checked on the rest. With all of TierInputs present it
  * also derives the tiers and checks FG (7:1) and the syntax colours (4.5:1) on
@@ -170,19 +178,19 @@ function hasTierInputs(palette                                  )               
 export function checkPalette(mode      , palette                                  )           {
   const problems = Object.entries(palette)
     .filter(([, color]) => !/^#[0-9a-f]{6}$/i.test(color))
-    .map(([name]) => `${mode}.${name} is not a hex color`);
+    .map(([name]) => `${name} is not a hex color`);
   if (problems.length > 0) return problems;
 
   for (const [foreground, background, minimum] of contrastPairs) {
     if (!(foreground in palette) || !(background in palette)) continue;
     const ratio = contrast(palette[foreground], palette[background]);
     if (ratio < minimum) {
-      problems.push(`${mode}.${foreground}/${background} contrast is ${ratio.toFixed(2)}; need ${minimum}`);
+      problems.push(`${foreground}/${background} contrast is ${ratio.toFixed(2)}; need ${minimum}`);
     }
   }
   if (!hasTierInputs(palette)) return problems;
 
-  let tiers                        ;
+  let tiers       ;
   try {
     tiers = deriveTiers(mode, palette);
   } catch (error) {
@@ -191,12 +199,12 @@ export function checkPalette(mode      , palette                                
   for (const [name, background] of Object.entries(tiers)) {
     if (!name.startsWith("wash") && !name.startsWith("tint")) continue;
     const ratio = contrast(palette.fg, background);
-    if (ratio < 7) problems.push(`${mode}.fg/${name} contrast is ${ratio.toFixed(2)}; need 7`);
+    if (ratio < 7) problems.push(`fg/${name} contrast is ${ratio.toFixed(2)}; need 7`);
     if (!name.startsWith("tint")) continue;
     for (const color of syntaxColors) {
       const syntaxRatio = contrast(palette[color], background);
       if (syntaxRatio < textContrast) {
-        problems.push(`${mode}.${color}/${name} contrast is ${syntaxRatio.toFixed(2)}; need ${textContrast}`);
+        problems.push(`${color}/${name} contrast is ${syntaxRatio.toFixed(2)}; need ${textContrast}`);
       }
     }
   }

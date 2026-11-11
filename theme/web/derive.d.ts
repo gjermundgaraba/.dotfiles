@@ -9,6 +9,12 @@ export type HueName = (typeof hueNames)[number];
 /** The palette colours the tiers are derived from, as #rrggbb under tokens.json's keys. */
 export type TierInputs = Readonly<Record<"bg" | "surface" | "fg" | "fg-dim" | HueName, string>>;
 
+/** The tiers' names: wash, and per hue wash-*, tint-*, soft-* and quiet-*. */
+export type TierName = "wash" | `${"wash" | "tint" | "soft" | "quiet"}-${HueName}`;
+
+/** Derived tiers as #rrggbb strings. */
+export type Tiers = Readonly<Record<TierName, string>>;
+
 /** A #rrggbb colour's red, green and blue bytes. */
 export declare function channels(hex: string): number[];
 
@@ -34,10 +40,11 @@ export declare function readable(mode: Mode, label: string, source: string, back
  * tint-*, soft-* and quiet-*. Throws when a soft or quiet tier cannot be made
  * readable. Use checkPalette for the remaining contrast rules.
  */
-export declare function deriveTiers(mode: Mode, palette: TierInputs): Record<string, string>;
+export declare function deriveTiers(mode: Mode, palette: TierInputs): Tiers;
 
 /**
- * Every contrast rule the palette breaks, as messages; empty when it passes.
+ * Every contrast rule the palette breaks, as messages without the mode; empty
+ * when it passes.
  * Checks each rule whose colours are present; with all of TierInputs present
  * it also checks FG and the syntax colours on the derived washes and tints.
  */

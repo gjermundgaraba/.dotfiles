@@ -69,14 +69,14 @@ shadcn components reference tokens by their bare names (`--background`, `--prima
 
 ## Deriving tiers from your own palette
 
-`deriveTiers(mode, palette)` takes a palette in `tokens.json`'s shape (`bg`, `surface`, `fg`, `fg-dim` and the hues `accent`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `orange`, as `#rrggbb`) and returns its tiers exactly as `tokens.json` lists them. It throws only when a soft or quiet tier cannot be made readable. `checkPalette(mode, palette)` returns every contrast rule the palette breaks, checking the rules whose colours are present.
+`deriveTiers(mode, palette)` takes a palette in `tokens.json`'s shape (`bg`, `surface`, `fg`, `fg-dim` and the hues `accent`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `orange`, as `#rrggbb`) and returns its tiers exactly as `tokens.json` lists them, typed as `Tiers`. It throws only when a soft or quiet tier cannot be made readable. `checkPalette(mode, palette)` returns every contrast rule the palette breaks, checking the rules whose colours are present.
 
 ```js
 import { checkPalette, deriveTiers } from "@gjermundgaraba/gg-theme/derive";
 import tokens from "@gjermundgaraba/gg-theme/tokens" with { type: "json" };
 
 deriveTiers("dark", tokens.palette.dark); // deep-equals tokens.tiers.dark
-checkPalette("dark", { ...tokens.palette.dark, bg: "#ffffff" }); // ["dark.accent/bg contrast is 2.70; need 3", …]
+checkPalette("dark", { ...tokens.palette.dark, bg: "#ffffff" }); // ["accent/bg contrast is 2.70; need 3", …]
 ```
 
 ## Notes

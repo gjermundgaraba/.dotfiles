@@ -34,7 +34,7 @@ function validate(mode: (typeof modes)[number], palette: Record<string, string>)
     throw new Error(`${mode} palette does not have the same tokens as dark`);
   }
   const problems = checkPalette(mode, kebabPalette(palette));
-  if (problems.length > 0) throw new Error(problems.join("\n"));
+  if (problems.length > 0) throw new Error(problems.map((problem) => `${mode}.${problem}`).join("\n"));
 }
 
 function tiers(mode: (typeof modes)[number], palette: Record<string, string>): Record<string, string> {
@@ -197,8 +197,8 @@ function webSlots(mode: (typeof modes)[number], palette: Record<string, string>)
   slots.border = `color-mix(in oklab, var(--foreground) ${alpha[0]}%, transparent)`;
   slots.input = `color-mix(in oklab, var(--foreground) ${alpha[1]}%, transparent)`;
   slots.ring = palette.Accent;
-  slots.link = readable(mode, "link", palette.Accent, [palette.BG, palette.Surface], textContrast);
-  slots["link-visited"] = readable(mode, "link-visited", tier.QuietAccent, [palette.BG, palette.Surface], textContrast);
+  slots.link = readable(mode, `${mode}.link`, palette.Accent, [palette.BG, palette.Surface], textContrast);
+  slots["link-visited"] = readable(mode, `${mode}.link-visited`, tier.QuietAccent, [palette.BG, palette.Surface], textContrast);
   slots.selection = palette.SelectionBG;
   slots["selection-foreground"] = palette.SelectionFG;
   webCharts.forEach((hue, index) => (slots[`chart-${index + 1}`] = palette[hue]));
