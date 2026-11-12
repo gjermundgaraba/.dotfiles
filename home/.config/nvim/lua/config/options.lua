@@ -15,6 +15,33 @@ vim.opt.statusline:append "%{%v:lua.require('utils.diagnostic_status').statuslin
 
 vim.opt.clipboard = "unnamedplus"
 
+-- On a Linux machine with no display server (a clankerbox VM, say), Neovim finds
+-- no clipboard tool: it only looks for pbcopy on macOS, and it won't pick
+-- OSC 52 by itself while 'clipboard' is set. Copy with OSC 52 then, which the
+-- terminal applies to the local clipboard. Paste returns what was last copied,
+-- since an OSC 52 read goes unanswered by clankermux and would stall every `p`.
+if vim.fn.has "mac" == 0 and not vim.env.DISPLAY and not vim.env.WAYLAND_DISPLAY then
+  local osc52 = require "vim.ui.clipboard.osc52"
+  local copied = {}
+  local function copy(reg)
+    local send = osc52.copy(reg)
+    return function(lines, regtype)
+      copied[reg] = { lines, regtype }
+      send(lines)
+    end
+  end
+  local function paste(reg)
+    return function()
+      return copied[reg] or {}
+    end
+  end
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = { ["+"] = copy "+", ["*"] = copy "*" },
+    paste = { ["+"] = paste "+", ["*"] = paste "*" },
+  }
+end
+
 vim.opt.autocomplete = true
 vim.opt.completeopt = { "menu", "menuone", "noselect", "popup" }
 vim.opt.pumborder = "rounded"
