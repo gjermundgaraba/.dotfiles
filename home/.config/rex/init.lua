@@ -7,14 +7,8 @@ local function type_text(ctx, data)
   return true
 end
 
--- Runs a command and returns its output, or raises what it printed to stderr. Rex shows the error
--- with its own "Error: " prefix, so drop the one CLIs such as rex and rex-state print
-local function run(argv)
-  local r, err = rex.exec(argv)
-  if not r then error(err, 0) end
-  if not r.ok then error((r.stderr:gsub("^Error: ", ""):gsub("%s+$", "")), 0) end
-  return r.stdout
-end
+local helpers = require("helpers")
+local run, copy = helpers.run, helpers.copy
 
 -- Norwegian keyboard: restore Option+key special characters
 -- (only matters if Option as Alt is turned on in Rex's settings)
@@ -118,20 +112,6 @@ rex.bind("f20>shift+i", "focus_forward")
 rex.bind("f20>z", "pane.zoom")
 rex.bind("f20>,", "client.settings")
 
-local function copy(text, title)
-  local copied = rex.exec({ "pbcopy" }, { stdin = text })
-  if copied and copied.ok then
-    rex.exec({
-      "osascript",
-      "-e", "on run argv",
-      "-e", "display notification (item 1 of argv) with title (item 2 of argv)",
-      "-e", "end run",
-      text, title,
-    })
-  end
-  return text
-end
-
 rex.action{
   name  = "copy_block_id",
   title = "Copy Pane ID",
@@ -143,6 +123,10 @@ rex.bind("f20>y>y", "copy_block_id")
 require("agent_fork").setup{ copy = copy }
 rex.bind("f20>f", "fork_agent")
 rex.bind("f20>y>i", "copy_agent_session_id")
+
+-- New Clankerbox Host: create a clankerbox machine and add it to the Mac app as a remote host
+require("clankerbox_host").setup()
+rex.bind("f20>i>c", "new_clankerbox_host")
 
 -- Closes the floating layer with this block label in the active tab, if there is one
 local function close_popup(session_id, label)
@@ -219,14 +203,10 @@ rex.bind("f20>y>p", "copy_block_path")
 
 -- The DNS name of the pane's host, without scheme or port. A remote host's session runs this on
 -- the Mac's server with ctx.server set, so ask rex the address that host's label resolves to;
--- this machine's is its built-in Tailscale name. The server runs commands with only the system
--- PATH, so run the rex binary the server itself runs from, the command's parent
+-- this machine's is its built-in Tailscale name
 local function host_name(ctx)
   if ctx.server then
-    local found = run({
-      "/bin/sh", "-c", 'exec "$(ps -o comm= -p $PPID)" -S "$1" --timeout 3s whoami --json',
-      "sh", ctx.server,
-    })
+    local found = run({ helpers.rex, "-S", ctx.server, "--timeout", "3s", "whoami", "--json" })
     local endpoint = (rex.json.decode(found) or {}).endpoint or ""
     return (endpoint:gsub("^%a[%w+.-]*://", ""):gsub("[:/].*$", ""))
   end

@@ -41,6 +41,8 @@ home/.config/rex/*
 !home/.config/rex/agent_fork.lua
 !home/.config/rex/agent_unread.lua
 !home/.config/rex/agent-session
+!home/.config/rex/helpers.lua
+!home/.config/rex/clankerbox_host.lua
 home/.config/atuin/atuin-receipt.json
 home/.config/ghostty/.claude/settings.local.json
 home/.config/ghostty/local
