@@ -1,0 +1,16 @@
+{
+  "bg": "#282a27",
+  "surface": "#383c36",
+  "overlay": "#767d72",
+  "fg": "#e2e6e0",
+  "fg-dim": "#a0a89c",
+  "selection-bg": "#53273a",
+  "accent": "#fb6d9c",
+  "red": "#fa9a84",
+  "green": "#4cc157",
+  "yellow": "#e0ba31",
+  "blue": "#42abff",
+  "magenta": "#e786ed",
+  "cyan": "#00c9cb",
+  "orange": "#ff8200"
+}

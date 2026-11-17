@@ -156,6 +156,29 @@ for (const mode of modes) {
   }
 }
 
+const gdocsDarkModeKeys = [
+  "BG",
+  "Surface",
+  "Overlay",
+  "FG",
+  "FGDim",
+  "SelectionBG",
+  "Accent",
+  "Red",
+  "Green",
+  "Yellow",
+  "Blue",
+  "Magenta",
+  "Cyan",
+  "Orange",
+] as const;
+const gdocsDarkModePath = join(root, "theme", "gdocs-dark-mode", "gg-dark.json");
+await writeAtomic(
+  gdocsDarkModePath,
+  `${JSON.stringify(Object.fromEntries(gdocsDarkModeKeys.map((name) => [kebab(name), palettes.dark[name]])), null, 2)}\n`,
+);
+console.log(`generated ${gdocsDarkModePath.slice(root.length)}`);
+
 const webStatus = { destructive: "Red", success: "Green", warning: "Orange", info: "Cyan" } as const;
 const webCharts = ["Blue", "Green", "Orange", "Magenta", "Cyan"] as const;
 const webRadius = "0.5rem";

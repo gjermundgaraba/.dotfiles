@@ -100,6 +100,14 @@ publishes any version not yet on npm, using npm trusted publishing.
 After Stowing, select `gg-dark` or `gg-light` via Pi's `/settings`, or run
 `pi --use-theme gg-light/gg-dark` to follow terminal appearance.
 
+### Dark Mode for Google Docs
+
+The build writes the dark palette to `theme/gdocs-dark-mode/gg-dark.json`, in
+the format the extension's Export writes. The extension derives its own tints
+from these colors and has no light theme. To use it, open the extension's
+options, choose **Import…**, pick that file, and save. The extension keeps its
+own copy, so import again after the palette changes.
+
 ### Rex
 
 Rex can't read a theme file yet, so it keeps its own copy of the colors in its
