@@ -2,6 +2,8 @@
 -- from a script. So this opens its Add Remote Host prompt and enters the address with Cua Driver,
 -- which works while Rex is in the background. It needs Remote Control turned on in the app's
 -- settings and Cua Driver's daemon running, and a Rex update that changes the prompt can break it.
+-- It asks for the name, and then for the template among the ready ones when there's more than one,
+-- unless `rex do new_clankerbox_host name=… template=…` gives them.
 
 local helpers = require("helpers")
 local run, notify = helpers.run, helpers.notify
@@ -11,7 +13,7 @@ local M = {}
 local home = os.getenv("HOME")
 local CLANKERBOX = home .. "/.vite-plus/bin/clankerbox"
 local CUA_DRIVER = home .. "/.local/bin/cua-driver"
-local TEMPLATE = "gg-linux-dev"
+local DEFAULT_TEMPLATE = "gg-linux-dev" -- listed first
 local REX_APP = "com.superlogical.rex"
 local FIELD = "Command Palette Search"
 local TITLE = "New Clankerbox Host"
@@ -26,28 +28,90 @@ local function wait(deadline, message, check)
   end
 end
 
+-- Raises why a question in the command palette got no answer, or returns nil when it was cancelled
+local function unanswered(what, why, detail)
+  if why == "cancelled" then return nil end
+  error("Couldn't ask for " .. what .. ": " .. why .. (detail and (": " .. detail) or ""), 0)
+end
+
 -- Rex can only pause for the answer in the action's own run, not under pcall
 local function ask_name()
   local text, why, detail = rex.ui.input{
     title       = "Name of the new clankerbox machine",
     placeholder = "lowercase letters, digits and hyphens",
-    confirm     = "Create machine",
+    confirm     = "Continue",
   }
-  if text == nil then
-    if why == "cancelled" then return nil end
-    error("Couldn't ask for a name: " .. why .. (detail and (": " .. detail) or ""), 0)
-  end
+  if text == nil then return unanswered("a name", why, detail) end
   text = text:gsub("^%s+", ""):gsub("%s+$", "")
   if text ~= "" then return text end
 end
 
-local function machine(name)
-  local r, err = rex.exec({ CLANKERBOX, "get", name, "--json" })
+-- Runs a clankerbox command for its JSON reply. Returns the reply, or nil and the error's fields
+local function clankerbox(argv)
+  local command = { CLANKERBOX }
+  for _, arg in ipairs(argv) do command[#command + 1] = arg end
+  command[#command + 1] = "--json"
+  local r, err = rex.exec(command)
   if not r then error(err, 0) end
   local reply = rex.json.decode(r.stdout) or {}
   if r.ok then return reply end
-  if reply.error and reply.error.tag == "NotFound" then return nil end
-  error("clankerbox: " .. (reply.error and reply.error.message or r.stderr), 0)
+  if not reply.error then error("clankerbox: " .. (r.stderr:gsub("%s+$", "")), 0) end
+  return nil, reply.error
+end
+
+local function machine(name)
+  local reply, err = clankerbox({ "get", name })
+  if reply then return reply end
+  if err.tag == "NotFound" then return nil end
+  error("clankerbox: " .. tostring(err.message), 0)
+end
+
+-- A template's current build, which a create clones
+local function current_build(template)
+  for _, build in ipairs(template.builds or {}) do
+    if build.id == template.current then return build end
+  end
+  return {}
+end
+
+-- The pick list's item for a template: its base and sizes, and the hosts that hold a copy
+local function template_item(template)
+  local build = current_build(template)
+  local hosts = {}
+  for _, copy in ipairs(build.copies or {}) do
+    if copy.phase == "ready" then hosts[#hosts + 1] = copy.host end
+  end
+  return {
+    id       = template.id,
+    icon     = "server",
+    subtitle = string.format("%s · %s vCPU, %s GiB RAM, %s GiB disk", tostring(build.base),
+      tostring(build.cpu), tostring(build.ramMib and math.floor(build.ramMib / 1024)), tostring(build.diskGib)),
+    detail   = table.concat(hosts, ", "),
+  }
+end
+
+-- Asks which ready template to create the machine from, the default one first. Takes the only one
+-- without asking, and returns nil when the question is cancelled
+local function pick_template(name)
+  local reply, err = clankerbox({ "template", "list" })
+  if not reply then error("clankerbox: " .. tostring(err.message), 0) end
+  local items = {}
+  for _, template in ipairs(reply.templates or {}) do
+    if template.state == "ready" then
+      local item = template_item(template)
+      if template.id == DEFAULT_TEMPLATE then table.insert(items, 1, item) else items[#items + 1] = item end
+    end
+  end
+  if #items == 0 then error("clankerbox has no ready template", 0) end
+  if #items == 1 then return items[1].id end
+  local id, why, detail = rex.ui.pick{
+    title       = "Template for " .. name,
+    placeholder = "Filter templates",
+    confirm     = "Create machine",
+    items       = items,
+  }
+  if id == nil then return unanswered("a template", why, detail) end
+  return id
 end
 
 local function tailnet_name(name)
@@ -139,11 +203,12 @@ local function add_to_app(ctx, endpoint)
   error("Rex.app didn't list " .. endpoint .. " after Return", 0)
 end
 
-local function create_host(ctx, name)
+local function create_host(ctx, name, template)
   local deadline = os.time() + TIMEOUT_SECONDS
   local existing = machine(name)
   if not existing then
-    run({ CLANKERBOX, "create", "--template", TEMPLATE, "--timeout", TIMEOUT_SECONDS .. "s", name },
+    if not template then error(name .. " is gone; run again to pick its template", 0) end
+    run({ CLANKERBOX, "create", "--template", template, "--timeout", TIMEOUT_SECONDS .. "s", name },
       { timeout = TIMEOUT_SECONDS })
   elseif existing.state ~= "running" then
     error(name .. " exists and is " .. tostring(existing.state), 0)
@@ -166,15 +231,23 @@ function M.setup()
     title       = TITLE,
     description = "Creates a clankerbox machine and adds it to the Mac app as a remote host",
     keywords    = "clankerbox machine vm create remote host tailscale",
-    args        = { name = "string?" },
+    args        = { name = "string?", template = "string?" },
     run         = function(ctx, args)
-      local name = (args or {}).name or ask_name()
+      args = args or {}
+      local name = args.name or ask_name()
       if not name then return end
       if not name:match("^[a-z0-9][a-z0-9-]*$") then
         error("A machine name takes lowercase letters, digits and hyphens: " .. name, 0)
       end
+      -- Asked here, outside the pcall below, where Rex can pause for the answer. A machine that has
+      -- the name already needs no template
+      local template = args.template
+      if not template and not machine(name) then
+        template = pick_template(name)
+        if not template then return end
+      end
       notify("Setting up " .. name .. "…", TITLE)
-      local ok, result = pcall(create_host, ctx, name)
+      local ok, result = pcall(create_host, ctx, name, template)
       if not ok then
         notify(tostring(result), TITLE .. " failed")
         error(result, 0)
