@@ -64,48 +64,27 @@
       ]
     },
     "npm:@clanker-stuff/mcp-skills@0.1.0",
-    "npm:@clanker-stuff/codemode-diffs@0.1.0",
-    {
-      "source": "npm:@aliou/pi-ts-aperture",
-      "extensions": [
-        "-extensions/aperture/index.ts",
-        "-extensions/mcp/index.ts"
-      ]
-    }
+    "npm:@clanker-stuff/codemode-diffs@0.1.0"
   ],
   "defaultProvider": "openai",
-  "defaultModel": "gpt-6.1-terra",
+  "defaultModel": "gpt-6.2-sol",
   "defaultTools": [
     "+codemode"
   ],
   "codemode": {
     "mode": "only"
   },
-  "defaultThinkingLevel": "max",
+  "defaultThinkingLevel": "xhigh",
   "modelThinkingLevels": {
     "xai/grok-4.6": "xhigh",
     "radius/deepseek-v4.1-flash": "high"
   },
   "treeFilterMode": "no-tools",
   "enabledModels": [
-    "opencode-go/kimi-k3",
-    "github-copilot/grok-4.6",
-    "xai/grok-4.6",
-    "cursorapi/grok-4.6",
-    "cursorapi/grok-4.6-fast",
-    "radius/deepseek-v4.1-flash",
-    "radius/cheap",
-    "radius/balanced",
-    "radius/precise",
-    "openrouter/openai/gpt-6.1-sol",
-    "openrouter/openai/gpt-6-astra",
     "claude-bridge/claude-opus-5-5",
     "claude-bridge/claude-sonnet-5-5",
-    "claude-bridge/claude-fable-5-1",
-    "openai/gpt-6.1-sol",
-    "openai/gpt-6-astra",
-    "aperture/aperture/anthropic/claude-sonnet-5.5",
-    "openai/gpt-6.1-terra"
+    "openai/gpt-6.2-astra",
+    "openai/gpt-6.2-sol"
   ],
   "showHardwareCursor": true,
   "terminal": {
