@@ -4,7 +4,11 @@ guard let out = CommandLine.arguments.dropFirst().first else {
     FileHandle.standardError.write(Data("Usage: swift make-icons.swift <output-directory>\n".utf8))
     exit(64)
 }
-let rex = Bundle(path: "/Applications/Rex Beta.app/Contents/Resources/SuperBlockIcons_SuperBlockIcons.bundle")!
+// Found by bundle ID, as the app's name changed from Rex Beta to Rex
+guard let rexApp = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.superlogical.rex") else {
+    fatalError("Rex isn't installed")
+}
+let rex = Bundle(url: rexApp.appendingPathComponent("Contents/Resources/SuperBlockIcons_SuperBlockIcons.bundle"))!
 let pixels = 64.0
 // As Flare's row.rs draws a tile, its corners round by 24% of it and its
 // glyph fills 60%, but it fills 80% of the icon (not 84%), leaving room

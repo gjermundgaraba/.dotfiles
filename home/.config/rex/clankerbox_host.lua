@@ -17,32 +17,27 @@ local FIELD = "Command Palette Search"
 local TITLE = "New Clankerbox Host"
 local TIMEOUT_SECONDS = 600
 
-local function sleep(seconds) rex.exec({ "/bin/sleep", tostring(seconds) }) end
-
 local function wait(deadline, message, check)
   while true do
     local value = check()
     if value then return value end
     if os.time() >= deadline then error(message, 0) end
-    sleep(3)
+    rex.sleep(3)
   end
 end
 
-local function ask(prompt)
-  local r, err = rex.exec({
-    "osascript",
-    "-e", "on run argv",
-    "-e", "activate",
-    "-e", "text returned of (display dialog (item 1 of argv) default answer \"\" with title (item 2 of argv))",
-    "-e", "end run",
-    prompt, TITLE,
-  })
-  if not r then error(err, 0) end
-  if not r.ok then
-    if r.stderr:find("%(%-128%)") then return nil end
-    error((r.stderr:gsub("%s+$", "")), 0)
+-- Rex can only pause for the answer in the action's own run, not under pcall
+local function ask_name()
+  local text, why, detail = rex.ui.input{
+    title       = "Name of the new clankerbox machine",
+    placeholder = "lowercase letters, digits and hyphens",
+    confirm     = "Create machine",
+  }
+  if text == nil then
+    if why == "cancelled" then return nil end
+    error("Couldn't ask for a name: " .. why .. (detail and (": " .. detail) or ""), 0)
   end
-  local text = r.stdout:gsub("^%s+", ""):gsub("%s+$", "")
+  text = text:gsub("^%s+", ""):gsub("%s+$", "")
   if text ~= "" then return text end
 end
 
@@ -115,7 +110,7 @@ local function add_to_app(ctx, endpoint)
   for _ = 1, 10 do
     window = window_with_palette_field()
     if window then break end
-    sleep(0.3)
+    rex.sleep(0.3)
   end
   if not window then error("Rex.app didn't open Add Remote Host", 0) end
 
@@ -139,7 +134,7 @@ local function add_to_app(ctx, endpoint)
 
   for _ = 1, 20 do
     if app_hosts()[endpoint] then return end
-    sleep(0.5)
+    rex.sleep(0.5)
   end
   error("Rex.app didn't list " .. endpoint .. " after Return", 0)
 end
@@ -173,7 +168,7 @@ function M.setup()
     keywords    = "clankerbox machine vm create remote host tailscale",
     args        = { name = "string?" },
     run         = function(ctx, args)
-      local name = (args or {}).name or ask("Name of the new clankerbox machine:")
+      local name = (args or {}).name or ask_name()
       if not name then return end
       if not name:match("^[a-z0-9][a-z0-9-]*$") then
         error("A machine name takes lowercase letters, digits and hyphens: " .. name, 0)

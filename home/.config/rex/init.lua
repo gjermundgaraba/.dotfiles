@@ -100,6 +100,7 @@ rex.action{
 rex.bind("f20>shift+o", "focus_back")
 rex.bind("f20>shift+i", "focus_forward")
 rex.bind("f20>z", "pane.zoom")
+rex.bind("f20>space", "pane.copy_mode.enter")
 rex.bind("f20>,", "client.settings")
 
 rex.action{
