@@ -1,14 +1,10 @@
--- Helpers shared by init.lua and its modules.
-
 local M = {}
 
 -- The rex binary of this Mac's Rex server. The server runs commands with only the system PATH
 M.rex = os.getenv("HOME") .. "/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/"
   .. "Rex Server.app/Contents/MacOS/rex"
 
--- Runs a command and returns its output, or raises what it printed to stderr. Rex shows the error
--- with its own "Error: " prefix, so drop the one CLIs such as rex and rex-state print. opts is
--- rex.exec's
+-- Rex adds its own "Error: " prefix when displaying a Lua error.
 function M.run(argv, opts)
   local r, err = rex.exec(argv, opts)
   if not r then error(err, 0) end

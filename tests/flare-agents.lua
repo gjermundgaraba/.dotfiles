@@ -1,7 +1,3 @@
--- Tests home/.config/flare/extensions/agents.lua with a stand-in for Flare's
--- `flare` table: its rows, its notice, and which agent it says Rex shows.
--- Run with Lua 5.4 or later: lua tests/flare-agents.lua
-
 local root = arg[0]:match("^(.*)/tests/") or "."
 local handlers, items, notice, title, follower = {}, nil, nil, nil, nil
 
@@ -15,7 +11,6 @@ flare = {
   after = function() end,
   exec = function() return nil, "not here" end,
   window_title = function() return title end,
-  -- Snapshots are handed over as tables
   json = { decode = function(value) return value end, encode = function(value) return value end },
 }
 -- Flare's safe Lua runtime does not expose the debug library.
@@ -36,7 +31,6 @@ local function record(state, app, updated, extra)
   return r
 end
 
--- A session whose active window's focused pane runs `foreground`
 local function session(label, foreground, status, block_title)
   return {
     id = "session:" .. label, label = label, active_window = "w-" .. label,
@@ -56,28 +50,25 @@ follower.line({ servers = {
       { unread = true, msg = "" }) }, "Fix\tthe\nbug"),
     session("notes", fish),
     session("twin", claude),
+    session("mixed", fish),
   } },
   { server = "box.example.ts.net", connected = true, sessions = {
     session("review", codex, { record("blocked", "codex", "2026-10-29T17:30:00Z",
       { kind = "permission", msg = "Allow rm?" }) }),
     session("twin", codex),
+    session("mixed", codex),
   } },
   { server = "slow.example.ts.net", connected = false },
   { server = "gone.example.ts.net", connected = false, error = "refused" },
 } })
 
--- Rows: the most pressing first, titled by the pane's title, else by the agent,
--- with its message under it, its icon in its state, then where it runs and
--- its directory
 check("rows", #items, 2)
 check("first row", items[1].title, "codex")
 check("first subtitle", items[1].subtitle, "Allow rm?")
 check("first place", items[1].columns[1], "box/review")
--- Each folder but the last two by its first letter, home as ~ on this Mac only
 check("first directory", items[1].columns[2], "/U/a/w/repos/ibc")
 check("first columns", #items[1].columns, 2)
 check("first icon", items[1].icon.image:match("[^/]+$"), "codex-blocked.webp")
--- Its state is found, though no column shows it
 check("first match", items[1].match:find("blocked", 1, true) ~= nil, true)
 check("second row", items[2].title, "Fix the bug")
 check("second subtitle", items[2].subtitle, nil)
@@ -85,7 +76,6 @@ check("second directory", items[2].columns[2], "~/w/pers/flare")
 check("second icon", items[2].icon.image:match("[^/]+$"), "claude-code-unread.webp")
 check("notice", notice, "Can't reach gone")
 
--- Which agent Rex shows, by the session its window title names
 local function agent(window)
   title = window
   return handlers.agent({ bundle_id = "com.superlogical.rex", pid = 1 })
@@ -94,6 +84,7 @@ check("claude", agent("Fix the bug - flare"), "claude")
 check("codex by script", agent("Review - review"), "codex")
 check("a shell", agent("~ - notes"), nil)
 check("same label, different agents", agent("x - twin"), nil)
+check("same label, shell and agent", agent("x - mixed"), nil)
 check("unknown session", agent("x - nowhere"), nil)
 check("another app", handlers.agent({ bundle_id = "com.apple.Notes", pid = 1 }), nil)
 
@@ -106,22 +97,18 @@ follower.line({ servers = { { server = "local", connected = true, sessions = { s
 check("a session whose read failed", agent("x - only"), nil)
 check("no title, a session whose read failed", agent(nil), nil)
 
--- A message of control characters only shows no subtitle
 follower.line({ servers = { { server = "local", connected = true, sessions = {
   session("only", codex, { record("working", "codex", "2026-10-29T17:30:00Z", { msg = "\27" }) }, "Real title"),
 } } } })
 check("control-only message", items[1].subtitle, nil)
 check("control-only message's title", items[1].title, "Real title")
--- A working agent's icon moves
 check("working icon", items[1].icon.image:match("[^/]+$"), "codex-working.webp")
 
--- An idle agent is done, with its plain icon
 follower.line({ servers = { { server = "local", connected = true, sessions = {
   session("a", codex, { record("idle", "codex", "2026-10-29T17:30:00Z") }),
 } } } })
 check("idle is done", items[1].icon.image:match("[^/]+$"), "codex.png")
 
--- A jump that can't bring Rex forward says so
 flare.exec = function(argv)
   if argv[1] == "/usr/bin/open" then return nil, "no open" end
   if argv[#argv] == "--json" then
@@ -132,14 +119,21 @@ flare.exec = function(argv)
 end
 handlers.run(items[1].id)
 check("jump notice", notice, "Couldn't jump: Couldn't bring Rex forward: no open")
--- Shown once
 handlers.close()
 
--- A snapshot rex-state stopped rewriting says so and answers nothing
-follower.line({ written_at = "2020-01-01T00:00:00Z", servers = { { server = "local", connected = true,
-  sessions = { session("only", codex) } } } })
-check("stopped daemon's agent", agent("x - only"), nil)
-check("stopped daemon's notice", notice and notice:match("^rex%-state stopped") ~= nil, true)
+local now = os.time
+os.time = function() return 951868860 end
+local leap_day_snapshot = { written_at = "2000-02-29T19:59:00-04:00", servers = {
+  { server = "local", connected = true, sessions = { session("only", codex) } },
+} }
+follower.line(leap_day_snapshot)
+check("two-minute-old snapshot's agent", agent("x - only"), "codex")
+check("two-minute-old snapshot's notice", notice, nil)
+leap_day_snapshot.written_at = "2000-02-29T19:58:59-04:00"
+follower.line(leap_day_snapshot)
+check("stale snapshot's agent", agent("x - only"), nil)
+check("stale snapshot's notice", notice, "rex-state stopped writing 2m ago; these rows may be old")
+os.time = now
 
 if failures > 0 then os.exit(1) end
 print("ok")

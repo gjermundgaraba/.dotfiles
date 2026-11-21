@@ -1,4 +1,3 @@
-// Records this pi session for Rex's Fork Agent Session action (~/.config/rex/agent_fork.lua)
 import { execFile } from "node:child_process";
 import { homedir } from "node:os";
 import { join } from "node:path";

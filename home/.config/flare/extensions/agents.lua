@@ -1,8 +1,3 @@
--- Agents in Rex on this Mac and every Rex host, the ones waiting on you first.
--- Follows rex-state (macos/Library/LaunchAgents/local.rex-state.plist); ↩ jumps
--- to the agent's pane. Also tells Flare's snippets which agent the focused Rex
--- pane runs, for their app-specific text.
-
 local HOME = os.getenv("HOME")
 -- Flare runs with launchd's PATH, so name commands in full
 local REX_STATE = HOME .. "/.cargo/bin/rex-state"
@@ -11,9 +6,6 @@ local REX = HOME .. "/Library/Application Support/com.superlogical.rex/RexServer
 local REX_APP = "com.superlogical.rex"
 
 local AGENTS = { ["claude-code"] = true, codex = true, pi = true, opencode = true }
--- The states rows show, the most pressing first, with the color of their border
--- (make-icons.swift draws the same). Seen done agents and idle ones are both
--- just waiting, so both are done, which has no border.
 local STATES = {
   blocked = { rank = 1, color = 0xFF3B30 },
   error = { rank = 2, color = 0xAF52DE },
@@ -21,40 +13,36 @@ local STATES = {
   working = { rank = 4, color = 0xFF9500 },
   done = { rank = 5 },
 }
--- Each agent's icons, by its app and state, in agents/ beside this file:
--- claude-code.png when done, the animated claude-code-blocked.webp and so on
--- otherwise (a .png serves a state without one)
 local ICONS = flare.dir .. "agents/"
--- rex-state rewrites its snapshot every 30 s, so an older one means it stopped
-local STALE_AFTER = 120
+-- rex-state normally writes a snapshot every 30 seconds.
+local SNAPSHOT_STALE_SECONDS = 120
 
 flare.mode{
   name = "Agents",
   icon = { symbol = "sparkles", color = 0x5E5CE6 },
   placeholder = "Search agents…",
   actions = { primary = "Jump" },
-  -- j/k move through the agents; / searches them
   navigation = "list",
-  -- Where it runs and its directory
   columns = { { width = 160 }, { width = 220, truncate = "start" } },
 }
 
-local snapshot -- rex-state's last snapshot
+local snapshot
 local problem = "Waiting for rex-state…"
-local jump_failed -- why the last jump failed, shown the next time the mode opens
-local rows = {} -- by item id
+local jump_failed
+local rows = {}
 
--- Seconds since the epoch of an RFC 3339 time, such as 2026-10-29T19:04:00.99+01:00
-local function epoch(stamp)
-  local y, mo, d, h, mi, s, zone = (stamp or ""):match("^(%d+)-(%d+)-(%d+)T(%d+):(%d+):([%d.]+)(.*)$")
-  if not y then return nil end
-  y, mo, d = tonumber(y), tonumber(mo), tonumber(d)
-  -- Days from the civil date (Howard Hinnant's algorithm)
+local function days_since_epoch(y, mo, d)
   if mo <= 2 then y = y - 1 end
   local era = y // 400
   local yoe = y - era * 400
   local doy = (153 * (mo > 2 and mo - 3 or mo + 9) + 2) // 5 + d - 1
-  local days = era * 146097 + yoe * 365 + yoe // 4 - yoe // 100 + doy - 719468
+  return era * 146097 + yoe * 365 + yoe // 4 - yoe // 100 + doy - 719468
+end
+
+local function epoch(stamp)
+  local y, mo, d, h, mi, s, zone = (stamp or ""):match("^(%d+)-(%d+)-(%d+)T(%d+):(%d+):([%d.]+)(.*)$")
+  if not y then return nil end
+  local days = days_since_epoch(tonumber(y), tonumber(mo), tonumber(d))
   local t = days * 86400 + tonumber(h) * 3600 + tonumber(mi) * 60 + tonumber(s)
   local sign, oh, om = zone:match("^([+-])(%d+):(%d+)$")
   if sign then t = t - (sign == "+" and 1 or -1) * (tonumber(oh) * 3600 + tonumber(om) * 60) end
@@ -69,13 +57,11 @@ local function age(seconds)
   return seconds .. "s"
 end
 
--- A host by the first label of its name
 local function short(server)
   if server == "local" then return nil end
   return server:match("^[^.]+") or server
 end
 
--- Text for a row: control characters as spaces, nil when blank
 local function clean(text)
   if type(text) ~= "string" then return nil end
   text = text:gsub("%c", " ")
@@ -83,8 +69,6 @@ local function clean(text)
   return text
 end
 
--- An agent's icon in a state: its image, if there is one, else a terminal in
--- the state's color
 local function agent_icon(app, state)
   local name = ICONS .. app .. (state == "done" and "" or ("-" .. state))
   for _, path in ipairs{ name .. ".webp", name .. ".png" } do
@@ -97,14 +81,11 @@ local function agent_icon(app, state)
   return { symbol = "terminal.fill", color = STATES[state].color }
 end
 
--- A directory on this Mac with its home as ~
 local function home(cwd)
   if cwd == HOME or cwd:sub(1, #HOME + 1) == HOME .. "/" then return "~" .. cwd:sub(#HOME + 1) end
   return cwd
 end
 
--- A directory as fish's prompt shows it: each folder but the last two by its
--- first letter, with a hidden one's dot
 local function fish(cwd)
   local names = {}
   for name in cwd:gmatch("[^/]+") do table.insert(names, name) end
@@ -112,14 +93,12 @@ local function fish(cwd)
   return (cwd:sub(1, 1) == "/" and "/" or "") .. table.concat(names, "/")
 end
 
--- Seconds since rex-state last wrote, if it stopped writing
-local function stopped_for()
+local function stale_snapshot_age()
   local written = snapshot and epoch(snapshot.written_at)
-  local since = written and os.time() - written
-  if since and since > STALE_AFTER then return since end
+  local seconds = written and os.time() - written
+  if seconds and seconds > SNAPSHOT_STALE_SECONDS then return seconds end
 end
 
--- A block's most pressing agent record: its state, the record, and when it changed
 local function status(block)
   local best
   for _, record in ipairs(block.status or {}) do
@@ -142,7 +121,6 @@ local function render()
   local down = {}
   rows = {}
   for _, server in ipairs(snapshot and snapshot.servers or {}) do
-    -- A host still connecting has no error yet
     if not server.connected and server.error then table.insert(down, short(server.server) or "this Mac") end
     for _, session in ipairs(server.sessions or {}) do
       for _, block in ipairs(session.blocks or {}) do
@@ -162,7 +140,6 @@ local function render()
             item = {
               id = id,
               title = clean(block.title) or app,
-              -- What the agent is doing, while it says
               subtitle = clean(best.record.msg),
               icon = agent_icon(app, best.state),
               columns = { place, cwd },
@@ -180,10 +157,9 @@ local function render()
   local items = {}
   for i, row in ipairs(found) do items[i] = row.item end
   flare.items(items)
-  local stopped = stopped_for()
-  -- An unreachable host's agents can't be jumped to, so its rows are gone
+  local stale_age = stale_snapshot_age()
   flare.notice(problem or jump_failed
-    or (stopped and ("rex-state stopped writing " .. age(stopped) .. " ago; these rows may be old"))
+    or (stale_age and ("rex-state stopped writing " .. age(stale_age) .. " ago; these rows may be old"))
     or (#down > 0 and ("Can't reach " .. table.concat(down, ", ")) or nil))
 end
 
@@ -209,7 +185,6 @@ local function follow()
   end
 end
 
--- A rex command for SERVER ("local" for this Mac's)
 local function rex(server, ...)
   local argv = { REX, "--autostart=false" }
   if server ~= "local" then
@@ -220,7 +195,6 @@ local function rex(server, ...)
   return argv
 end
 
--- Runs a command, raising its error
 local function call(argv)
   local out, err = flare.exec(argv, { timeout = 5 })
   if not out then error(err, 0) end
@@ -228,8 +202,6 @@ local function call(argv)
   return out.stdout
 end
 
--- Rex.app's client on this Mac's server, which shows sessions on every host:
--- the one connected last
 local function app_client()
   local clients = flare.json.decode(call(rex("local", "client", "ls", "--json"))).clients or {}
   local newest, newest_at
@@ -244,11 +216,7 @@ local function app_client()
   return newest and newest.client_id
 end
 
--- The pane Rex's Mark Agent Unread (home/.config/rex/agent_unread.lua) waits to mark
--- once a jump leaves it: when it was saved, its session and its block, a line each
 local PENDING = HOME .. "/.local/state/rex/mark-unread"
--- Rex saves it just before it opens this mode, so an older one is from a mode
--- closed without a jump
 local PENDING_FRESH = 5
 
 local function read_pending()
@@ -268,7 +236,6 @@ flare.on("open", function()
 end)
 
 flare.on("close", function()
-  -- Shown once; a jump after this closing sets it again
   jump_failed = nil
 end)
 
@@ -278,7 +245,6 @@ local function jump(row)
   if not client then error("Rex isn't running", 0) end
   call(rex("local", "--client", client, "do", "session.select",
     "session_id=" .. row.session, "window_id=" .. row.window))
-  -- Rex comes forward on its session even if the pane can't be focused
   local focused, err = pcall(call, rex(row.server, "api", "call", "session.focus_block",
     flare.json.encode{ session_id = row.session, block_id = row.block }))
   local opened, open_err = pcall(call, { "/usr/bin/open", "-b", REX_APP })
@@ -286,7 +252,6 @@ local function jump(row)
   if not opened then error("Couldn't bring Rex forward: " .. open_err, 0) end
 end
 
--- Marks the pending pane unread, on its own server, unless the jump went to it
 local function mark_pending(target)
   local pending = read_pending()
   os.remove(PENDING)
@@ -317,7 +282,6 @@ flare.on("run", function(id)
   render()
 end)
 
--- The agent a terminal's foreground process is, by its argv0, executable, or script
 local function classify(foreground)
   for _, key in ipairs{ "argv0", "invoked_path", "path", "script" } do
     local name = type(foreground[key]) == "string" and foreground[key]:match("([^/]+)$")
@@ -326,40 +290,36 @@ local function classify(foreground)
   end
 end
 
--- The agent in the focused pane of a session's active window: false for none,
--- nil when unknown, as the session's last read failed and its focus may be old
-local function front(session)
-  if session.stale then return nil end
+local function focused_agent(session)
   for _, window in ipairs(session.windows or {}) do
     if window.id == session.active_window then
       for _, block in ipairs(session.blocks or {}) do
-        if block.id == window.focused_block then return block.foreground and classify(block.foreground) or false end
+        if block.id == window.focused_block then return block.foreground and classify(block.foreground) end
       end
     end
   end
-  return false
 end
 
 -- Rex's window title ends in " - " and the session's label, with no sign of the
 -- host, so sessions of that label on several hosts answer only when they agree
 flare.on("agent", function(app)
-  -- An old snapshot may name another pane than the one focused now
-  if app.bundle_id ~= REX_APP or not snapshot or stopped_for() then return nil end
+  if app.bundle_id ~= REX_APP or not snapshot or stale_snapshot_age() then return nil end
   local title = flare.window_title(app.pid)
   local sessions = {}
   for _, server in ipairs(snapshot.servers or {}) do
     for _, session in ipairs(server.sessions or {}) do table.insert(sessions, session) end
   end
-  if not title then return #sessions == 1 and front(sessions[1]) or nil end
-  local agent
+  if not title and #sessions ~= 1 then return nil end
+  local matched, agent = false, nil
   for _, session in ipairs(sessions) do
-    if title:sub(-(#session.label + 3)) == " - " .. session.label then
-      local this = front(session)
-      if this == nil or (agent ~= nil and agent ~= this) then return nil end
-      agent = this
+    if not title or title:sub(-(#session.label + 3)) == " - " .. session.label then
+      if session.stale then return nil end
+      local candidate = focused_agent(session)
+      if matched and candidate ~= agent then return nil end
+      matched, agent = true, candidate
     end
   end
-  return agent or nil
+  return agent
 end)
 
 follow()

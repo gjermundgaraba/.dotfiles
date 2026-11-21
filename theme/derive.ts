@@ -1,9 +1,3 @@
-// Derives a palette's tiers and checks its contrast. Self-contained, with no
-// imports: build.ts uses it, and the build strips its types into
-// theme/web/derive.js, which the web package exports as
-// @gjermundgaraba/gg-theme/derive. Colours and names use tokens.json's shape:
-// #rrggbb strings under kebab-case keys.
-
 export type Mode = "dark" | "light";
 
 export const hueNames = ["accent", "red", "green", "yellow", "blue", "magenta", "cyan", "orange"] as const;
@@ -171,8 +165,7 @@ function hasTierInputs(palette: Readonly<Record<string, string>>): palette is Ti
  * when it passes.
  * Checks each rule whose colours are present, so a palette without the
  * terminal colours is checked on the rest. With all of TierInputs present it
- * also derives the tiers and checks FG (7:1) and the syntax colours (4.5:1) on
- * each wash and tint.
+ * also checks FG (7:1) on every wash and tint, and syntax colours (4.5:1) on tints.
  */
 export function checkPalette(mode: Mode, palette: Readonly<Record<string, string>>): string[] {
   const problems = Object.entries(palette)

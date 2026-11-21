@@ -261,7 +261,6 @@ const webOutputs: [string, string][] = [
   [
     "index.css",
     [
-      "/* gg-theme — generated from theme/palette.ts. Do not edit. */",
       ...webModes.map((mode) =>
         cssBlock(webSelectors[mode], mode, [
           ...Object.entries(slotsByMode[mode]),
@@ -274,7 +273,6 @@ const webOutputs: [string, string][] = [
   [
     "tailwind.css",
     [
-      "/* gg-theme — Tailwind v4 entry. Generated from theme/palette.ts. Do not edit. */",
       '@import "./index.css";',
       [
         "@theme inline {",
@@ -293,13 +291,8 @@ const webOutputs: [string, string][] = [
   ],
   [
     "primitives.css",
-    [
-      "/* gg-theme primitives — generated from theme/palette.ts. Do not edit.\n" +
-        "   The un-roled palette, for layers that map it to their own vocabulary\n" +
-        "   instead of consuming the shadcn slots in index.css. After the palette\n" +
-        "   come the tiers derived from it: soft (text), quiet (receding), wash and\n" +
-        "   tint (backgrounds). */",
-      ...webModes.map((mode) =>
+    webModes
+      .map((mode) =>
         cssBlock(webSelectors[mode], mode, [
           ...Object.entries(palettes[mode]).map(
             ([name, color]) => [`gg-${kebab(name)}`, oklchCss(color)] as [string, string],
@@ -311,8 +304,8 @@ const webOutputs: [string, string][] = [
           ["gg-link-visited", oklchCss(slotsByMode[mode]["link-visited"])],
           ...Object.entries(deprecatedPre020Aliases).map(([name, source]) => [name, `var(--gg-${source})`] as [string, string]),
         ]),
-      ),
-    ].join("\n\n"),
+      )
+      .join("\n\n"),
   ],
   [
     "tokens.json",
@@ -349,7 +342,7 @@ const webOutputs: [string, string][] = [
 const deriveSource = await readFile(new URL("./derive.ts", import.meta.url), "utf8");
 webOutputs.push([
   "derive.js",
-  `// gg-theme derive — generated from theme/derive.ts. Do not edit.\n${stripTypeScriptTypes(deriveSource).replace(/[ \t]+$/gm, "").trimEnd()}`,
+  stripTypeScriptTypes(deriveSource).replace(/[ \t]+$/gm, "").trimEnd(),
 ]);
 
 for (const [file, output] of webOutputs) {

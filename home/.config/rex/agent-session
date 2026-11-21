@@ -1,9 +1,4 @@
 #!/bin/sh
-# Records the agent session each Rex pane runs, for Rex's Fork Agent Session action (agent_fork.lua):
-#   agent-session record APP [ID]  records this pane's session. Without ID, reads it from a
-#                                  SessionStart hook's JSON on stdin
-#   agent-session clear            forgets this pane's session
-#   agent-session id APP BLOCK     prints BLOCK's session ID, if APP recorded it
 
 dir="${XDG_STATE_HOME:-$HOME/.local/state}/rex/agent-sessions"
 

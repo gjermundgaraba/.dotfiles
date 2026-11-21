@@ -1,24 +1,13 @@
--- Mark Agent Unread: puts Rex's unread dot back on an idle or finished agent's pane, once you
--- have picked somewhere else to go.
---
---   require("agent_unread").setup{ pick = function() ... end }
---   rex.bind("f20>u", "mark_agent_unread")
---
 -- Rex has no API for unread. Rex.app keeps a receipt of when it last showed each pane, and a done
 -- program status report (OSC 7501) newer than that is unread. Rex.app counts the pane as shown
 -- while it is on screen, even under Flare's panel, so the report has to wait until you are
--- elsewhere. The action checks the agent, saves the pane in PENDING below, and calls pick, which
--- opens Flare's Agents mode (home/.config/flare/extensions/agents.lua). After Flare jumps to
--- another pane it runs this action with now = true on the pending pane's own server, which writes
--- the report to the pane's tty, as if the agent had sent it, repeating its app, title and message.
--- The agent's next report replaces it. A remote host's server writes to its own panes, so it
--- needs this file too.
+-- elsewhere.
 
 local M = {}
 
 local terminal = "com.superlogical.terminal"
 local state_dir = os.getenv("HOME") .. "/.local/state/rex"
--- When it was saved, in seconds since the epoch, then the session and block, a line each
+local FOCUS_SETTLE_SECONDS = 0.5
 M.PENDING = state_dir .. "/mark-unread"
 
 local function base64(text)
@@ -28,7 +17,6 @@ local function base64(text)
   return (encoded.stdout:gsub("%s", ""))
 end
 
--- The done report for the pane's agent, repeating its app, title and message
 local function report(ctx)
   local status = rex.block.call(terminal, "program_status", { block_id = ctx.block_id }) or {}
   local root = (status.records or {})[1]
@@ -44,8 +32,6 @@ local function report(ctx)
   return "\27]7501;" .. table.concat(fields, ":") .. "\27\\"
 end
 
--- Writes text to the pane's tty, on this server's host, which must run the pane. Half a second
--- later, so Rex.app has finished showing where Flare jumped
 local function write(ctx, text)
   local proc = rex.block.call(terminal, "process", { block_id = ctx.block_id }) or {}
   local pid = proc.foreground and proc.foreground.pid
@@ -56,7 +42,7 @@ local function write(ctx, text)
   if not ps.ok or tty == "" or tty:find("?", 1, true) then error("No tty for this pane", 0) end
 
   local started, start_err = rex.exec.start(
-    { "sh", "-c", 'sleep 0.5 && printf %s "$1" > "$2"', "sh", text, "/dev/" .. tty },
+    { "sh", "-c", 'sleep "$1" && printf %s "$2" > "$3"', "sh", tostring(FOCUS_SETTLE_SECONDS), text, "/dev/" .. tty },
     { detach = true }
   )
   if not started then error(start_err, 0) end

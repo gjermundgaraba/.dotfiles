@@ -1,16 +1,7 @@
--- New Clankerbox Host: creates a clankerbox machine and adds it to the Mac app as a remote host, at
--- its Tailscale name.
---
---   require("clankerbox_host").setup()
---   rex.bind("f20>i>c", "new_clankerbox_host")
---
 -- The app doesn't yet show hosts added with `rex hosts add`, and nothing adds a host to it by address
 -- from a script. So this opens its Add Remote Host prompt and enters the address with Cua Driver,
 -- which works while Rex is in the background. It needs Remote Control turned on in the app's
 -- settings and Cua Driver's daemon running, and a Rex update that changes the prompt can break it.
--- Running it again after a failure picks up where it stopped: it uses the machine that has the name
--- and skips a host the app has. The Mac app runs this action on the Mac's server, also in a remote
--- host's session, so its commands run on the Mac.
 
 local helpers = require("helpers")
 local run, notify = helpers.run, helpers.notify
@@ -24,12 +15,10 @@ local TEMPLATE = "gg-linux-dev"
 local REX_APP = "com.superlogical.rex"
 local FIELD = "Command Palette Search"
 local TITLE = "New Clankerbox Host"
-local TIMEOUT = 600 -- seconds, for the whole run
+local TIMEOUT_SECONDS = 600
 
 local function sleep(seconds) rex.exec({ "/bin/sleep", tostring(seconds) }) end
 
--- Calls check every few seconds until it returns a value, and returns that value. Raises message
--- once the deadline, in seconds since the epoch, has passed
 local function wait(deadline, message, check)
   while true do
     local value = check()
@@ -39,7 +28,6 @@ local function wait(deadline, message, check)
   end
 end
 
--- Asks for text in a dialog. Returns nil when it's cancelled or left empty
 local function ask(prompt)
   local r, err = rex.exec({
     "osascript",
@@ -58,7 +46,6 @@ local function ask(prompt)
   if text ~= "" then return text end
 end
 
--- The machine with this name, or nil if there's none
 local function machine(name)
   local r, err = rex.exec({ CLANKERBOX, "get", name, "--json" })
   if not r then error(err, 0) end
@@ -68,7 +55,6 @@ local function machine(name)
   error("clankerbox: " .. (reply.error and reply.error.message or r.stderr), 0)
 end
 
--- The machine's Tailscale name once it has joined the tailnet
 local function tailnet_name(name)
   local tailnet = (machine(name) or {}).tailnet or {}
   if tailnet.state == "joined" and tailnet.name ~= "" then return tailnet.name end
@@ -86,7 +72,6 @@ local function app_hosts()
   return names
 end
 
--- Calls a Cua Driver tool and returns its reply, or raises its first failure
 local function driver(tool, args)
   local r, err = rex.exec({ CUA_DRIVER, "call", tool, rex.json.encode(args) })
   if not r then error(err, 0) end
@@ -103,9 +88,7 @@ local function driver(tool, args)
   return reply
 end
 
--- The window of the open command palette: the one whose field accessibility can reach. The
--- palette's window also exists while it's closed, but then has no field
-local function palette_window()
+local function window_with_palette_field()
   for _, window in ipairs(driver("list_windows", { app = REX_APP }).windows or {}) do
     local state = driver("get_window_state", {
       pid = window.pid, window_id = window.window_id,
@@ -130,15 +113,12 @@ local function add_to_app(ctx, endpoint)
 
   local window
   for _ = 1, 10 do
-    window = palette_window()
+    window = window_with_palette_field()
     if window then break end
     sleep(0.3)
   end
   if not window then error("Rex.app didn't open Add Remote Host", 0) end
 
-  -- Set the field to ENDPOINT, replacing any text the palette kept, and press Return only once it
-  -- holds exactly that and the palette offers to connect to it, which only Add Remote Host does.
-  -- Anything else gets Escape
   local function steps(list)
     return driver("run_steps", {
       session = "new-clankerbox-host", pid = window.pid, window_id = window.window_id, steps = list,
@@ -164,17 +144,16 @@ local function add_to_app(ctx, endpoint)
   error("Rex.app didn't list " .. endpoint .. " after Return", 0)
 end
 
--- Creates the machine unless it exists, then adds it to the app. Returns its Tailscale name
 local function create_host(ctx, name)
-  local deadline = os.time() + TIMEOUT
+  local deadline = os.time() + TIMEOUT_SECONDS
   local existing = machine(name)
   if not existing then
-    run({ CLANKERBOX, "create", "--template", TEMPLATE, "--timeout", TIMEOUT .. "s", name },
-      { timeout = TIMEOUT })
+    run({ CLANKERBOX, "create", "--template", TEMPLATE, "--timeout", TIMEOUT_SECONDS .. "s", name },
+      { timeout = TIMEOUT_SECONDS })
   elseif existing.state ~= "running" then
     error(name .. " exists and is " .. tostring(existing.state), 0)
   end
-  -- create returns once the machine runs, which can be before it has joined the tailnet
+  -- Clankerbox joins the tailnet in a separate step after create returns.
   local endpoint = wait(deadline, name .. " didn't join the tailnet", function()
     return tailnet_name(name)
   end)

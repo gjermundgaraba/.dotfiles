@@ -1,5 +1,3 @@
-// Types for derive.js. Hand-written: keep in step with theme/derive.ts's exports.
-
 export type Mode = "dark" | "light";
 
 export declare const hueNames: readonly ["accent", "red", "green", "yellow", "blue", "magenta", "cyan", "orange"];
@@ -46,6 +44,6 @@ export declare function deriveTiers(mode: Mode, palette: TierInputs): Tiers;
  * Every contrast rule the palette breaks, as messages without the mode; empty
  * when it passes.
  * Checks each rule whose colours are present; with all of TierInputs present
- * it also checks FG and the syntax colours on the derived washes and tints.
+ * it also checks FG on every wash and tint, and syntax colours on tints.
  */
 export declare function checkPalette(mode: Mode, palette: Readonly<Record<string, string>>): string[];

@@ -1,5 +1,4 @@
 [
-    // Enables
     {
         "key": "alt+cmd+j",
         "command": "editor.action.insertCursorBelow",
@@ -164,7 +163,6 @@
         "command": "tab",
         "when": "editorTextFocus && !editorReadonly && !editorTabMovesFocus && !cpp.shouldAcceptTab && !inlineSuggestionVisible"
     },
-    // Disables
     {
         "key": "alt+cmd+k",
         "command": "-keybindings.editor.recordSearchKeys",

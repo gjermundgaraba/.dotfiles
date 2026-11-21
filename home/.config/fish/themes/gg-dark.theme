@@ -1,5 +1,4 @@
 # name: gg-dark
-# Generated from theme/palette.ts. Do not edit.
 fish_color_normal e2e6e0
 fish_color_command 00c9cb
 fish_color_keyword e786ed

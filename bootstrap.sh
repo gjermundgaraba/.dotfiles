@@ -80,13 +80,10 @@ install_packages() {
 link_dotfiles() {
   git -C "$root" config core.hooksPath .githooks
   git -C "$root" config filter.pi-settings.clean "jq 'del(.deviceId, .lastChangelogVersion)'"
-  # Neovim skills are linked below as whole folders, which Codex needs to
-  # discover them; Python's bytecode caches stay in the repository.
   stow -R --no-folding \
     --ignore='^\.config/nvim/\.agents/skills(/.*)?$' \
     --ignore='(^|/)__pycache__(/.*)?$' \
     -d "$root" -t "$HOME" home
-  # Real parent directories, so other checkouts can link skills beside these.
   mkdir -p "$HOME/.config/nvim/.agents/skills" "$HOME/.codex/skills" "$HOME/.agents/skills" "$HOME/.claude/skills"
   stow -R -d "$root/home/.config/nvim/.agents" -t "$HOME/.config/nvim/.agents/skills" skills
   stow -R -d "$root" -t "$HOME" skills

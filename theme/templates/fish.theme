@@ -1,5 +1,4 @@
 # name: {{Name}}
-# Generated from theme/palette.ts. Do not edit.
 fish_color_normal {{FG}}
 fish_color_command {{Cyan}}
 fish_color_keyword {{Magenta}}

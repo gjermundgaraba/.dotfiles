@@ -1,5 +1,3 @@
--- Keyboard shortcuts ported from ~/.config/ghostty/config
-
 local terminal = "com.superlogical.terminal"
 
 local function type_text(ctx, data)
@@ -27,12 +25,8 @@ for key, text in pairs(alt_text) do
   rex.bind(key, function(ctx) return type_text(ctx, text) end)
 end
 
--- Unbinds: let these keys reach the terminal
 rex.unbind("cmd+w")
--- rex.unbind("cmd+shift+w")
--- rex.unbind("ctrl+cmd+up")
 
--- Features
 rex.bind("cmd+k", "client.palette.toggle")
 rex.bind("ctrl+cmd+r", "client.tab.rename")
 rex.bind("ctrl+tab", "client.tab.next")
@@ -86,11 +80,7 @@ rex.bind("f20>r>s", "session.rename")
 rex.bind("f20>shift+p", "session.previous")
 rex.bind("f20>shift+n", "session.next")
 
--- Back and forward through the panes Rex showed, on every host, as Vim's jump list does with
--- ctrl+o and ctrl+i. rex-state's daemon records them
--- (macos/Library/LaunchAgents/local.rex-state.plist). rex-state focuses the pane on its server
--- and has this Rex show it. Not with rex.client.queue: a queued session.select from a key press
--- looks only on the Mac's server, so a pane on another host isn't found
+-- A session.select queued from a key press only looks on the Mac's server.
 local function focus_history(ctx, direction)
   run({ os.getenv("HOME") .. "/.cargo/bin/rex-state", direction, ctx.client_id })
 end
@@ -119,16 +109,13 @@ rex.action{
 }
 rex.bind("f20>y>y", "copy_block_id")
 
--- Fork Agent Session and Copy Agent Session ID, for Claude Code, Codex and pi
 require("agent_fork").setup{ copy = copy }
 rex.bind("f20>f", "fork_agent")
 rex.bind("f20>y>i", "copy_agent_session_id")
 
--- New Clankerbox Host: create a clankerbox machine and add it to the Mac app as a remote host
 require("clankerbox_host").setup()
 rex.bind("f20>i>c", "new_clankerbox_host")
 
--- Closes the floating layer with this block label in the active tab, if there is one
 local function close_popup(session_id, label)
   local view = rex.call("session.view", { session_id = session_id }) or {}
   for _, window in ipairs(view.windows or {}) do
@@ -146,7 +133,6 @@ local function close_popup(session_id, label)
   return false
 end
 
--- Pressed again, closes the popup in the active tab instead of opening another
 rex.action{
   name  = "popup_shell",
   title = "Toggle Popup Shell",
@@ -170,9 +156,7 @@ rex.action{
 }
 rex.bind("cmd+shift+t", "popup_shell")
 
--- Agents on every host, the ones waiting on you first, in Flare's Agents mode
--- (home/.config/flare/extensions/agents.lua). The Mac app runs this file's actions
--- on the Mac's server, also in a remote host's session, so open runs on the Mac
+-- The Mac app runs actions on the Mac's server, even from remote sessions.
 local function show_agents()
   run({ "/usr/bin/open", "-g", "flare://mode/agents" })
 end
@@ -185,8 +169,6 @@ rex.action{
 }
 rex.bind("f20>g", "agents")
 
--- Mark Agent Unread: Show Agents to pick where to go, and the unread dot back on this pane's
--- idle or finished agent once Flare has jumped there
 require("agent_unread").setup{ pick = show_agents }
 rex.bind("f20>u", "mark_agent_unread")
 
@@ -226,20 +208,17 @@ rex.action{
 }
 rex.bind("f20>y>u", "copy_host_name")
 
--- The host's label as `rex hosts` lists it, which a remote host's session gets as ctx.server.
--- This machine's own server has no label, so use the Mac's name, as the app does
 rex.action{
   name  = "copy_host_label",
   title = "Copy Host Label",
   run   = function(ctx)
     if ctx.server then return copy(ctx.server, "Copied host label") end
-    local name = run({ "/usr/sbin/scutil", "--get", "ComputerName" })
-    return copy((name:gsub("%s+$", "")), "Copied host label")
+    local computer_name = run({ "/usr/sbin/scutil", "--get", "ComputerName" })
+    return copy((computer_name:gsub("%s+$", "")), "Copied host label")
   end,
 }
 rex.bind("f20>y>l", "copy_host_label")
 
--- Splits
 local dirs = { h = "left", j = "down", k = "up", l = "right" }
 for key, dir in pairs(dirs) do
   rex.bind("cmd+alt+" .. key, "pane.focus", { direction = dir })

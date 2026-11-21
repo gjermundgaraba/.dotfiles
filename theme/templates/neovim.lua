@@ -1,4 +1,3 @@
--- Generated from theme/palette.ts by theme/build.ts. Do not edit.
 vim.g.colors_name = '{{Name}}'
 vim.o.background = '{{Background}}'
 
