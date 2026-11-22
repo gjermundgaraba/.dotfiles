@@ -9,7 +9,7 @@
     "npm:@clanker-stuff/dollah-skills@0.1.0",
     "npm:@clanker-stuff/history@0.1.0",
     "npm:@clanker-stuff/shell-resume-history@0.1.0",
-    "npm:@clanker-stuff/plannotator@0.2.0",
+    "npm:@clanker-stuff/stash@0.1.0",
     {
       "source": "npm:@clanker-stuff/footer@0.1.0",
       "extensions": [
@@ -31,7 +31,7 @@
     {
       "source": "npm:@clanker-stuff/shape-spinner@0.1.0",
       "extensions": [
-        "-index.ts"
+        "+index.ts"
       ]
     },
     {
@@ -63,18 +63,26 @@
         "+index.ts"
       ]
     },
-    "npm:@clanker-stuff/mcp-skills@0.1.0",
-    "npm:@clanker-stuff/codemode-diffs@0.1.0"
+    {
+      "source": "npm:@clanker-stuff/codemode-diffs@0.1.0",
+      "extensions": [
+        "+index.ts"
+      ]
+    },
+    "/Users/gg/ws/pers/clanker-stuff/pi/extensions/experimental/waits",
+    "/Users/gg/ws/pers/clanker-stuff/pi/extensions/experimental/peers",
+    "/Users/gg/ws/pers/pi-ladybird-ui",
+    "/Users/gg/ws/pers/pi-mcp-bleeding-edge"
   ],
-  "defaultProvider": "openai",
-  "defaultModel": "gpt-6.2-sol",
+  "defaultProvider": "claude-bridge",
+  "defaultModel": "claude-opus-5-5",
   "defaultTools": [
     "+codemode"
   ],
   "codemode": {
     "mode": "only"
   },
-  "defaultThinkingLevel": "xhigh",
+  "defaultThinkingLevel": "high",
   "modelThinkingLevels": {
     "xai/grok-4.6": "xhigh",
     "radius/deepseek-v4.1-flash": "high"
@@ -84,7 +92,9 @@
     "claude-bridge/claude-opus-5-5",
     "claude-bridge/claude-sonnet-5-5",
     "openai/gpt-6.2-astra",
-    "openai/gpt-6.2-sol"
+    "openai/gpt-6.2-sol",
+    "google/gemini-4-neon",
+    "claude-bridge/claude-fable-5-2"
   ],
   "showHardwareCursor": true,
   "terminal": {
@@ -99,7 +109,8 @@
   "enableSkillCommands": true,
   "hideThinkingBlock": false,
   "extensions": [
-    "+extensions/herdr-micro-effort.ts"
+    "+extensions/herdr-micro-effort.ts",
+    "-builtin:mcp"
   ],
   "cacheWarming": "idle"
 }
